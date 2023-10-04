@@ -21,10 +21,11 @@
     "cors": "^2.8.5",
     "express": "^4.17.2",
     "express-validator": "^7.0.1",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "ws": "^8.14.2"
   },
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "nodemon -w *.ts src/index.ts"
- }
+  }
 }
