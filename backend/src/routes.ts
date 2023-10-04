@@ -1,4 +1,4 @@
-import { param } from "express-validator"
+import { body, param } from "express-validator"
 import { UserController } from "./controller/UserController"
 
 export const Routes = [{
@@ -7,8 +7,8 @@ export const Routes = [{
     controller: UserController,
     action: "insert",
     validation: [
-        //body('id').isAlphanumeric(),
-        //body('settings').isJSON(),
+        body('id').isAlphanumeric(),
+        body('settings').isJSON(),
     ]
 }, {
     method: "delete",

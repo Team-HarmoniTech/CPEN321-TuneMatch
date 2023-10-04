@@ -1,21 +1,20 @@
 import * as bodyParser from "body-parser"
 import * as express from "express"
 import { Request, Response } from "express"
+import * as http from "http"
 import * as morgan from "morgan"
-import { WebSocket, WebSocketServer } from 'ws'
+import { WebSocketServer } from "ws"
 import { PORT } from "./config"
 import { handleError } from "./middleware/errorHandler"
 import { Routes } from "./routes"
 
-// create express app
 const app = express();
-const cors = require('cors'); // prevent CORS errors
 
+// Middleware
 app.use(morgan('tiny')); // API logger
 app.use(bodyParser.json());
-app.use(cors())
 
-// register express routes from defined application routes
+// Register express routes from defined application routes in routes.ts
 Routes.forEach(route => {
     (app as any)[route.method](route.route, async (req: Request, res: Response, next: Function) => {
         try {
@@ -29,22 +28,45 @@ Routes.forEach(route => {
 
 app.use(handleError);
 
-// start express server
-app.listen(PORT, () => {
-    console.log(`Express server has started on port ${PORT}.`);
+// Create http websocket server
+const server = http.createServer(app);
+const wss = new WebSocketServer({server: server, path: "/socket"});
+
+// Register websocket routes after connection
+wss.on('connection', function connection(ws) {
+  ws.on('error', console.error);
+
+  ws.on('message', function message(data) {
+    ws.send(`received: ${data}`);
+  });
+
+  wss.client
 });
 
-// create websocket server
-const wss = new WebSocketServer({ port: 8080 });
+// Websocket auth functionality
+server.on('upgrade', function upgrade(request, socket, head) {
+  socket.on('error', console.error);
 
-wss.on('connection', function connection(ws) {
-    ws.on('error', console.error);
-  
-    ws.on('message', function message(data, isBinary) {
-      wss.clients.forEach(function each(client) {
-        if (client !== ws && client.readyState === WebSocket.OPEN) {
-          client.send(data, { binary: isBinary });
-        }
-      });
+  const authenticate = (req, next) => {
+    console.log(req.headers["user-id"]);
+  }
+
+  authenticate(request, function next(err, client) {
+    if (err || !client) {
+      socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+      socket.destroy();
+      return;
+    }
+
+    socket.removeListener('error', console.error);
+
+    wss.handleUpgrade(request, socket, head, function done(ws) {
+      wss.emit('connection', ws, request, client);
     });
   });
+});
+
+// start express server
+server.listen(PORT, () => {
+    console.log(`Express server has started on port ${PORT}.`);
+});
