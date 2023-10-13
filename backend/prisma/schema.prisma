@@ -8,54 +8,63 @@ datasource db {
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  internal_id String @unique
-  username String
-  top_artists  Json
-  top_genres Json
+  id                  Int     @id @default(autoincrement())
+  internal_id         String  @unique
+  username            String
+  top_artists         Json
+  top_genres          Json
   currently_listening String?
-  is_banned Boolean @default(false)
-  pfp_url String?
-  bio String?
+  is_banned           Boolean @default(false)
+  pfp_url             String?
+  bio                 String?
 
-  // Constraints
-  session   Session?      @relation("Session Members", fields: [id], references: [id])
+  // Sessions
+  session   Session? @relation(fields: [sessionId], references: [id])
+  sessionId Int?
+
+  // Friends
+  // If a User is in requested and requesting then they are considered friends
+  requested  User[] @relation("friends")
+  requesting User[] @relation("friends")
+
+  // Connections
   connections1 Connection[] @relation("Connections 1")
   connections2 Connection[] @relation("Connections 2")
+
+  // Reports
   reports_as_offender Report[] @relation("Offender Reports")
   reports_as_reporter Report[] @relation("Reporter Reports")
 }
 
 model Connection {
-  id    Int     @id @default(autoincrement())
-  user_id_1 Int
-  user_id_2 Int
+  id            Int  @id @default(autoincrement())
+  user_id_1     Int
+  user_id_2     Int
   match_percent Int?
-  are_friends Boolean @default(false) 
-  user_1_requested Boolean?
 
   // Constraints
-  user_1   User      @relation("Connections 1", fields: [user_id_1], references: [id])
-  user_2   User      @relation("Connections 2", fields: [user_id_2], references: [id])
+  user_1 User @relation("Connections 1", fields: [user_id_1], references: [id])
+  user_2 User @relation("Connections 2", fields: [user_id_2], references: [id])
+
   @@unique([user_id_1, user_id_2])
 }
 
 model Session {
-  id    Int       @id @default(autoincrement())
-  members  User[] @relation("Session Members")
+  id      Int    @id @default(autoincrement())
+  members User[]
 }
 
 model Report {
-  id    Int       @id @default(autoincrement())
+  id                Int           @id @default(autoincrement())
   offending_user_id Int
   reporting_user_id Int
-  reason ReportReasons
-  reason_text String?
-  report_context Json
+  reason            ReportReasons
+  reason_text       String?
+  report_context    Json
 
   // Constraints
-  user_1   User      @relation("Offender Reports", fields: [offending_user_id], references: [id])
-  user_2   User      @relation("Reporter Reports", fields: [reporting_user_id], references: [id])
+  user_1 User @relation("Offender Reports", fields: [offending_user_id], references: [id])
+  user_2 User @relation("Reporter Reports", fields: [reporting_user_id], references: [id])
 }
 
 enum ReportReasons {

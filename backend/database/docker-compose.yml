@@ -1,9 +1,9 @@
-version: '3'
+version: "3"
 services:
   mysql:
     image: mysql:8.0.17
     environment:
-      MYSQL_ROOT_PASSWORD: pass
-      MYSQL_DATABASE: test
+      MYSQL_ROOT_PASSWORD: 5KvX9bzs8x8VSAmwcD9S
+      MYSQL_DATABASE: TuneMatchDB
     ports:
       - "3306:3306"

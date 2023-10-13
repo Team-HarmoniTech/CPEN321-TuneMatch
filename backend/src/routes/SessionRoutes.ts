@@ -21,7 +21,7 @@ export const SessionRoutes = [{
             body('user-id').isAlphanumeric(),
             body('user-ids').isArray()
         ])
-    ] 
+    ]
 }, {
     method: "delete",
     route: "/session/:session-id/end",
@@ -30,7 +30,7 @@ export const SessionRoutes = [{
     validation: [
         header('user-id').exists().isAlphanumeric(),
         param('session-id').exists().isInt(),
-    ] 
+    ]
 }, {
     method: "get",
     route: "/session/join/:user-id",
@@ -39,5 +39,5 @@ export const SessionRoutes = [{
     validation: [
         header('user-id').exists().isAlphanumeric(),
         param('user-id').exists().isAlphanumeric(),
-    ] 
+    ]
 }]

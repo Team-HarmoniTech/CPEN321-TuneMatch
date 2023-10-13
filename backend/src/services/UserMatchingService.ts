@@ -4,7 +4,7 @@ export class UserMatchingService {
     calcPercentMatch(u1: User, u2: User): number {
         const arrayScore = (arr1, arr2): number => {
             // Create map from value to index
-            const arr1map = new Map<string, number>(); 
+            const arr1map = new Map<string, number>();
             arr1.forEach((value, index) => {
                 arr1map.set(value, index);
             });
@@ -21,7 +21,7 @@ export class UserMatchingService {
 
             return score / maxLength;
         }
-    
+
         return (arrayScore(u1.top_artists, u2.top_artists) + arrayScore(u1.top_genres, u2.top_genres)) * 50;
     }
 }

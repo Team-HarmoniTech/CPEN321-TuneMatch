@@ -7,11 +7,11 @@ export const UserRoutes = [{
     controller: UserController,
     action: "insert",
     validation: [
-        body('internal_id').exists().isAlphanumeric,
-        body('username').exists().isString(),
-        body('top_artists').exists().isJSON(),
-        body('top_genres').exists().isJSON(),
-        body('pfp_url').isString()
+        // body('internal_id').exists().isAlphanumeric,
+        // body('username').exists().isstring(),
+        // body('top_artists').exists().isJSON(),
+        // body('top_genres').exists().isJSON(),
+        // body('pfp_url').isstring()
     ]
 }, {
     method: "post",
@@ -20,12 +20,12 @@ export const UserRoutes = [{
     action: "update",
     validation: [
         param('id').exists().isAlphanumeric(),
-        body('username').isString(),
+        body('username').isstring(),
         body('top_artists').isJSON(),
         body('top_genres').isJSON(),
-        body('pfp_url').isString(),
-        body('bio').isString()
-    ] 
+        body('pfp_url').isstring(),
+        body('bio').isstring()
+    ]
 }, {
     method: "delete",
     route: "/users/:id",
@@ -33,5 +33,5 @@ export const UserRoutes = [{
     action: "remove",
     validation: [
         param('id').exists().isAlphanumeric(),
-    ] 
+    ]
 }]
