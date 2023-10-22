@@ -76,7 +76,7 @@ export class UserMatchingService {
         } else {
           // Calculate the match percentage
           matchPercent = await this.calcPercentMatch(user, userToMatch);
-          // Add the user connection to the database
+          
           await userService.addUserConnection(userId, userToMatch.id, matchPercent);
         }
 
@@ -102,16 +102,14 @@ export class UserMatchingService {
           }
         }
       }
+      await userService.connectionsComputed(userId, true);
     }
 
     async getTopMatches(userId) {
-      // Fetch the user's connections and their match percentages
       const userConnections = await userService.getUserConnections(userId);
-      
-      // Sort the connections by match percentage in descending order
+
       userConnections.sort((a, b) => b.match - a.match);
-      
-      // Return the top 50 matches
+
       return userConnections.slice(0, 50);
     }
 }
