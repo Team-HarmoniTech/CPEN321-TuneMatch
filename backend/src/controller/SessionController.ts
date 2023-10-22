@@ -1,76 +1,43 @@
-import { PrismaClient } from "@prisma/client";
-import { NextFunction, Request, Response } from "express";
 import { WebSocket } from "ws";
+import { database } from "..";
 import { SessionMessage } from "../models/SessionModels";
 
 export class SessionController {
-
-    private database = new PrismaClient();
-    private sessionDB = this.database;
-
-    // REST Routes
-    async start(req: Request, res: Response, next: NextFunction) {
-        if (req.currentUser.session) {
-            throw new Error("You cannot join a second session");
-        }
-        // const session: Session = await this.sessionDB.create({
-        //     data: {
-        //         members: {
-        //             connect: {
-        //                 id: req.currentUser.id
-        //             }
-        //         }
-        //     }
-        // });
-        // res.send({
-        //     'session-id': session.id
-        // });
-    }
-
-    async end(req: Request, res: Response, next: NextFunction) {
-        // const session: Session = await this.sessionDB.delete({
-        //     where: {
-        //         id: req.params['session-id']
-        //     }
-        // });
-        // res.send({
-        //     'session-id': session.id
-        // });
-    }
+    private sessionDB = database.session;
 
     // Websocket Routes
-    async acceptRequest(ws: WebSocket, req: SessionMessage) {
+    async acceptRequest(ws: WebSocket, req: SessionMessage, currentUserId: number) {
         switch (req.action) {
-            case "message":
-                await this.message(ws, req);
-                break;
             case "join":
-                await this.join(ws, req);
+                await this.join(ws, req, currentUserId);
                 break;
             case "leave":
-                await this.leave(ws, req);
+                await this.leave(ws, req, currentUserId);
                 break;
             case "queue":
-                await this.queue(ws, req);
+                await this.queue(ws, req, currentUserId);
+                break;
+            case "message":
+                await this.message(ws, req, currentUserId);
                 break;
             default:
-                throw new Error(`Error: Session endpoint ${req.action} does not exist.`);
+                ws.send(JSON.stringify({ Error: `Session endpoint ${req.action} does not exist.`}));
         }
     }
 
-    async message(ws: WebSocket, req: SessionMessage) {
+    async message(ws: WebSocket, req: SessionMessage, currentUserId: number) {
 
     }
 
-    async queue(ws: WebSocket, req: SessionMessage) {
+    async queue(ws: WebSocket, req: SessionMessage, currentUserId: number) {
 
     }
 
-    async join(ws: WebSocket, req: SessionMessage) {
-
+    async join(ws: WebSocket, req: SessionMessage, currentUserId: number) {
+        
     }
 
-    async leave(ws: WebSocket, req: SessionMessage) {
+    async leave(ws: WebSocket, req: SessionMessage, currentUserId: number) {
 
     }
 }
