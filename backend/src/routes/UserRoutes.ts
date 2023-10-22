@@ -3,7 +3,7 @@ import { UserController } from "../controller/UserController";
 
 export const UserRoutes = [{
     method: "get",
-    route: "/users/:internal_id/matches",
+    route: "/users/matches/:internal_id",
     controller: UserController,
     action: "topMatches",
     validation: [
@@ -23,15 +23,15 @@ export const UserRoutes = [{
     controller: UserController,
     action: "insert",
     validation: [
-        body('internal_id').isAlphanumeric(),
-        body('username').isString(),
-        body('top_artists').isJSON(),
-        body('top_genres').isJSON(),
-        body('pfp_url').isString()
+        body('userData.internal_id').isAlphanumeric(),
+        body('userData.username').isString(),
+        body('userData.top_artists').isJSON(),
+        body('userData.top_genres').isJSON(),
+        body('userData.pfp_url').optional().isString()
     ]
 }, {
     method: "put",
-    route: "/users/update/:id",
+    route: "/users/update/:internal_id",
     controller: UserController,
     action: "update",
     validation: [
@@ -51,7 +51,7 @@ export const UserRoutes = [{
     ]
 }, {
     method: "delete",
-    route: "/users/delete/:id",
+    route: "/users/delete/:internal_id",
     controller: UserController,
     action: "remove",
     validation: [

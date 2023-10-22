@@ -11,10 +11,13 @@ export async function findCurrentUser(req: Request, res: Response, next: NextFun
     });
     if (!user || !userId) {
         res.status(400).send({ error: 'This user does not exist'});
+        return;
     }
     if (user.is_banned) {
         res.status(400).send({ error: 'This user is banned'});
+        return;
     }
     req.currentUserId = user.id;
+    req.currentUserInternalId = user.internal_id;
     next();
 }

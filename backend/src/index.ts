@@ -41,6 +41,9 @@ Routes.forEach(route => {
         // If there are validation errors, send a response with the error messages
         return res.status(400).json({ errors: errors.array() });
     }
+    if (req.params['internal_id'] && req.currentUserInternalId !== req.params['internal_id']) {
+        res.status(400).send({ error: 'You many not make requests on behalf other users'});
+    }
     // Request Handling
     try {
       const result = await (new (route.controller as any))[route.action](req, res, next)
