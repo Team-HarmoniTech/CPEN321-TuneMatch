@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 import { userMatchingService, userService } from "..";
-import { exportUsers } from "../models/SessionModels";
 import { SocketMessage } from "../models/WebsocketModels";
 import WebSocket = require("ws");
 
@@ -14,7 +13,12 @@ export class UserController {
 
     async topMatches(req: Request, res: Response, next: NextFunction) {
         const matches = await userMatchingService.getTopMatches(req.currentUserId);
-        res.send(matches);
+        res.send(matches.map(u => ({
+            id: u.spotify_id,
+            username: u.username,
+            profilePic: u.pfp_url,
+            match: u.match
+        })));
     }
 
     async insert(req: Request, res: Response, next: NextFunction) {
@@ -39,9 +43,15 @@ export class UserController {
         res.send(user);
     }
 
-    async getFriendsCurrentlyPlaying(req: Request, res: Response, next: NextFunction) {
+    async getFriends(req: Request, res: Response, next: NextFunction) {
         const friends = await userService.getUserFriends(req.currentUserId);
-        res.send(exportUsers(friends, true));
+        res.send(friends.map(u => ({
+            id: u.spotify_id,
+            username: u.username,
+            profilePic: u.pfp_url,
+            currentlyPlaying: u.currently_listening,
+            session: !!u.sessionId
+        })));
     }
 
     // Websocket Routes

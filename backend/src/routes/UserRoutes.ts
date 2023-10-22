@@ -1,20 +1,30 @@
-import { body, header, param } from "express-validator";
+import { body, header, param, query } from "express-validator";
 import { UserController } from "../controller/UserController";
 
 export const UserRoutes = [{
     method: "get",
-    route: "/users/matches/:spotify_id",
+    route: "/users/:spotify_id",
     controller: UserController,
-    action: "topMatches",
+    action: "insert",
+    validation: [
+        header('user-id').isAlphanumeric(),
+        param('spotify_id').isAlphanumeric(),
+        query('fullProfile').optional().isBoolean()
+    ]
+}, {
+    method: "get",
+    route: "/users/friends/:spotify_id",
+    controller: UserController,
+    action: "getFriends",
     validation: [
         header('user-id').isAlphanumeric(),
         param('spotify_id').isAlphanumeric(),
     ]
-},{
+}, {
     method: "get",
-    route: "/users/:spotify_id",
+    route: "/users/matches/:spotify_id",
     controller: UserController,
-    action: "insert",
+    action: "topMatches",
     validation: [
         header('user-id').isAlphanumeric(),
         param('spotify_id').isAlphanumeric(),

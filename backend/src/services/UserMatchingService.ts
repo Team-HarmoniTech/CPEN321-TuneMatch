@@ -14,7 +14,7 @@ export class UserMatchingService {
             });
 
             let score: number = 0;
-            const maxLength = Math.max(arr1.length, arr2.length);
+            const maxLength = Math.max(arr1.length, arr2.length, 1);
 
             // Score each index of array 2 against the created map
             arr2.forEach((value, index) => {
@@ -105,7 +105,7 @@ export class UserMatchingService {
       await userService.connectionsComputed(userId, true);
     }
 
-    async getTopMatches(userId: number) {
+    async getTopMatches(userId: number): Promise<(User & { match: number })[]> {
       const userConnections = await userService.getUserConnections(userId);
 
       userConnections.sort((a, b) => b.match - a.match);

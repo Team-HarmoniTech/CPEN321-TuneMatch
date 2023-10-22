@@ -13,7 +13,6 @@ export class SessionController {
             try {
                 await func(ws, message, currentUserId);
             } catch (err) {
-                throw err
                 ws.send(JSON.stringify({ success: false, Error: err.message }));
             }
         }
