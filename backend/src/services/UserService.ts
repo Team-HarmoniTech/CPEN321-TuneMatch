@@ -121,4 +121,19 @@ export class UserService {
             });
         }
     }
+
+    async connectionsComputed(userId: number, complete?: boolean): Promise<boolean> {
+        if (complete) {
+            await this.userDB.update({
+                where: { id: userId },
+                data: { connectionComputed: true }
+            });
+            return true;
+        } else {
+            const user = await database.user.findFirst({
+                where: { id: userId }
+            });
+            return user.connectionComputed;
+        }
+    }
 }
