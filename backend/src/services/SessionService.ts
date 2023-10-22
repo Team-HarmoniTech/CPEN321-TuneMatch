@@ -1,87 +1,69 @@
 import { Mutex } from "async-mutex";
 import { database, socketService } from "..";
-import { SessionMessage, SessionQueue } from "../models/SessionModels";
+import { SessionQueue, SessionWithMembers, UserWithSession } from "../models/SessionModels";
 
 export class SessionService {
     private sessionQueues = new Map<number, SessionQueue>();
 
-    async joinSession(userId: number, sessionId?: number): Promise<number> {
+    async joinSession(userId: number, otherUserId?: number): Promise<SessionWithMembers> {
         // Leave old session if exists
         this.leaveSession(userId);
         // Add user to the new session
-        if (sessionId) {
-            return (await database.session.update({
-                where: {
-                    id: sessionId
-                },
-                data: {
-                    members: {
-                        connect: {
-                            id: userId
-                        }
-                    }
-                }
-            })).id;
+        if (otherUserId) {
+            const otherUser = await database.user.findFirst({
+                where: { id: otherUserId },
+                include: { session: true }
+            });
+            if (!otherUser.sessionId) {
+                return null;
+            } else {
+                return await database.session.update({
+                    where: { id: otherUser.sessionId },
+                    data: { members: { connect: { id: userId } } },
+                    include: { members: true }
+                });
+            }
         } else {
             const session = await database.session.create({
-                data: {
-                    members: {
-                        connect: {
-                            id: userId
-                        }
-                    }
-                }
+                data: { members: { connect: { id: userId } } },
+                include: { members: true }
             });
             this.sessionQueues.set(session.id, {
                 queue: [],
                 lock: new Mutex()
             });
-            return session.id;
+            return session;
         }
     }
 
-    async leaveSession(userId: number) {
+    async leaveSession(userId: number): Promise<SessionWithMembers> {
         // Disconnect from old session if exists
         const user = await database.user.findFirst({
-            where: {
-                id: userId
-            },
-            include: {
-                session: {
-                    include: {
-                        members: true
-                    }
-                }
-            }
+            where: { id: userId },
+            include: { session: { include: { members: true } } }
         });
         // If session will be empty delete, otherwise leave
         if (user.session) {
             const toDelete = user.session.members.length === 1;
             if (toDelete) this.sessionQueues.delete(user.session.id);
             await database.user.update({
-                where: {
-                    id: userId
-                },
-                data: {
-                    session: {
+                where: { id: userId },
+                data: { session: {
                         disconnect: !toDelete,
                         delete: toDelete,
-                    }
-                }
+                    } }
             });
+            return toDelete ? undefined : user.session;
         }
+        return undefined;
     }
 
-    async messageSession(sessionId: number, senderId: number, message: SessionMessage) {
+    async messageSession(sender: UserWithSession, message: any) {
         const session = await database.session.findFirstOrThrow({
-            where: {
-                id: sessionId
-            },
-            include: {
-                members: true
-            }
+            where: { id: sender.sessionId },
+            include: { members: true }
         });
-        const recipients = session.members.map(user => user.id).filter(id => !(id === senderId));
+        const recipients = session.members.map(user => user.id).filter(id => !(id === sender.id));
         await socketService.broadcast(recipients, message);
     }
 

@@ -1,11 +1,12 @@
 import { Request } from "express";
 import { WebSocket } from "ws";
 import { database, sessionService, socketService } from "..";
+import { UserWithSession } from "../models/SessionModels";
 import { SocketMessage } from "../models/WebsocketModels";
 import { SessionController } from "./SessionController";
 import { UserController } from "./UserController";
 
-async function authenticateSocket(socket, req): Promise<number> {
+async function authenticateSocket(socket, req): Promise<UserWithSession> {
 	if (!req.headers["user-id"]) {
 		socket.close();
 		return;
@@ -14,19 +15,20 @@ async function authenticateSocket(socket, req): Promise<number> {
 	const user = await database.user.findFirst({
 		where: {
 			internal_id: req.headers["user-id"].tostring()
-		}
+		},
+		include: { session: true }
 	});
 	if (!user) {
 		socket.close();
 		return;
 	}
 	await socketService.addConnection(user.id, socket);
-	return user.id;
+	return user;
 }
 
 export async function handleConnection(ws: WebSocket, req: Request) {
 	// Authenticate and add to our persistant set of connections
-	const currentUserId = await authenticateSocket(ws, req);
+	const currentUser = await authenticateSocket(ws, req);
 
 	ws.on('error', console.error);
 
@@ -38,10 +40,10 @@ export async function handleConnection(ws: WebSocket, req: Request) {
 			} else {
 				switch (req.method) {
 					case "SESSION":
-						new SessionController().acceptRequest(ws, req, currentUserId);
+						new SessionController().acceptRequest(ws, req, currentUser);
 						break;
 					case "PLAYING":
-						new UserController().updateCurrentlyPlaying(ws, req, currentUserId);
+						new UserController().updateCurrentlyPlaying(ws, req, currentUser);
 						break;
 					default:
 						ws.send(JSON.stringify({ Error: "Received data has an invalid method"}));
