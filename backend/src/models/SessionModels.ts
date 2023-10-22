@@ -24,13 +24,14 @@ export type VisibleUser = {
     profilePic: String,
 }
 
-export function exportUsers(users: User[]): VisibleUser[] {
+export function exportUsers(users: User[], currentlyPlaying?: boolean): VisibleUser[] {
     return users.map(u => ({
-        id: u.internal_id,
+        id: u.spotify_id,
         username: u.username,
-        profilePic: u.pfp_url
+        profilePic: u.pfp_url,
+        ...(currentlyPlaying ? { currentlyPlaying: u.currently_listening } : {})
     }));
 }
-export function exportUser(user: User): VisibleUser {
-    return exportUsers([user])[0];
+export function exportUser(user: User, currentlyPlaying?: boolean): VisibleUser {
+    return exportUsers([user], currentlyPlaying)[0];
 }

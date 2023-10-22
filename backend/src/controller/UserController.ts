@@ -1,14 +1,14 @@
-import { User } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
-import { database, userMatchingService, userService } from "..";
+import { userMatchingService, userService } from "..";
+import { exportUsers } from "../models/SessionModels";
 import { SocketMessage } from "../models/WebsocketModels";
 import WebSocket = require("ws");
 
 export class UserController {
-    private userDB = database.user;
 
+    // REST Routes
     async get(req: Request, res: Response, next: NextFunction) {
-        const user = userService.getUser(req.internal_id);
+        const user = userService.getUserById(req.currentUserId);
         res.send(user);
     }
 
@@ -24,20 +24,31 @@ export class UserController {
     }
 
     async update(req: Request, res: Response, next: NextFunction) {
+        if (req.params['spotify_id'] && req.currentUserSpotifyId !== req.params['spotify_id']) {
+            throw { message: 'You many not update other users', statusCode: 400 };
+        }
         const user = await userService.upsertUser(req.body['userData'], req.currentUserId);
         res.send(user);
     }
 
     async delete(req: Request, res: Response, next: NextFunction) {
+        if (req.params['spotify_id'] && req.currentUserSpotifyId !== req.params['spotify_id']) {
+            throw { message: 'You many not delete other users', statusCode: 400 };
+        }
         const user = await userService.upsertUser(req.body['userData'], req.currentUserId);
         res.send(user);
     }
 
+    async getFriendsCurrentlyPlaying(req: Request, res: Response, next: NextFunction) {
+        const friends = await userService.getUserFriends(req.currentUserId);
+        res.send(exportUsers(friends, true));
+    }
+
     // Websocket Routes
-    async updateCurrentlyPlaying(ws: WebSocket, message: SocketMessage, currentUser: User) {
+    async updateCurrentlyPlaying(ws: WebSocket, message: SocketMessage, currentUserId: number) {
         try {
-            message.body["from"] = currentUser.id;
-            userService.broadcastToFriends(currentUser.id, message);
+            message.body["from"] = currentUserId;
+            userService.broadcastToFriends(currentUserId, message);
         } catch(err) {
             ws.send(JSON.stringify({ success: false, Error: err }));
         }

@@ -8,20 +8,29 @@ export class WebSocketService {
     private connectionsLock: Mutex = new Mutex();
 
     async addConnection(userId: number, socket: WebSocket) {
-        await this.connectionsLock.runExclusive(() => {
+        await this.connectionsLock.runExclusive(async () => {
+            const duplicate = !!(await this.connections.getFromKey(userId));
+            if (duplicate) {
+                socket.close(1008, `Duplicate User ${userId} tried to connect`);
+                return;
+            }
             this.connections.set(userId, socket);
+            console.log(`WEBSOCKET: User ${userId} connected`);
         });
     }
 
     async removeConnectionById(userId: number) {
         await this.connectionsLock.runExclusive(() => {
             this.connections.removeByKey(userId);
+            console.log(`WEBSOCKET: User ${userId} disconnected`);
         });
     }
 
     async removeConnectionBySocket(socket: WebSocket) {
         await this.connectionsLock.runExclusive(() => {
-            this.connections.removeByValue(socket);
+            const id = this.connections.getFromValue(socket);
+            this.connections.removeByValue(socket); 
+            console.log(`WEBSOCKET: User ${id} disconnected`);
         });
     }
 

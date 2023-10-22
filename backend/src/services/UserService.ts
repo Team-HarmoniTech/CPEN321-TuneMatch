@@ -1,4 +1,4 @@
-import { Prisma, User } from "@prisma/client";
+import { Prisma, Session, User } from "@prisma/client";
 import { database, socketService } from "..";
 import { SocketMessage } from "../models/WebsocketModels";
 
@@ -6,7 +6,7 @@ export class UserService {
     private userDB = database.user;
 
     async getUserFriends(userId: number): Promise<User[]> {
-        const user = await this.userDB.findFirst({
+        const user = await this.userDB.findUnique({
             where: { id: userId },
             include: {
                 requested: true,
@@ -38,12 +38,24 @@ export class UserService {
         await socketService.broadcast(recipients, message);
     }
 
-    async getUser(internalId: string): Promise<User> {
-        return await this.userDB.findFirst({
-            where: { internal_id: internalId },
+    async getUserBySpotifyId(spotify_id: string): Promise<User & { requesting: User[], requested: User[], session: Session }> {
+        return await this.userDB.findUnique({
+            where: { spotify_id: spotify_id },
             include: {
                 requested: true,
-                requesting: true
+                requesting: true,
+                session: true
+            }
+        });
+    }
+
+    async getUserById(id: number): Promise<User & { requesting: User[], requested: User[], session: Session }> {
+        return await this.userDB.findUnique({
+            where: { id: id },
+            include: {
+                requested: true,
+                requesting: true,
+                session: true
             }
         });
     }
@@ -67,7 +79,7 @@ export class UserService {
     }
     
     async getUserConnections(userId: number): Promise<(User & { match: number })[]> {
-        const user = await this.userDB.findFirst({
+        const user = await this.userDB.findUnique({
             where: {
                 id: userId
             },
@@ -130,7 +142,7 @@ export class UserService {
             });
             return true;
         } else {
-            const user = await database.user.findFirst({
+            const user = await database.user.findUnique({
                 where: { id: userId }
             });
             return user.connectionComputed;
