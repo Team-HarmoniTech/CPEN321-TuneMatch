@@ -5,6 +5,7 @@ export class UserMatchingService {
     private userDB = database.user;
     private connectionDB = database.connection;
 
+    // ChatGPT usage: No
     calcPercentMatch(u1: User, u2: User): number {
         const arrayScore = (arr1, arr2): number => {
             // Create map from value to index
