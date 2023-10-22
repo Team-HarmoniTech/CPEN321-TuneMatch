@@ -1,10 +1,9 @@
-import { Prisma, PrismaClient, User } from "@prisma/client";
-import { socketService } from "..";
+import { Prisma, User } from "@prisma/client";
+import { database, socketService } from "..";
 import { SocketMessage } from "../models/WebsocketModels";
 
 export class UserService {
-    private database = new PrismaClient();
-    private userDB = this.database.user;
+    private userDB = database.user;
 
     async getUserFriends(userId: number): Promise<User[]> {
         const user = await this.userDB.findFirst({
@@ -96,7 +95,7 @@ export class UserService {
     }
 
     async addUserConnection(userId1: number, userId2: number, match: number) {
-        await this.database.connection.create({
+        await database.connection.create({
             data: {
                 match_percent: match,
                 user_1: { connect: { id: userId1 } },

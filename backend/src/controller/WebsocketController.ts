@@ -1,14 +1,11 @@
-import { PrismaClient } from "@prisma/client";
 import { Request } from "express";
 import { WebSocket } from "ws";
-import { sessionService, socketService } from "..";
+import { database, sessionService, socketService } from "..";
 import { SocketMessage } from "../models/WebsocketModels";
 import { SessionController } from "./SessionController";
 import { UserController } from "./UserController";
 
-const database = new PrismaClient();
-
-async function authenticateSocket(socket, req) {
+async function authenticateSocket(socket, req): Promise<number> {
 	if (!req.headers["user-id"]) {
 		socket.close();
 		return;
@@ -19,46 +16,44 @@ async function authenticateSocket(socket, req) {
 			internal_id: req.headers["user-id"].tostring()
 		}
 	});
-	console.log(user);
 	if (!user) {
 		socket.close();
 		return;
 	}
-	req.currentUserId = user.id;
 	await socketService.addConnection(user.id, socket);
+	return user.id;
 }
 
 export async function handleConnection(ws: WebSocket, req: Request) {
 	// Authenticate and add to our persistant set of connections
-	await authenticateSocket(ws, req);
+	const currentUserId = await authenticateSocket(ws, req);
 
 	ws.on('error', console.error);
 
 	ws.on('message', function message(data) {
 		try {
-			const req: SocketMessage = JSON.parse(data.tostring());
+			const req: SocketMessage = JSON.parse(data.toString());
 			if (!req.method) {
-				ws.send('ERROR: received data is missing fields');
+				ws.send(JSON.stringify({ Error: "Received data is missing fields"}));
 			} else {
-				const sessions = new SessionController();
-				const users = new UserController();
 				switch (req.method) {
 					case "SESSION":
-						sessions.acceptRequest(ws, req);
+						new SessionController().acceptRequest(ws, req, currentUserId);
 						break;
 					case "PLAYING":
-						users.updateCurrentlyPlaying(ws, req);
+						new UserController().updateCurrentlyPlaying(ws, req, currentUserId);
 						break;
 					default:
-						ws.send('ERROR: received data has an invalid method');
+						ws.send(JSON.stringify({ Error: "Received data has an invalid method"}));
 				}
 			}
 		} catch {
-			ws.send('ERROR: received data is not formatted correctly');
+			ws.send(JSON.stringify({ Error: "Received data is not formatted correctly"}));
 		}
 	});
 
 	ws.on('close', async function close(code, reason) {
+		console.error(`Socket Closed: ${reason.toString()}`);
 		const userId = await socketService.retrieveBySocket(ws);
 		await sessionService.leaveSession(userId);
 		await socketService.removeConnectionBySocket(ws);

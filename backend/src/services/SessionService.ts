@@ -1,10 +1,8 @@
-import { PrismaClient } from "@prisma/client";
 import { Mutex } from "async-mutex";
-import { socketService } from "..";
+import { database, socketService } from "..";
 import { SessionMessage, SessionQueue } from "../models/SessionModels";
 
 export class SessionService {
-    private database = new PrismaClient();
     private sessionQueues = new Map<number, SessionQueue>();
 
     async joinSession(userId: number, sessionId?: number): Promise<number> {
@@ -12,7 +10,7 @@ export class SessionService {
         this.leaveSession(userId);
         // Add user to the new session
         if (sessionId) {
-            return (await this.database.session.update({
+            return (await database.session.update({
                 where: {
                     id: sessionId
                 },
@@ -25,7 +23,7 @@ export class SessionService {
                 }
             })).id;
         } else {
-            const session = await this.database.session.create({
+            const session = await database.session.create({
                 data: {
                     members: {
                         connect: {
@@ -44,7 +42,7 @@ export class SessionService {
 
     async leaveSession(userId: number) {
         // Disconnect from old session if exists
-        const user = await this.database.user.findFirst({
+        const user = await database.user.findFirst({
             where: {
                 id: userId
             },
@@ -60,7 +58,7 @@ export class SessionService {
         if (user.session) {
             const toDelete = user.session.members.length === 1;
             if (toDelete) this.sessionQueues.delete(user.session.id);
-            await this.database.user.update({
+            await database.user.update({
                 where: {
                     id: userId
                 },
@@ -75,7 +73,7 @@ export class SessionService {
     }
 
     async messageSession(sessionId: number, senderId: number, message: SessionMessage) {
-        const session = await this.database.session.findFirstOrThrow({
+        const session = await database.session.findFirstOrThrow({
             where: {
                 id: sessionId
             },

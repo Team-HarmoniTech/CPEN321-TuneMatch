@@ -61,10 +61,11 @@ model Report {
   reason            ReportReasons
   reason_text       String?
   report_context    Json
+  timestamp         DateTime @default(now())
 
   // Constraints
-  user_1 User @relation("Offender Reports", fields: [offending_user_id], references: [id])
-  user_2 User @relation("Reporter Reports", fields: [reporting_user_id], references: [id])
+  offender User @relation("Offender Reports", fields: [offending_user_id], references: [id])
+  reporter User @relation("Reporter Reports", fields: [reporting_user_id], references: [id])
 }
 
 enum ReportReasons {
