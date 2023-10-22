@@ -11,6 +11,11 @@ export class UserController {
         res.send(user);
     }
 
+    async topMatches(req: Request, res: Response, next: NextFunction) {
+        const matches = ""
+        res.send(matches);
+    }
+
     async insert(req: Request, res: Response, next: NextFunction) {
         
     }

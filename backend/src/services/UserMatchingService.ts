@@ -1,16 +1,9 @@
-import { Prisma, PrismaClient, User } from "@prisma/client";
-import { UserService } from "./UserService";
+import { User } from "@prisma/client";
+import { database, userService } from "..";
 
 export class UserMatchingService {
-    private userService: UserService;
-
-    constructor() {
-      this.userService = new UserService();
-    }
-
-    private database = new PrismaClient();
-    private userDB = this.database.user;
-    private connectionDB = this.database.connection;
+    private userDB = database.user;
+    private connectionDB = database.connection;
 
     calcPercentMatch(u1: User, u2: User): number {
         const arrayScore = (arr1, arr2): number => {
@@ -42,7 +35,7 @@ export class UserMatchingService {
       const matchThreshold = 80;
       const matchQueue = [];
 
-      const user = await this.userService.getUser(userId);
+      const user = await userService.getUser(userId);
     
       if (!user) {
         throw new Error(`User with ID ${userId} not found.`);
@@ -84,14 +77,14 @@ export class UserMatchingService {
           // Calculate the match percentage
           matchPercent = await this.calcPercentMatch(user, userToMatch);
           // Add the user connection to the database
-          await this.userService.addUserConnection(userId, userToMatch.id, matchPercent);
+          await userService.addUserConnection(userId, userToMatch.id, matchPercent);
         }
 
         matchedUsers.push(userToMatch);
     
         if (matchPercent >= matchThreshold) {
           // Find friends of the user to match
-          const friends = await this.userService.getUserFriends(userToMatch.id);
+          const friends = await userService.getUserFriends(userToMatch.id);
     
           for (const friend of friends) {
             if (
@@ -100,7 +93,7 @@ export class UserMatchingService {
             ) {
               const friendMatchPercent = await this.calcPercentMatch(user, friend);
 
-              await this.userService.addUserConnection(userId, friend.id, friendMatchPercent);
+              await userService.addUserConnection(userId, friend.id, friendMatchPercent);
     
               if (friendMatchPercent >= matchThreshold) {
                 matchQueue.push(friend);
@@ -113,7 +106,7 @@ export class UserMatchingService {
 
     async getTopMatches(userId) {
       // Fetch the user's connections and their match percentages
-      const userConnections = await this.userService.getUserConnections(userId);
+      const userConnections = await userService.getUserConnections(userId);
       
       // Sort the connections by match percentage in descending order
       userConnections.sort((a, b) => b.match - a.match);

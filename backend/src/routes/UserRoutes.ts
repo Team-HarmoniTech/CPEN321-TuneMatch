@@ -3,6 +3,14 @@ import { UserController } from "../controller/UserController";
 
 export const UserRoutes = [{
     method: "get",
+    route: "/users/:internal_id/matches",
+    controller: UserController,
+    action: "topMatches",
+    validation: [
+        param('internal_id').isAlphanumeric(),
+    ]
+},{
+    method: "get",
     route: "/users/:internal_id",
     controller: UserController,
     action: "insert",

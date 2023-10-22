@@ -28,6 +28,7 @@ model User {
   requesting User[] @relation("friends")
 
   // Connections
+  connectionComputed Boolean @default(false)
   connections1 Connection[] @relation("Connections 1")
   connections2 Connection[] @relation("Connections 2")
 
