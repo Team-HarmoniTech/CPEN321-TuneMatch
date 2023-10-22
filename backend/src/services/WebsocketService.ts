@@ -1,5 +1,4 @@
 import { BiMap } from "@jsdsl/bimap";
-import { PrismaClient } from "@prisma/client";
 import { Mutex } from "async-mutex";
 import { SocketMessage } from "../models/WebsocketModels";
 import WebSocket = require("ws");
@@ -7,7 +6,6 @@ import WebSocket = require("ws");
 export class WebSocketService {
     connections: BiMap<number, WebSocket> = new BiMap();
     private connectionsLock: Mutex = new Mutex();
-    private database = new PrismaClient();
 
     async addConnection(userId: number, socket: WebSocket) {
         await this.connectionsLock.runExclusive(() => {

@@ -30,7 +30,6 @@
   },
   "scripts": {
     "start": "ts-node src/index.ts",
-    "dev": "nodemon -w *.ts src/index.ts",
-    "resetdb": "shx rm -rf node_modules prisma/migrations && npm i"
+    "dev": "nodemon -w *.ts src/index.ts"
   }
 }
