@@ -1,0 +1,34 @@
+# TO RUN - docker-compose -f docker-compose.prod.yml up -d
+
+version: '3.8'
+services:
+  # MySQL Database Service
+  mysql:
+    image: mysql:8.0.17
+    restart: always
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: 5KvX9bzs8x8VSAmwcD9S
+      MYSQL_DATABASE: TuneMatchDB
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql 
+
+  # Express.js/Prisma Backend Service
+  backend:
+    build:
+      context: ../../
+      dockerfile: Dockerfile
+    restart: always
+    container_name: backend_app
+    environment:
+      DATABASE_URL: "mysql://root:5KvX9bzs8x8VSAmwcD9S@mysql:3306/TuneMatchDB"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysql
+    command: sh -c "npx prisma migrate dev && npm start"
+
+volumes:
+  mysql_data:
