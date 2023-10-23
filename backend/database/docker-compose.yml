@@ -18,6 +18,7 @@ services:
     build:
       context: ../
       dockerfile: Dockerfile
+    restart: always
     container_name: backend_app
     environment:
       DATABASE_URL: "mysql://root:5KvX9bzs8x8VSAmwcD9S@mysql:3306/TuneMatchDB"
