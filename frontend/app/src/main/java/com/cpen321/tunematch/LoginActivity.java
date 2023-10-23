@@ -2,14 +2,18 @@ package com.cpen321.tunematch;
 
 import static com.spotify.sdk.android.auth.AccountsQueryParameters.CLIENT_ID;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.cpen321.tunematch.MainActivity;
 import com.cpen321.tunematch.R;
+import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.spotify.sdk.android.auth.AuthorizationClient;
 import com.spotify.sdk.android.auth.AuthorizationRequest;
 import com.spotify.sdk.android.auth.AuthorizationResponse;
@@ -24,14 +28,54 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        if (!SpotifyAppRemote.isSpotifyInstalled(this)) {
+            Log.d(TAG, "onCreate: spotify is not installed");
+            // Create an AlertDialog.Builder instance
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("Spotify app is not installed. Please download the Spotify app as it is required to run our app.")
+                    .setTitle("Spotify Not Installed")
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User clicked OK button
+                        }
+                    });
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        } else {
+            AuthorizationRequest.Builder builder =
+                    new AuthorizationRequest.Builder("0dcb406f508a4845b32a1342a91a71af", AuthorizationResponse.Type.TOKEN, REDIRECT_URI);
 
-        AuthorizationRequest.Builder builder =
-                new AuthorizationRequest.Builder("0dcb406f508a4845b32a1342a91a71af", AuthorizationResponse.Type.TOKEN, REDIRECT_URI);
+            builder.setScopes(new String[]{"streaming"});
+            AuthorizationRequest request = builder.build();
+            AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request);
+        }
 
-        builder.setScopes(new String[]{"streaming"});
-        AuthorizationRequest request = builder.build();
+        Button loginButton = findViewById(R.id.spotify_login_button);
+        loginButton.setOnClickListener(v -> {
+            if (!SpotifyAppRemote.isSpotifyInstalled(this)) {
+                Log.d(TAG, "onCreate: spotify is not installed");
+                // Create an AlertDialog.Builder instance
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage("Spotify app is not installed. Please download the Spotify app as it is required to run our app.")
+                        .setTitle("Spotify Not Installed")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // User clicked OK button
+                            }
+                        });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            } else {
+                AuthorizationRequest.Builder builder =
+                        new AuthorizationRequest.Builder("0dcb406f508a4845b32a1342a91a71af", AuthorizationResponse.Type.TOKEN, REDIRECT_URI);
 
-        AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request);
+                builder.setScopes(new String[]{"streaming"});
+                AuthorizationRequest request = builder.build();
+                AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request);
+            }
+        });
+
+
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
