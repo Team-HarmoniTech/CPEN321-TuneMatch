@@ -18,7 +18,7 @@ services:
   # Express.js/Prisma Backend Service
   backend:
     build:
-      context: ../../
+      context: ..
       dockerfile: Dockerfile
     restart: always
     container_name: backend_app
