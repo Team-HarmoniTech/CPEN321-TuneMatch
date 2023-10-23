@@ -27,7 +27,7 @@ export class ReportService {
     }
 
     async banUser(userId: number) {
-        database.user.update({
+        await database.user.update({
             where: { id: userId },
             data: { is_banned: true }
         });

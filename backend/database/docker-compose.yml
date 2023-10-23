@@ -1,9 +1,20 @@
 version: "3"
 services:
+  app:
+    image: tunematch
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "mysql://root:5KvX9bzs8x8VSAmwcD9S@mysql:3306/TuneMatchDB"
+    networks:
+      - my-network
+    command: sh -c "npx prisma migrate dev && npx prisma generate && npm start"
   mysql:
     image: mysql:8.0.17
     environment:
       MYSQL_ROOT_PASSWORD: 5KvX9bzs8x8VSAmwcD9S
       MYSQL_DATABASE: TuneMatchDB
-    ports:
-      - "3306:3306"
+    networks:
+      - my-network
+networks:
+  my-network:

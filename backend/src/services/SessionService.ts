@@ -1,6 +1,6 @@
 import { Mutex } from "async-mutex";
 import { database, socketService } from "..";
-import { SessionQueue, SessionWithMembers, UserWithSession } from "../models/SessionModels";
+import { SessionQueue, SessionWithMembers } from "../models/SessionModels";
 
 export class SessionService {
     private sessionQueues = new Map<number, SessionQueue>();
@@ -10,15 +10,15 @@ export class SessionService {
         this.leaveSession(userId);
         // Add user to the new session
         if (otherUserId) {
-            const otherUser = await database.user.findFirst({
-                where: { id: otherUserId },
-                include: { session: true }
+            const otherSession = await database.session.findFirstOrThrow({
+                where: { members: { some: { id: otherUserId } } },
             });
-            if (!otherUser.sessionId) {
+            console.log(otherSession);
+            if (!otherSession) {
                 return null;
             } else {
                 return await database.session.update({
-                    where: { id: otherUser.sessionId },
+                    where: { id: otherSession.id },
                     data: { members: { connect: { id: userId } } },
                     include: { members: true }
                 });
@@ -38,7 +38,7 @@ export class SessionService {
 
     async leaveSession(userId: number): Promise<SessionWithMembers> {
         // Disconnect from old session if exists
-        const user = await database.user.findFirst({
+        const user = await database.user.findUnique({
             where: { id: userId },
             include: { session: { include: { members: true } } }
         });
@@ -58,12 +58,12 @@ export class SessionService {
         return undefined;
     }
 
-    async messageSession(sender: UserWithSession, message: any) {
-        const session = await database.session.findFirstOrThrow({
-            where: { id: sender.sessionId },
+    async messageSession(sessionId: number, senderId: number, message: any) {
+        const session = await database.session.findUnique({
+            where: { id: sessionId },
             include: { members: true }
         });
-        const recipients = session.members.map(user => user.id).filter(id => !(id === sender.id));
+        const recipients = session.members.map(user => user.id).filter(id => !(id === senderId));
         await socketService.broadcast(recipients, message);
     }
 

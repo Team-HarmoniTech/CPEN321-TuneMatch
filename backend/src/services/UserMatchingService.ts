@@ -5,6 +5,7 @@ export class UserMatchingService {
     private userDB = database.user;
     private connectionDB = database.connection;
 
+    // ChatGPT usage: No
     calcPercentMatch(u1: User, u2: User): number {
         const arrayScore = (arr1, arr2): number => {
             // Create map from value to index
@@ -14,7 +15,7 @@ export class UserMatchingService {
             });
 
             let score: number = 0;
-            const maxLength = Math.max(arr1.length, arr2.length);
+            const maxLength = Math.max(arr1.length, arr2.length, 1);
 
             // Score each index of array 2 against the created map
             arr2.forEach((value, index) => {
@@ -29,13 +30,13 @@ export class UserMatchingService {
         return (arrayScore(u1.top_artists, u2.top_artists) + arrayScore(u1.top_genres, u2.top_genres)) * 50;
     }
 
-    async matchNewUser(userId) {
+    async matchNewUser(userId: number) {
       const matchedUsers = [];
       const maxMatches = 80;
       const matchThreshold = 80;
       const matchQueue = [];
 
-      const user = await userService.getUser(userId);
+      const user = await userService.getUserById(userId);
     
       if (!user) {
         throw new Error(`User with ID ${userId} not found.`);
@@ -84,7 +85,7 @@ export class UserMatchingService {
     
         if (matchPercent >= matchThreshold) {
           // Find friends of the user to match
-          const friends = await userService.getUserFriends(userToMatch.id);
+          const friends = await userService.getUserConnections(userToMatch.id);
     
           for (const friend of friends) {
             if (
@@ -105,7 +106,7 @@ export class UserMatchingService {
       await userService.connectionsComputed(userId, true);
     }
 
-    async getTopMatches(userId) {
+    async getTopMatches(userId: number): Promise<(User & { match: number })[]> {
       const userConnections = await userService.getUserConnections(userId);
 
       userConnections.sort((a, b) => b.match - a.match);

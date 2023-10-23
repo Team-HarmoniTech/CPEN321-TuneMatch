@@ -1,21 +1,33 @@
-import { body, param } from "express-validator";
+import { body, header, param, query } from "express-validator";
 import { UserController } from "../controller/UserController";
 
 export const UserRoutes = [{
     method: "get",
-    route: "/users/matches/:internal_id",
-    controller: UserController,
-    action: "topMatches",
-    validation: [
-        param('internal_id').isAlphanumeric(),
-    ]
-},{
-    method: "get",
-    route: "/users/:internal_id",
+    route: "/users/:spotify_id",
     controller: UserController,
     action: "insert",
     validation: [
-        param('internal_id').isAlphanumeric(),
+        header('user-id').isAlphanumeric(),
+        param('spotify_id').isAlphanumeric(),
+        query('fullProfile').optional().isBoolean()
+    ]
+}, {
+    method: "get",
+    route: "/users/friends/:spotify_id",
+    controller: UserController,
+    action: "getFriends",
+    validation: [
+        header('user-id').isAlphanumeric(),
+        param('spotify_id').isAlphanumeric(),
+    ]
+}, {
+    method: "get",
+    route: "/users/matches/:spotify_id",
+    controller: UserController,
+    action: "topMatches",
+    validation: [
+        header('user-id').isAlphanumeric(),
+        param('spotify_id').isAlphanumeric(),
     ]
 }, {
     method: "post",
@@ -23,18 +35,19 @@ export const UserRoutes = [{
     controller: UserController,
     action: "insert",
     validation: [
-        body('userData.internal_id').isAlphanumeric(),
+        body('userData.spotify_id').isAlphanumeric(),
         body('userData.username').isString(),
         body('userData.top_artists').isJSON(),
         body('userData.top_genres').isJSON(),
-        body('userData.pfp_url').optional().isString()
+        body('userData.pfp_url').optional().isURL()
     ]
 }, {
     method: "put",
-    route: "/users/update/:internal_id",
+    route: "/users/update/:spotify_id",
     controller: UserController,
     action: "update",
     validation: [
+        header('user-id').isAlphanumeric(),
         param('id').isAlphanumeric(),
         body('username').optional().isString(),
         body('top_artists').optional().isJSON(),
@@ -51,10 +64,11 @@ export const UserRoutes = [{
     ]
 }, {
     method: "delete",
-    route: "/users/delete/:internal_id",
+    route: "/users/delete/:spotify_id",
     controller: UserController,
     action: "remove",
     validation: [
+        header('user-id').isAlphanumeric(),
         param('id').isAlphanumeric(),
     ]
 }]
