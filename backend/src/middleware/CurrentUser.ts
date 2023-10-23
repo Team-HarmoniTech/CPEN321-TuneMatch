@@ -8,11 +8,11 @@ export async function findCurrentUser(req: Request, res: Response, next: NextFun
         where: { spotify_id: userId }
     });
     if (!user && userId !== "") {
-        res.status(400).send({ error: 'This user does not exist'});
+        res.status(400).send({ error: 'This executing user does not exist'});
         return;
     }
     if (user && user.is_banned) {
-        res.status(400).send({ error: 'This user is banned'});
+        res.status(400).send({ error: 'This executing user is banned'});
         return;
     }
     if (user) {

@@ -5,6 +5,7 @@ export abstract class SocketMessage {
     constructor(
         public method: SocketMethod,
         public action: string,
-        public body?: object
+        public body?: object,
+        public from?: string
     ) { }
 }

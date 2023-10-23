@@ -34,7 +34,9 @@ export class UserService {
     }
 
     async broadcastToFriends(userId: number, message: SocketMessage) {
-        const recipients = (await this.getUserFriends(userId)).map(user => user.id);
+        const user = await this.getUserById(userId);
+        const recipients = (await this.getUserFriends(user.id)).map(user => user.id);
+        message = { ...message, from: user.spotify_id };
         await socketService.broadcast(recipients, message);
     }
 

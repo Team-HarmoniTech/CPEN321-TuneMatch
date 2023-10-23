@@ -1,6 +1,6 @@
 import { WebSocket } from "ws";
 import { sessionService, userService } from "..";
-import { SessionMessage, exportUser, exportUsers } from "../models/SessionModels";
+import { SessionMessage, transformUser, transformUsers } from "../models/SessionModels";
 
 export class SessionController {
 
@@ -20,8 +20,6 @@ export class SessionController {
 
     async message(ws: WebSocket, message: SessionMessage, currentUserId: number) { 
         const currentUser = await userService.getUserById(currentUserId);
-        let toSend = message;
-        message.body['userId'] = currentUserId;
         await sessionService.messageSession(currentUser.session.id, currentUserId, message);
     }
 
@@ -29,26 +27,28 @@ export class SessionController {
         const { uri, duration, idx } = message.body;
         const currentUser = await userService.getUserById(currentUserId);
         await sessionService.queueAdd(currentUser.session.id, uri, duration, idx);
+        await sessionService.messageSession(currentUser.session.id, currentUserId, message);
     }
 
     async queueNext(ws: WebSocket, message: SessionMessage, currentUserId: number) {
         const currentUser = await userService.getUserById(currentUserId);
         await sessionService.queueNext(currentUser.session.id);
+        await sessionService.messageSession(currentUser.session.id, currentUserId, message);
     }
 
     async join(ws: WebSocket, message: SessionMessage, currentUserId: number) {
         const session = await sessionService.joinSession(currentUserId, message?.body?.userId || undefined);
         if (!session) {
-            throw new Error(`User with id ${message.body['userId']} does not exist.`);
+            throw new Error(`User with id ${message.body.userId} does not exist.`);
         }
-        ws.send(JSON.stringify({ success: true, members: exportUsers(session.members.filter(x => x.id !== currentUserId)) }));
-        await sessionService.messageSession(session.id, currentUserId, { userJoin: exportUser(session.members.find(x => x.id === currentUserId)) });
+        ws.send(JSON.stringify({ success: true, members: transformUsers(session.members.filter(x => x.id !== currentUserId)) }));
+        await sessionService.messageSession(session.id, currentUserId, { userJoin: transformUser(session.members.find(x => x.id === currentUserId)) });
     }
 
     async leave(ws: WebSocket, message: SessionMessage, currentUserId: number) {
         const session = await sessionService.leaveSession(currentUserId);
         if (session) {
-            await sessionService.messageSession(session.id, currentUserId, { userLeave: exportUser(session.members.find(x => x.id === currentUserId)) });
+            await sessionService.messageSession(session.id, currentUserId, { userLeave: transformUser(session.members.find(x => x.id === currentUserId)) });
         }
     }
 }

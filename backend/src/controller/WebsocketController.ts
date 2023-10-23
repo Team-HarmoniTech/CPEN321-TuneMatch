@@ -1,7 +1,7 @@
 import { Request } from "express";
 import { WebSocket } from "ws";
 import { database, sessionService, socketService } from "..";
-import { exportUser } from "../models/SessionModels";
+import { transformUser } from "../models/SessionModels";
 import { SocketMessage } from "../models/WebsocketModels";
 import { SessionController } from "./SessionController";
 import { UserController } from "./UserController";
@@ -60,7 +60,7 @@ export async function handleConnection(ws: WebSocket, req: Request) {
 		if (userId) {
 			const session = await sessionService.leaveSession(userId);
 			if (session) {
-				await sessionService.messageSession(session.id, currentUserId, { userLeave: exportUser(session.members.find(x => x.id === currentUserId)) });
+				await sessionService.messageSession(session.id, currentUserId, { userLeave: transformUser(session.members.find(x => x.id === currentUserId)) });
 			}
 			await socketService.removeConnectionBySocket(ws);
 		}
