@@ -7,7 +7,7 @@ export class UserController {
 
     // REST Routes
     async get(req: Request, res: Response, next: NextFunction) {
-        const user = await userService.getUserById(req.currentUserId);
+        const user = await userService.getUserById(req.params.spotify_id);
         res.send(user);
     }
 
