@@ -9,7 +9,7 @@
         android:id="@+id/friendNameText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="30dp"
         android:text="Name of friends in the session"
         android:textColor="@color/white"
         android:textSize="16sp"

@@ -16,9 +16,7 @@ public class ListFragment extends Fragment {
     private ArrayList<String> itemList;
     private String listTitle;
 
-    public ListFragment() {
-        // Required empty public constructor
-    }
+    public ListFragment() {}
 
     public static ListFragment newInstance(ArrayList<String> itemList, String listTitle) {
         ListFragment fragment = new ListFragment();
