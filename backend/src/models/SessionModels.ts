@@ -29,6 +29,9 @@ export function transformUsers(users: User[], extras?: (user) => object): Visibl
     return users.map(u => transformUser(u, extras));
 }
 export function transformUser(user: User, extras?: (user) => object): VisibleUser {
+    if (!user) {
+        throw { message: `User not found.`, statusCode: 400 };
+    }
     return {
         id: user.spotify_id,
         username: user.username,

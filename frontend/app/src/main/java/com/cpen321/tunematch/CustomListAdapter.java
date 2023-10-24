@@ -2,6 +2,7 @@
 // Written by ChatGPT and add changes to fit my purpose
 package com.cpen321.tunematch;
 
+
 import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -14,7 +15,6 @@ import android.widget.TextView;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.List;

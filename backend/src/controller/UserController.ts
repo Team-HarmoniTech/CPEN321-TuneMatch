@@ -8,7 +8,9 @@ export class UserController {
 
     // REST Routes
     async get(req: Request, res: Response, next: NextFunction) {
-        const user = await userService.getUserBySpotifyId(req.params.spotify_id);
+        /* Use currentUserId for the /me endpoint */
+        const userId = (req.url.startsWith("/me")) ? req.currentUserSpotifyId : req.params.spotify_id;
+        const user = await userService.getUserBySpotifyId(userId);
         res.send(transformUser(user, (user) => {
             return req.query.fullProfile ? { bio:user.bio } : { };
         }));
@@ -28,26 +30,18 @@ export class UserController {
     }
 
     async update(req: Request, res: Response, next: NextFunction) {
-        if (req.params.spotify_id && req.currentUserSpotifyId !== req.params.spotify_id) {
-            throw { message: 'You many not update other users', statusCode: 400 };
-        }
         const user = await userService.upsertUser(req.body.userData, req.currentUserId);
         res.send(user);
     }
 
     async delete(req: Request, res: Response, next: NextFunction) {
-        if (req.params.spotify_id && req.currentUserSpotifyId !== req.params.spotify_id) {
-            throw { message: 'You many not delete other users', statusCode: 400 };
-        }
         const user = await userService.deleteUser(req.currentUserId);
         res.send(user);
     }
 
-    async getFriends(req: Request, res: Response, next: NextFunction) {
-        const friends = await userService.getUserFriends(req.currentUserId);
-        res.send(transformUsers(friends, (user) => {
-            return { currentlyPlaying: user.currently_listening, session: !!user.sessionId };
-        }));
+    async searchUsers(req: Request, res: Response, next: NextFunction) {
+        const options = await userService.searchUsers(req.params.search_term, Number(req.query.max));
+        res.send(transformUsers(options));
     }
 
     // Websocket Routes

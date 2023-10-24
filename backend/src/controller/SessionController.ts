@@ -38,9 +38,6 @@ export class SessionController {
 
     async join(ws: WebSocket, message: SessionMessage, currentUserId: number) {
         const session = await sessionService.joinSession(currentUserId, message?.body?.userId || undefined);
-        if (!session) {
-            throw new Error(`User with id ${message.body.userId} does not exist.`);
-        }
         ws.send(JSON.stringify({ success: true, members: transformUsers(session.members.filter(x => x.id !== currentUserId)) }));
         await sessionService.messageSession(session.id, currentUserId, { userJoin: transformUser(session.members.find(x => x.id === currentUserId)) });
     }
