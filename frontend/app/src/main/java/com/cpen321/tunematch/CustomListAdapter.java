@@ -1,4 +1,4 @@
-// For friend activity list
+// For custom lists with two elements
 // Written by ChatGPT and add changes to fit my purpose
 package com.cpen321.tunematch;
 

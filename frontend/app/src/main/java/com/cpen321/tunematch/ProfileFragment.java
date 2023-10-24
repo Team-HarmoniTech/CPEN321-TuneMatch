@@ -1,3 +1,4 @@
+// Wrote by team member following online tutorial regarding BottomNavigationView usage
 package com.cpen321.tunematch;
 
 import android.content.Intent;
