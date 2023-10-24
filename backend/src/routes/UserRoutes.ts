@@ -37,8 +37,8 @@ export const UserRoutes = [{
     validation: [
         body('userData.spotify_id').isAlphanumeric(),
         body('userData.username').isString(),
-        body('userData.top_artists').isJSON(),
-        body('userData.top_genres').isJSON(),
+        body('userData.top_artists').isArray(),
+        body('userData.top_genres').isArray(),
         body('userData.pfp_url').optional().isURL()
     ]
 }, {
@@ -50,8 +50,8 @@ export const UserRoutes = [{
         header('user-id').isAlphanumeric(),
         param('id').isAlphanumeric(),
         body('username').optional().isString(),
-        body('top_artists').optional().isJSON(),
-        body('top_genres').optional().isJSON(),
+        body('top_artists').optional().isArray(),
+        body('top_genres').optional().isArray(),
         body('pfp_url').optional().isString(),
         body('bio').optional().isString(),
         body().custom((req) => {

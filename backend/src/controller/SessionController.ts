@@ -49,6 +49,8 @@ export class SessionController {
         const session = await sessionService.leaveSession(currentUserId);
         if (session) {
             await sessionService.messageSession(session.id, currentUserId, { userLeave: transformUser(session.members.find(x => x.id === currentUserId)) });
+        } else {
+            throw new Error(`User with id ${message.body.userId} is not in a session.`);
         }
     }
 }

@@ -1,4 +1,4 @@
-# TO RUN - docker-compose f docker-compose.locak.yml up -d
+# TO RUN - docker-compose -f docker-compose.local.yml up -d
 
 version: '3'
 services:

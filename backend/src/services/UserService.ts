@@ -1,4 +1,4 @@
-import { Prisma, Session, User } from "@prisma/client";
+import { Connection, Prisma, Session, User } from "@prisma/client";
 import { database, socketService } from "..";
 import { SocketMessage } from "../models/WebsocketModels";
 
@@ -109,6 +109,7 @@ export class UserService {
     }
 
     async addUserConnection(userId1: number, userId2: number, match: number) {
+        if (userId1 === userId2) return;
         await database.connection.create({
             data: {
                 match_percent: match,
@@ -118,9 +119,19 @@ export class UserService {
         })
     }
 
-    async getRandomUser(): Promise<User> {
-        const users = await this.userDB.findMany();
-        return users[Math.floor(Math.random() * users.length)];
+    async getRandomUser(notIn: number[]): Promise<User> {
+        return await this.userDB.findFirst({
+            where: { id: { notIn: notIn, }, },
+        });
+    }
+
+    async getConnection(userId1: number, userId2: number): Promise<Connection> {
+        return await database.connection.findFirst({
+            where: {
+              user_id_1: userId1,
+              user_id_2: userId2,
+            },
+        });
     }
 
     async searchUsers(search: string, max?: number): Promise<User[]> {
@@ -144,7 +155,7 @@ export class UserService {
             });
             return true;
         } else {
-            const user = await database.user.findUnique({
+            const user = await this.userDB.findUnique({
                 where: { id: userId }
             });
             return user.connectionComputed;
