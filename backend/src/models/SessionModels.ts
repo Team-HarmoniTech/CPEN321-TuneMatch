@@ -22,15 +22,17 @@ export type VisibleUser = {
     id: String,
     username: String,
     profilePic: String,
+    [key: string]: any;
 }
 
-export function exportUsers(users: User[]): VisibleUser[] {
-    return users.map(u => ({
-        id: u.spotify_id,
-        username: u.username,
-        profilePic: u.pfp_url,
-    }));
+export function transformUsers(users: User[], extras?: (user) => object): VisibleUser[] {
+    return users.map(u => transformUser(u, extras));
 }
-export function exportUser(user: User, currentlyPlaying?: boolean): VisibleUser {
-    return exportUsers([user])[0];
+export function transformUser(user: User, extras?: (user) => object): VisibleUser {
+    return {
+        id: user.spotify_id,
+        username: user.username,
+        profilePic: user.pfp_url,
+        ...(extras ? extras(user): {}),
+    }
 }
