@@ -48,7 +48,7 @@ export const UserRoutes = [{
     action: "update",
     validation: [
         header('user-id').isAlphanumeric(),
-        param('id').isAlphanumeric(),
+        param('spotify_id').isAlphanumeric(),
         body('username').optional().isString(),
         body('top_artists').optional().isArray(),
         body('top_genres').optional().isArray(),
@@ -69,6 +69,16 @@ export const UserRoutes = [{
     action: "remove",
     validation: [
         header('user-id').isAlphanumeric(),
-        param('id').isAlphanumeric(),
+        param('spotify_id').isAlphanumeric(),
+    ]
+}, {
+    method: "get",
+    route: "/users/search/:search_term",
+    controller: UserController,
+    action: "searchUsers",
+    validation: [
+        header('user-id').isAlphanumeric(),
+        param('search_term').isString(),
+        query('max').optional().isInt()
     ]
 }]

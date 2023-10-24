@@ -10,7 +10,7 @@ datasource db {
 
 model User {
   id                  Int     @id @default(autoincrement())
-  spotify_id         String  @unique
+  spotify_id          String  @unique
   username            String
   top_artists         Json
   top_genres          Json

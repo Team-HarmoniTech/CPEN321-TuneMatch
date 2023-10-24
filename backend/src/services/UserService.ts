@@ -135,16 +135,10 @@ export class UserService {
     }
 
     async searchUsers(search: string, max?: number): Promise<User[]> {
-        if (max) {
-            return await this.userDB.findMany({
-                where: { username: { contains: search } },
-                take: max
-            });
-        } else {
-            return await this.userDB.findMany({
-                where: { username: { contains: search } }
-            });
-        }
+        return await this.userDB.findMany({
+            where: { username: { contains: search } },
+            take: max ?? 50
+        });
     }
 
     async connectionsComputed(userId: number, complete?: boolean): Promise<boolean> {

@@ -50,6 +50,11 @@ export class UserController {
         }));
     }
 
+    async searchUsers(req: Request, res: Response, next: NextFunction) {
+        const options = await userService.searchUsers(req.params.search_term, Number(req.query.max));
+        res.send(transformUsers(options));
+    }
+
     // Websocket Routes
     async updateCurrentlyPlaying(ws: WebSocket, message: SocketMessage, currentUserId: number) {
         try {
