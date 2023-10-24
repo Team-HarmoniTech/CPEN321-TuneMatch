@@ -14,6 +14,7 @@ import java.util.ArrayList;
 
 public class ListFragment extends Fragment {
     private ArrayList<String> itemList;
+    private ArrayAdapter<String> adapter;
     private String listTitle;
 
     public ListFragment() {}
@@ -46,7 +47,11 @@ public class ListFragment extends Fragment {
         titleTextView.setText(listTitle);
 
         // Create an ArrayAdapter to populate the ListView
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, itemList);
+        if (listTitle.equals("Friends List")) {
+//            adapter = new CustomListAdapter(getContext(), null, "EditFriendsList", itemList); // TODO: Do we support deleting friends?
+        } else {
+            adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, itemList);
+        }
 
         // Find the ListView and set the adapter
         ListView listView = view.findViewById(R.id.listView);

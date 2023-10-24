@@ -53,7 +53,7 @@ public class CustomListAdapter extends BaseAdapter {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             if (listType.equals("FriendsList")) {
                 convertView = inflater.inflate(R.layout.friend_activity_custom, parent, false);
-            } else {
+            } else if (listType.equals("SessionsList")) {
                 convertView = inflater.inflate(R.layout.listening_session_custom, parent, false);
             }
         }

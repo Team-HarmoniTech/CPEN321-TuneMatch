@@ -42,7 +42,6 @@ public class ProfileFragment extends Fragment {
                 transaction.replace(R.id.mainFrame, friendsListFragment);
                 transaction.addToBackStack(null);       // If you want to add the transaction to the back stack
                 transaction.commit();
-
             }
 
         });

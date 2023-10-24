@@ -2,6 +2,6 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <solid android:color="@color/background" /> <!-- Background color -->
     <stroke android:width="1.5dp" /> <!-- Border width -->
-    <stroke android:color="@color/pointGreen" /> <!-- Border color (in this case, red) -->
+    <stroke android:color="@color/red" /> <!-- Border color (in this case, red) -->
     <corners android:radius="20dp" /> <!-- Corner radius -->
 </shape>
