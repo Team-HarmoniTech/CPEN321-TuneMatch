@@ -39,7 +39,7 @@ export class UserMatchingService {
       const user = await userService.getUserById(userId);
     
       if (!user) {
-        throw new Error(`User with ID ${userId} not found.`);
+        throw { message: `User not found.`, statusCode: 400 };
       }
 
       while (matchedUsers.length < maxMatches) {
@@ -98,6 +98,11 @@ export class UserMatchingService {
     }
 
     async getTopMatches(userId: number): Promise<(User & { match: number })[]> {
+      while (!await userService.connectionsComputed(userId)) {
+        /* Check every second until complete */
+        await new Promise(f => setTimeout(f, 1000)); 
+      }
+
       const userConnections = await userService.getUserConnections(userId);
 
       userConnections.sort((a, b) => b.match - a.match);

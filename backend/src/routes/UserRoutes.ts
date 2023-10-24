@@ -7,27 +7,25 @@ export const UserRoutes = [{
     controller: UserController,
     action: "get",
     validation: [
-        header('user-id').isAlphanumeric(),
         param('spotify_id').isAlphanumeric(),
         query('fullProfile').optional().isBoolean()
     ]
 }, {
     method: "get",
-    route: "/users/friends/:spotify_id",
+    route: "/me",
     controller: UserController,
-    action: "getFriends",
+    action: "get",
     validation: [
         header('user-id').isAlphanumeric(),
-        param('spotify_id').isAlphanumeric(),
+        query('fullProfile').optional().isBoolean()
     ]
 }, {
     method: "get",
-    route: "/users/matches/:spotify_id",
+    route: "/me/matches",
     controller: UserController,
     action: "topMatches",
     validation: [
-        header('user-id').isAlphanumeric(),
-        param('spotify_id').isAlphanumeric(),
+        header('user-id').isAlphanumeric()
     ]
 }, {
     method: "post",
@@ -43,12 +41,11 @@ export const UserRoutes = [{
     ]
 }, {
     method: "put",
-    route: "/users/update/:spotify_id",
+    route: "/me/update",
     controller: UserController,
     action: "update",
     validation: [
         header('user-id').isAlphanumeric(),
-        param('spotify_id').isAlphanumeric(),
         body('username').optional().isString(),
         body('top_artists').optional().isArray(),
         body('top_genres').optional().isArray(),
@@ -64,12 +61,11 @@ export const UserRoutes = [{
     ]
 }, {
     method: "delete",
-    route: "/users/delete/:spotify_id",
+    route: "/me/delete",
     controller: UserController,
-    action: "remove",
+    action: "delete",
     validation: [
-        header('user-id').isAlphanumeric(),
-        param('spotify_id').isAlphanumeric(),
+        header('user-id').isAlphanumeric()
     ]
 }, {
     method: "get",

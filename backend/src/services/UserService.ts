@@ -13,24 +13,48 @@ export class UserService {
                 requesting: true
             }
         });
-        return user.requested.filter(requested => user.requesting.includes(requested));
+        // Only keep overlapping values
+        return user.requested.filter(requested => user.requesting.some(requesting => requesting.id === requested.id));
     }
 
-    async addFriend(requestingId: number, requestedId: number) {
-        await this.userDB.update({
-            where: { id: requestingId },
-            data: { requesting: { connect: { id: requestedId } } }
-        });
-    }
-
-    async removeFriend(userId: number, friendId: number) {
-        await this.userDB.update({
+    async getUserFriendsRequests(userId: number): Promise<{ requesting: User[], requested: User[] }> {
+        const user = await this.userDB.findUnique({
             where: { id: userId },
-            data: {
-                requesting: { disconnect: { id: friendId } },
-                requested: { disconnect: { id: friendId } }
+            include: {
+                requested: true,
+                requesting: true
             }
         });
+        // Filter out overlapping users
+        const requesting = user.requesting.filter(requesting => !user.requested.some(requested => requested.id === requesting.id));
+        const requested = user.requested.filter(requested => !user.requesting.some(requesting => requesting.id === requested.id));
+
+        return { requesting, requested };
+    }
+
+    async addFriend(requestingId: number, requestedSpotifyId: string) {
+        try {
+            await this.userDB.update({
+                where: { id: requestingId },
+                data: { requested: { connect: { spotify_id: requestedSpotifyId } } }
+            });
+        } catch {
+            throw { message: 'User does not exist', statusCode: 400 };
+        }
+    }
+
+    async removeFriend(userId: number, friendSpotifyId: string) {
+        try {
+            await this.userDB.update({
+                where: { id: userId },
+                data: {
+                    requesting: { disconnect: { spotify_id: friendSpotifyId } },
+                    requested: { disconnect: { spotify_id: friendSpotifyId } }
+                }
+            });
+        } catch {
+            throw { message: 'User does not exist', statusCode: 400 };
+        }
     }
 
     async broadcastToFriends(userId: number, message: SocketMessage) {

@@ -7,21 +7,21 @@ export class SessionService {
 
     async joinSession(userId: number, otherUserId?: number): Promise<SessionWithMembers> {
         // Leave old session if exists
-        this.leaveSession(userId);
+        await this.leaveSession(userId);
 
         if (otherUserId) {
             // Add user to the other session
             const otherSession = await database.session.findFirstOrThrow({
                 where: { members: { some: { id: otherUserId } } },
             });
-            if (otherSession) {
-                return await database.session.update({
-                    where: { id: otherSession.id },
-                    data: { members: { connect: { id: userId } } },
-                    include: { members: true }
-                });
+            if (!otherSession) {
+                throw { message:`User is not in a session.`, statusCode: 400 };
             }
-            return
+            return await database.session.update({
+                where: { id: otherSession.id },
+                data: { members: { connect: { id: userId } } },
+                include: { members: true }
+            });
         } else {
             // Create new session for user
             const session = await database.session.create({
@@ -44,11 +44,11 @@ export class SessionService {
         });
         // If session will be empty delete, otherwise leave
         if (session && session.members.length <= 1) {
-            database.session.delete({
+            await database.session.delete({
                 where: { id: session.id }
             });
         } else if (session) {
-            return database.session.update({
+            return await database.session.update({
                 where: { id: session.id },
                 data: { members: { disconnect: { id: userId } } },
                 include: { members: true }
@@ -73,14 +73,14 @@ export class SessionService {
 
     async queueAdd(sessionId: number, songUri: string, durationMs: number, posAfter?: number) {
         const queueData = this.sessionQueues.get(sessionId);
-        queueData.lock.runExclusive(() => {
+        await queueData.lock.runExclusive(() => {
             queueData.queue.splice((posAfter ?? 0) + 1, 0, songUri);
         });
     }
 
     async queueNext(sessionId: number) {
         const queueData = this.sessionQueues.get(sessionId);
-        queueData.lock.runExclusive(() => {
+        await queueData.lock.runExclusive(() => {
             queueData.queue.shift();
         });
     }
