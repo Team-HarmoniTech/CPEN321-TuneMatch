@@ -5,7 +5,7 @@ export const UserRoutes = [{
     method: "get",
     route: "/users/:spotify_id",
     controller: UserController,
-    action: "insert",
+    action: "get",
     validation: [
         header('user-id').isAlphanumeric(),
         param('spotify_id').isAlphanumeric(),

@@ -1,3 +1,5 @@
+# TO RUN - docker-compose -f docker-compose.prod.yml up -d
+
 version: '3.8'
 services:
   # MySQL Database Service
@@ -16,8 +18,9 @@ services:
   # Express.js/Prisma Backend Service
   backend:
     build:
-      context: ../
+      context: ..
       dockerfile: Dockerfile
+    restart: always
     container_name: backend_app
     environment:
       DATABASE_URL: "mysql://root:5KvX9bzs8x8VSAmwcD9S@mysql:3306/TuneMatchDB"

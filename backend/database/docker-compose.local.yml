@@ -1,0 +1,11 @@
+# TO RUN - docker-compose f docker-compose.locak.yml up -d
+
+version: '3'
+services:
+  mysql:
+    image: mysql:8.0.17
+    environment:
+      MYSQL_ROOT_PASSWORD: 5KvX9bzs8x8VSAmwcD9S
+      MYSQL_DATABASE: TuneMatchDB
+    ports:
+      - "3306:3306"
