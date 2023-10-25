@@ -32,8 +32,8 @@ async function authenticateSocket(socket, req): Promise<number> {
 		"refresh", 
 		transformUsers(friends, (user) => {
 			return { 
-				currentlyPlaying: user.currently_playing, 
-				session: !!user.sessionId, 
+				currentSong: user.currently_song, 
+				currentSource: user.current_source
 			};
 		})
 	)));
@@ -88,14 +88,14 @@ export async function handleConnection(ws: WebSocket, req: Request) {
 		const userId = await socketService.retrieveBySocket(ws);
 		if (userId) {
 			const session = await sessionService.leaveSession(userId);
-			const user = await userService.updateUser({ currently_playing: null }, currentUserId);
+			const user = await userService.updateUser({ currently_song: null, current_source: null }, currentUserId);
 			if (session) {
 				await sessionService.messageSession(session.id, userId, { userLeave: transformUser(session.members.find(x => x.id === userId)) });
 				await userService.broadcastToFriends(currentUserId, 
 					new FriendsMessage("update", transformUser(session.members.find(x => x.id === currentUserId), (user) => {
 						return { 
-							currentlyPlaying: user.currently_playing, 
-							session: !!user.sessionId, 
+							currentSong: user.currently_song, 
+							currentSource: user.current_source
 						};
 					}))
 				);

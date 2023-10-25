@@ -16,7 +16,8 @@ model User {
   username            String
   top_artists         Json
   top_genres          Json
-  currently_playing String?
+  current_song        String?
+  current_source      Json? //Could be album or playlist
   is_banned           Boolean @default(false)
   pfp_url             String?
   bio                 String?

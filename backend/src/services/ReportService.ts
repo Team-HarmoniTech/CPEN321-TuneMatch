@@ -2,10 +2,11 @@ import { Report } from "@prisma/client";
 import { database } from "..";
 
 export class ReportService {
+    private reportDB = database.report;
 
     // ChatGPT Usage: No
     async generateReport(offenderId: number, reporterId: number, report: any): Promise<Report> {
-        return await database.report.create({
+        return await this.reportDB.create({
             data: {
                 offender: { connect: { id: offenderId } },
                 reporter: { connect: { id: reporterId } },
@@ -18,7 +19,7 @@ export class ReportService {
 
     // ChatGPT Usage: No
     async viewReports(dateFrom?: Date, dateTo?: Date): Promise<Report[]> {
-        return await database.report.findMany({ // MIGHT NOT WOrk
+        return await this.reportDB.findMany({ // MIGHT NOT WOrk
             where: {
                 timestamp: {
                     lte: dateTo,

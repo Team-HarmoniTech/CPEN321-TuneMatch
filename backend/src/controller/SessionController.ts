@@ -53,8 +53,8 @@ export class SessionController {
         await userService.broadcastToFriends(currentUserId, 
             new FriendsMessage("update", transformUser(session.members.find(x => x.id === currentUserId), (user) => {
                 return { 
-                    currentlyPlaying: user.currently_playing, 
-                    session: !!user.sessionId, 
+                    currentSong: user.currently_song, 
+                    currentSource: user.current_source
                 };
             }))
         );
@@ -69,8 +69,8 @@ export class SessionController {
             await userService.broadcastToFriends(currentUserId, 
                 new FriendsMessage("update", transformUser(session.members.find(x => x.id === currentUserId), (user) => {
                     return { 
-                        currentlyPlaying: user.currently_playing, 
-                        session: !!user.sessionId, 
+                        currentSong: user.currently_song, 
+                        currentSource: user.current_source
                     };
                 }))
             );

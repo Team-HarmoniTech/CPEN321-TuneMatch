@@ -77,8 +77,8 @@ export class UserController {
             "refresh", 
             transformUsers(friends, (user) => {
                 return { 
-                    currentlyPlaying: user.currently_playing, 
-                    session: !!user.sessionId, 
+                    currentSong: user.currently_song, 
+                    currentSource: user.current_source
                 };
             })
         )));
@@ -86,12 +86,12 @@ export class UserController {
 
     // ChatGPT Usage: No
     async update(ws: WebSocket, message: FriendsMessage, currentUserId: number) {
-        const user = await userService.updateUser({ currently_playing: message?.body.currentlyPlaying }, currentUserId);
+        const user = await userService.updateUserStatus(currentUserId, message?.body.song, message?.body.source);
         await userService.broadcastToFriends(currentUserId, 
             new FriendsMessage("update", transformUser(user, (user) => {
                 return { 
-                    currentlyPlaying: user.currently_playing, 
-                    session: !!user.sessionId, 
+                    currentSong: user.currently_song, 
+                    currentSource: user.current_source
                 };
             }))
         );

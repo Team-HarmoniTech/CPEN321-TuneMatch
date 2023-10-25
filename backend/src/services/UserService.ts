@@ -4,6 +4,7 @@ import { SocketMessage } from "../models/WebsocketModels";
 
 export class UserService {
     private userDB = database.user;
+    private connectionDB = database.connection;
 
     // ChatGPT Usage: Partial
     async getUserFriends(userId: number): Promise<User[]> {
@@ -150,7 +151,7 @@ export class UserService {
     // ChatGPT Usage: No
     async addUserConnection(userId1: number, userId2: number, match: number) {
         if (userId1 === userId2) return;
-        await database.connection.create({
+        await this.connectionDB.create({
             data: {
                 match_percent: match,
                 user_1: { connect: { id: userId1 } },
@@ -168,7 +169,7 @@ export class UserService {
 
     // ChatGPT Usage: No
     async getConnection(userId1: number, userId2: number): Promise<Connection> {
-        return await database.connection.findFirst({
+        return await this.connectionDB.findFirst({
             where: {
               user_id_1: userId1,
               user_id_2: userId2,
@@ -182,5 +183,17 @@ export class UserService {
             where: { username: { contains: search } },
             take: max ?? 50
         });
+    }
+
+    // ChatGPT Usage: No
+    async updateUserStatus(userId: number, song?: string, source?: { type: string, uri: string }): Promise<User> {
+        let user: any = await this.getUserById(userId);
+        /* If they are in a session don't update the source */
+        if (!user.session) {
+            user = await this.updateUser({ current_song: song, current_source: source }, userId);
+        } else {
+            user = await this.updateUser({ current_song: song }, userId);
+        }
+        return user;
     }
 }
