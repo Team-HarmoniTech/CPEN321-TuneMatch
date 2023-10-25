@@ -5,7 +5,7 @@ CREATE TABLE `User` (
     `username` VARCHAR(191) NOT NULL,
     `top_artists` JSON NOT NULL,
     `top_genres` JSON NOT NULL,
-    `currently_listening` VARCHAR(191) NULL,
+    `currently_playing` VARCHAR(191) NULL,
     `is_banned` BOOLEAN NOT NULL DEFAULT false,
     `pfp_url` VARCHAR(191) NULL,
     `bio` VARCHAR(191) NULL,

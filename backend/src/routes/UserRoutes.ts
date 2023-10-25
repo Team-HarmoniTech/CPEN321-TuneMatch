@@ -5,7 +5,7 @@ export const UserRoutes = [{
     method: "get",
     route: "/users/:spotify_id",
     controller: UserController,
-    action: "get",
+    action: "getUser",
     validation: [
         param('spotify_id').isAlphanumeric(),
         query('fullProfile').optional().isBoolean()
@@ -14,7 +14,7 @@ export const UserRoutes = [{
     method: "get",
     route: "/me",
     controller: UserController,
-    action: "get",
+    action: "getUser",
     validation: [
         header('user-id').isAlphanumeric(),
         query('fullProfile').optional().isBoolean()
@@ -31,7 +31,7 @@ export const UserRoutes = [{
     method: "post",
     route: "/users/create",
     controller: UserController,
-    action: "insert",
+    action: "insertUser",
     validation: [
         body('userData.spotify_id').isAlphanumeric(),
         body('userData.username').isString(),
@@ -43,7 +43,7 @@ export const UserRoutes = [{
     method: "put",
     route: "/me/update",
     controller: UserController,
-    action: "update",
+    action: "updateUser",
     validation: [
         header('user-id').isAlphanumeric(),
         body('username').optional().isString(),
@@ -63,7 +63,7 @@ export const UserRoutes = [{
     method: "delete",
     route: "/me/delete",
     controller: UserController,
-    action: "delete",
+    action: "deleteUser",
     validation: [
         header('user-id').isAlphanumeric()
     ]

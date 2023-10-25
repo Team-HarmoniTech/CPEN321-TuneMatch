@@ -94,7 +94,7 @@ export class UserMatchingService {
           }
         }
       }
-      await userService.connectionsComputed(userId, true);
+      await userService.updateConnectionsComputed(userId, true);
     }
 
     async getTopMatches(userId: number): Promise<(User & { match: number })[]> {

@@ -1,8 +1,9 @@
 import { Request } from "express";
 import { WebSocket } from "ws";
-import { database, sessionService, socketService } from "..";
-import { transformUser } from "../models/SessionModels";
+import { database, sessionService, socketService, userService } from "..";
+import { FriendsMessage, RequestsMessage, transformUser, transformUsers } from "../models/UserModels";
 import { SocketMessage } from "../models/WebsocketModels";
+import { RequestController } from "./RequestController";
 import { SessionController } from "./SessionController";
 import { UserController } from "./UserController";
 
@@ -23,6 +24,27 @@ async function authenticateSocket(socket, req): Promise<number> {
 		return;
 	}
 	await socketService.addConnection(user.id, socket);
+
+	/* Initial Data Push */
+	const friends = await userService.getUserFriends(user.id);
+	socket.send(JSON.stringify(new FriendsMessage(
+		"refresh", 
+		transformUsers(friends, (user) => {
+			return { 
+				currentlyPlaying: user.currently_playing, 
+				session: !!user.sessionId, 
+			};
+		})
+	)));
+	const requests = await userService.getUserFriendsRequests(user.id);
+	socket.send(JSON.stringify(new RequestsMessage(
+		"refresh", 
+		{ 
+			requesting: transformUsers(requests.requesting), 
+			requested: transformUsers(requests.requested) 
+		}
+	)));
+
 	return user.id;
 }
 
@@ -42,8 +64,11 @@ export async function handleConnection(ws: WebSocket, req: Request) {
 					case "SESSION":
 						new SessionController().acceptRequest(ws, req, currentUserId);
 						break;
-					case "PLAYING":
-						new UserController().updateCurrentlyPlaying(ws, req, currentUserId);
+					case "FRIENDS":
+						new UserController().acceptRequest(ws, req, currentUserId);
+						break;
+					case "REQUESTS":
+						new RequestController().acceptRequest(ws, req, currentUserId);
 						break;
 					default:
 						ws.send(JSON.stringify({ Error: "Received data has an invalid method"}));
@@ -59,8 +84,17 @@ export async function handleConnection(ws: WebSocket, req: Request) {
 		const userId = await socketService.retrieveBySocket(ws);
 		if (userId) {
 			const session = await sessionService.leaveSession(userId);
+			const user = await userService.updateUser({ currently_playing: null }, currentUserId);
 			if (session) {
-				await sessionService.messageSession(session.id, currentUserId, { userLeave: transformUser(session.members.find(x => x.id === currentUserId)) });
+				await sessionService.messageSession(session.id, userId, { userLeave: transformUser(session.members.find(x => x.id === userId)) });
+				await userService.broadcastToFriends(currentUserId, 
+					new FriendsMessage("update", transformUser(session.members.find(x => x.id === currentUserId), (user) => {
+						return { 
+							currentlyPlaying: user.currently_playing, 
+							session: !!user.sessionId, 
+						};
+					}))
+				);
 			}
 			await socketService.removeConnectionBySocket(ws);
 		}

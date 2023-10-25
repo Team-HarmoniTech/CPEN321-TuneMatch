@@ -32,24 +32,24 @@ export class UserService {
         return { requesting, requested };
     }
 
-    async addFriend(requestingId: number, requestedSpotifyId: string) {
+    async addFriend(userId: number, requestedId: number): Promise<User> {
         try {
-            await this.userDB.update({
-                where: { id: requestingId },
-                data: { requested: { connect: { spotify_id: requestedSpotifyId } } }
+            return await this.userDB.update({
+                where: { id: userId },
+                data: { requested: { connect: { id: requestedId } } }
             });
         } catch {
             throw { message: 'User does not exist', statusCode: 400 };
         }
     }
 
-    async removeFriend(userId: number, friendSpotifyId: string) {
+    async removeFriend(userId: number, requestedId: number): Promise<User> {
         try {
-            await this.userDB.update({
+            return await this.userDB.update({
                 where: { id: userId },
                 data: {
-                    requesting: { disconnect: { spotify_id: friendSpotifyId } },
-                    requested: { disconnect: { spotify_id: friendSpotifyId } }
+                    requesting: { disconnect: { id: requestedId } },
+                    requested: { disconnect: { id: requestedId } }
                 }
             });
         } catch {
@@ -60,6 +60,7 @@ export class UserService {
     async broadcastToFriends(userId: number, message: SocketMessage) {
         const user = await this.getUserById(userId);
         const recipients = (await this.getUserFriends(user.id)).map(user => user.id);
+        
         message = { ...message, from: user.spotify_id };
         await socketService.broadcast(recipients, message);
     }
@@ -86,30 +87,35 @@ export class UserService {
         });
     }
 
-    async upsertUser(userData: object, userId?: number): Promise<User> {
-        return await this.userDB.upsert({
-            where: {
-                id: userId ?? -1
-            },
-            create: <Prisma.UserCreateInput>userData,
-            update: <Prisma.UserUpdateInput>userData
+    async createUser(userData: object): Promise<User> {
+        return await this.userDB.create({
+            data: <Prisma.UserCreateInput>userData
         });
     }
 
-    async deleteUser(userId: number) {
-        await this.userDB.delete({
+    async updateUser(userData: object, userId: number): Promise<User> {
+        return await this.userDB.update({
             where: {
                 id: userId
-            }
+            },
+            data: <Prisma.UserUpdateInput>userData
+        });
+    }
+
+
+    async deleteUser(userId: number) {
+        if (await socketService.retrieveById(userId)) {
+            throw { message: "Cannot delete a user with an active websocket", statusCode: 400 };
+        }
+        await this.userDB.delete({
+            where: { id: userId }
         });
     }
     
     async getUserConnections(userId: number): Promise<(User & { match: number })[]> {
         const user = await this.userDB.findUnique({
-            where: {
-                id: userId
-            },
-            include: {
+            where: { id: userId },
+            include: { 
                 connections1: {
                     include: {
                         user_1: true,
@@ -165,18 +171,18 @@ export class UserService {
         });
     }
 
-    async connectionsComputed(userId: number, complete?: boolean): Promise<boolean> {
-        if (complete) {
-            await this.userDB.update({
-                where: { id: userId },
-                data: { connectionComputed: true }
-            });
-            return true;
-        } else {
-            const user = await this.userDB.findUnique({
-                where: { id: userId }
-            });
-            return user.connectionComputed;
-        }
+    async connectionsComputed(userId: number): Promise<boolean> {
+        const user = await this.userDB.findUnique({
+            where: { id: userId }
+        });
+        return user.connectionComputed;
+    }
+
+    async updateConnectionsComputed(userId: number, complete: boolean): Promise<boolean> {
+        await this.userDB.update({
+            where: { id: userId },
+            data: { connectionComputed: complete }
+        });
+        return true;
     }
 }
