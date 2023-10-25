@@ -5,8 +5,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="230dp"
-    android:orientation="vertical">
+    android:layout_height="240dp"
+    android:orientation="vertical"
+    android:background="@drawable/custom_green_btn">
 
     <TextView
         android:id="@+id/favArtistText"
@@ -29,6 +30,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="30dp"
+        android:layout_marginTop="15dp"
         android:text="Name"
         android:textAlignment="viewStart"
         android:textColor="@color/white"
@@ -59,10 +61,11 @@
 
     <Button
         android:id="@+id/addButton"
-        android:layout_width="75dp"
-        android:layout_height="44dp"
-        android:backgroundTint="@color/pointGreen"
+        android:layout_width="79dp"
+        android:layout_height="38dp"
+        android:background="@drawable/custom_green_btn"
         android:text="Add"
+        android:textColor="@color/pointGreen"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.925"
