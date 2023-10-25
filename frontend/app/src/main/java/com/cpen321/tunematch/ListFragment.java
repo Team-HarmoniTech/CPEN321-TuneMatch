@@ -13,16 +13,14 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 public class ListFragment extends Fragment {
-    private ArrayList<String> itemList;
     private ArrayAdapter<String> adapter;
     private String listTitle;
 
     public ListFragment() {}
 
-    public static ListFragment newInstance(ArrayList<String> itemList, String listTitle) {
+    public static ListFragment newInstance(String listTitle) {
         ListFragment fragment = new ListFragment();
         Bundle args = new Bundle();
-        args.putStringArrayList("itemList", itemList);
         args.putString("listTitle", listTitle);
         fragment.setArguments(args);
         return fragment;
@@ -33,7 +31,6 @@ public class ListFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            itemList = getArguments().getStringArrayList("itemList");
             listTitle = getArguments().getString("listTitle");
         }
     }
@@ -48,9 +45,13 @@ public class ListFragment extends Fragment {
 
         // Create an ArrayAdapter to populate the ListView
         if (listTitle.equals("Friends List")) {
-//            adapter = new CustomListAdapter(getContext(), null, "EditFriendsList", itemList); // TODO: Do we support deleting friends?
-        } else {
-            adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, itemList);
+            // TODO: Query list of friends
+//            adapter = new CustomListAdapter(getContext(), null, "EditFriendsList", itemList);
+        } else if (listTitle.equals("Top Artists")) {
+            // TODO: Query list of top artists
+//            adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, itemList);
+        } else if (listTitle.equals("Top Genres")) {
+            // TODO: Query list of top songs
         }
 
         // Find the ListView and set the adapter
