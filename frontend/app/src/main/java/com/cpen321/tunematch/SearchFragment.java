@@ -32,12 +32,21 @@ import okhttp3.Headers;
 import okhttp3.internal.http2.Header;
 
 public class SearchFragment extends Fragment {
+
     private View view;
     private ArrayAdapter<String> listAdapter;
     private AlertDialog profileDialog;
-    ReduxStore model = new ViewModelProvider(requireActivity()).get(ReduxStore.class);
-    ApiClient apiClient = new ApiClient();
+    ReduxStore model;
+    ApiClient apiClient;
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Initialize ViewModel and ApiClient here.
+        model = new ViewModelProvider(requireActivity()).get(ReduxStore.class);
+        apiClient = new ApiClient();
+    }
 
     @Nullable
     @Override
@@ -103,9 +112,10 @@ public class SearchFragment extends Fragment {
                                 .build();
                         try {
                             String response = apiClient.doGetRequest("/users/search/" + query,customHeaders);
-                            // Parse the response and update LiveData.
+                            // Parse the response.
                             List<Friend> newFriendsList = parseResponse(response);
-                            model.setFriendsList(newFriendsList);
+                            // Update LiveData.
+                            model.getFriendsList().postValue(newFriendsList);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -143,12 +153,13 @@ public class SearchFragment extends Fragment {
         return view;
     }
     public List<Friend> parseResponse(String response) {
+        Log.d("SearchFragment", "parseResponse: " + response);
         List<Friend> friends = new ArrayList<>();
         try {
             JSONArray jsonArray = new JSONArray(response);
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                String name = jsonObject.getString("name");
+                String name = jsonObject.getString("profilePic");
                 // Create a new Friend object and add it to the list.
                 friends.add(new Friend(name));
             }
