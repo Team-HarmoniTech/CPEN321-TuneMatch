@@ -2,6 +2,8 @@
 // Written by ChatGPT and add changes to fit my purpose
 package com.cpen321.tunematch;
 
+
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,16 +15,19 @@ import android.widget.TextView;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.List;
 
 public class CustomListAdapter extends BaseAdapter {
     private Context context;
+    private Activity parentView;
     private String listType;
     private List<List<String>> itemList;            // List = [(f1, s1), (f2, s2) ... ]
 
-    public CustomListAdapter(Context context, String listType, List<List<String>> itemList) {
+    public CustomListAdapter(Context context, Activity parentView, String listType, List<List<String>> itemList) {
         this.context = context;
+        this.parentView = parentView;
         this.listType = listType;
         this.itemList = itemList;
     }
@@ -65,26 +70,15 @@ public class CustomListAdapter extends BaseAdapter {
 
         if (listType.equals("SessionsList")) {
             Button joinBtn = convertView.findViewById(R.id.joinBtn);
-            // TODO: Whatever is required to join to existing listening session, need to send info through
-            // TODO: itemlist
+            // TODO: Whatever is required to join to existing listening session, need to send info through itemlist
             int sessionId = 0;
 
             joinBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     // TODO: send join request
-                    RoomFragment roomFragment = new RoomFragment();
-
-                    // Get the parent activity's fragment manager
-                    FragmentManager fragmentManager = ((FragmentActivity) context).getSupportFragmentManager();
-
-                    // Begin a fragment transaction
-                    FragmentTransaction transaction = fragmentManager.beginTransaction();
-
-                    // open room fragment
-                    transaction.replace(R.id.mainFrame, roomFragment);
-                    transaction.addToBackStack(null);       // If you want to add the transaction to the back stack
-                    transaction.commit();
+                    BottomNavigationView bottomNavigationView = parentView.findViewById(R.id.bottomNavi);
+                    bottomNavigationView.setSelectedItemId(R.id.navigation_room);
                 }
             });
         }

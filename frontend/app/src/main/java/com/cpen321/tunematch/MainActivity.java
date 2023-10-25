@@ -46,11 +46,11 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-        homeFrag = new HomeFragment();
+        homeFrag = new HomeFragment(this);
         roomFrag = new RoomFragment();
         searchFrag = new SearchFragment();
         profileFrag = new ProfileFragment();
-        setFragment(0); // Initialize default fragment to home
+        setFragment(0);             // Initialize default fragment to home
     }
 
     // Switch between fragments
