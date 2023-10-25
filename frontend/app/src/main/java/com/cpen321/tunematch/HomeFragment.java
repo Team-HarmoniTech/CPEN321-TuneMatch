@@ -18,11 +18,6 @@ import java.util.List;
 
 public class HomeFragment extends Fragment {
     private View view;
-    private Activity mainActivity;
-
-    public HomeFragment(Activity parent) {
-        this.mainActivity = parent;
-    }
 
     @Nullable
     @Override
@@ -36,7 +31,7 @@ public class HomeFragment extends Fragment {
         for (int i = 0; i < 20; i++) {
             friendsListItems.add(Arrays.asList(String.format("Item %d", i), String.format("Song %d", i)));
         }
-        CustomListAdapter friendsAdapter = new CustomListAdapter(getContext(), mainActivity, "FriendsList", friendsListItems);
+        CustomListAdapter friendsAdapter = new CustomListAdapter(getContext(), getActivity(), "FriendsList", friendsListItems);
         friendsActivityList.setAdapter(friendsAdapter);
 
         // Add existing listening session
@@ -46,7 +41,7 @@ public class HomeFragment extends Fragment {
         for (int i = 0; i < 15; i++) {
             sessionListItems.add(Arrays.asList(String.format("Friends %d", i), "_"));
         }
-        CustomListAdapter sessionAdapter = new CustomListAdapter(getContext(), mainActivity, "SessionsList", sessionListItems);
+        CustomListAdapter sessionAdapter = new CustomListAdapter(getContext(), getActivity(), "SessionsList", sessionListItems);
         sessionList.setAdapter(sessionAdapter);
 
 
