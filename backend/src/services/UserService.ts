@@ -1,4 +1,4 @@
-import { Prisma, Session, User } from "@prisma/client";
+import { Connection, Prisma, Session, User } from "@prisma/client";
 import { database, socketService } from "..";
 import { SocketMessage } from "../models/WebsocketModels";
 
@@ -13,24 +13,48 @@ export class UserService {
                 requesting: true
             }
         });
-        return user.requested.filter(requested => user.requesting.includes(requested));
+        // Only keep overlapping values
+        return user.requested.filter(requested => user.requesting.some(requesting => requesting.id === requested.id));
     }
 
-    async addFriend(requestingId: number, requestedId: number) {
-        await this.userDB.update({
-            where: { id: requestingId },
-            data: { requesting: { connect: { id: requestedId } } }
-        });
-    }
-
-    async removeFriend(userId: number, friendId: number) {
-        await this.userDB.update({
+    async getUserFriendsRequests(userId: number): Promise<{ requesting: User[], requested: User[] }> {
+        const user = await this.userDB.findUnique({
             where: { id: userId },
-            data: {
-                requesting: { disconnect: { id: friendId } },
-                requested: { disconnect: { id: friendId } }
+            include: {
+                requested: true,
+                requesting: true
             }
         });
+        // Filter out overlapping users
+        const requesting = user.requesting.filter(requesting => !user.requested.some(requested => requested.id === requesting.id));
+        const requested = user.requested.filter(requested => !user.requesting.some(requesting => requesting.id === requested.id));
+
+        return { requesting, requested };
+    }
+
+    async addFriend(requestingId: number, requestedSpotifyId: string) {
+        try {
+            await this.userDB.update({
+                where: { id: requestingId },
+                data: { requested: { connect: { spotify_id: requestedSpotifyId } } }
+            });
+        } catch {
+            throw { message: 'User does not exist', statusCode: 400 };
+        }
+    }
+
+    async removeFriend(userId: number, friendSpotifyId: string) {
+        try {
+            await this.userDB.update({
+                where: { id: userId },
+                data: {
+                    requesting: { disconnect: { spotify_id: friendSpotifyId } },
+                    requested: { disconnect: { spotify_id: friendSpotifyId } }
+                }
+            });
+        } catch {
+            throw { message: 'User does not exist', statusCode: 400 };
+        }
     }
 
     async broadcastToFriends(userId: number, message: SocketMessage) {
@@ -109,6 +133,7 @@ export class UserService {
     }
 
     async addUserConnection(userId1: number, userId2: number, match: number) {
+        if (userId1 === userId2) return;
         await database.connection.create({
             data: {
                 match_percent: match,
@@ -118,22 +143,26 @@ export class UserService {
         })
     }
 
-    async getRandomUser(): Promise<User> {
-        const users = await this.userDB.findMany();
-        return users[Math.floor(Math.random() * users.length)];
+    async getRandomUser(notIn: number[]): Promise<User> {
+        return await this.userDB.findFirst({
+            where: { id: { notIn: notIn, }, },
+        });
+    }
+
+    async getConnection(userId1: number, userId2: number): Promise<Connection> {
+        return await database.connection.findFirst({
+            where: {
+              user_id_1: userId1,
+              user_id_2: userId2,
+            },
+        });
     }
 
     async searchUsers(search: string, max?: number): Promise<User[]> {
-        if (max) {
-            return await this.userDB.findMany({
-                where: { username: { contains: search } },
-                take: max
-            });
-        } else {
-            return await this.userDB.findMany({
-                where: { username: { contains: search } }
-            });
-        }
+        return await this.userDB.findMany({
+            where: { username: { contains: search } },
+            take: max ?? 50
+        });
     }
 
     async connectionsComputed(userId: number, complete?: boolean): Promise<boolean> {
@@ -144,7 +173,7 @@ export class UserService {
             });
             return true;
         } else {
-            const user = await database.user.findUnique({
+            const user = await this.userDB.findUnique({
                 where: { id: userId }
             });
             return user.connectionComputed;

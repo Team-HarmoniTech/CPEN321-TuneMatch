@@ -21,7 +21,7 @@ CREATE TABLE `Connection` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `user_id_1` INTEGER NOT NULL,
     `user_id_2` INTEGER NOT NULL,
-    `match_percent` INTEGER NULL,
+    `match_percent` INTEGER NOT NULL,
 
     UNIQUE INDEX `Connection_user_id_1_user_id_2_key`(`user_id_1`, `user_id_2`),
     PRIMARY KEY (`id`)
@@ -60,10 +60,10 @@ CREATE TABLE `_friends` (
 ALTER TABLE `User` ADD CONSTRAINT `User_sessionId_fkey` FOREIGN KEY (`sessionId`) REFERENCES `Session`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Connection` ADD CONSTRAINT `Connection_user_id_1_fkey` FOREIGN KEY (`user_id_1`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Connection` ADD CONSTRAINT `Connection_user_id_1_fkey` FOREIGN KEY (`user_id_1`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Connection` ADD CONSTRAINT `Connection_user_id_2_fkey` FOREIGN KEY (`user_id_2`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Connection` ADD CONSTRAINT `Connection_user_id_2_fkey` FOREIGN KEY (`user_id_2`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Report` ADD CONSTRAINT `Report_offending_user_id_fkey` FOREIGN KEY (`offending_user_id`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
