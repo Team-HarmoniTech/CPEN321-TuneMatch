@@ -4,21 +4,33 @@ package com.cpen321.tunematch;
 import okhttp3.*;
 import java.io.IOException;
 
+import okhttp3.*;
+import java.io.IOException;
+
+import okhttp3.*;
+import java.io.IOException;
+
 public class ApiClient {
     private OkHttpClient client;
     private String baseUrl;
 
-    public ApiClient(String baseUrl) {
-        this.baseUrl = baseUrl;
+    public ApiClient() {
+        this.baseUrl = "https://zphy19my7b.execute-api.us-west-2.amazonaws.com/v1";
         client = new OkHttpClient();
     }
 
-    public String doGetRequest(String endpoint) throws IOException {
+    public String doGetRequest(String endpoint, Headers customHeaders) throws IOException {
         String fullUrl = baseUrl + endpoint;
-        Request request = new Request.Builder()
+
+        Request.Builder requestBuilder = new Request.Builder()
                 .url(fullUrl)
-                .get()
-                .build();
+                .get();
+
+        if (customHeaders != null) {
+            requestBuilder.headers(customHeaders);
+        }
+
+        Request request = requestBuilder.build();
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
@@ -28,14 +40,20 @@ public class ApiClient {
         }
     }
 
-    public String doPostRequest(String endpoint, String jsonRequestBody) throws IOException {
+    public String doPostRequest(String endpoint, String jsonRequestBody, Headers customHeaders) throws IOException {
         String fullUrl = baseUrl + endpoint;
+
         RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonRequestBody);
 
-        Request request = new Request.Builder()
+        Request.Builder requestBuilder = new Request.Builder()
                 .url(fullUrl)
-                .post(body)
-                .build();
+                .post(body);
+
+        if (customHeaders != null) {
+            requestBuilder.headers(customHeaders);
+        }
+
+        Request request = requestBuilder.build();
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
@@ -45,14 +63,41 @@ public class ApiClient {
         }
     }
 
-    public String doPutRequest(String endpoint, String jsonRequestBody) throws IOException {
+    public String doPutRequest(String endpoint, String jsonRequestBody, Headers customHeaders) throws IOException {
         String fullUrl = baseUrl + endpoint;
+
         RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonRequestBody);
 
-        Request request = new Request.Builder()
+        Request.Builder requestBuilder = new Request.Builder()
                 .url(fullUrl)
-                .put(body)
-                .build();
+                .put(body);
+
+        if (customHeaders != null) {
+            requestBuilder.headers(customHeaders);
+        }
+
+        Request request = requestBuilder.build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Unexpected code " + response);
+            }
+            return response.body().string();
+        }
+    }
+
+    public String doDeleteRequest(String endpoint, Headers customHeaders) throws IOException {
+        String fullUrl = baseUrl + endpoint;
+
+        Request.Builder requestBuilder = new Request.Builder()
+                .url(fullUrl)
+                .delete();
+
+        if (customHeaders != null) {
+            requestBuilder.headers(customHeaders);
+        }
+
+        Request request = requestBuilder.build();
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
@@ -62,4 +107,3 @@ public class ApiClient {
         }
     }
 }
-

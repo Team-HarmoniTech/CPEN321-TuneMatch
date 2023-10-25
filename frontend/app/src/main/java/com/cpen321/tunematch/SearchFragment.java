@@ -17,11 +17,27 @@ import androidx.appcompat.widget.SearchView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import okhttp3.Headers;
+import okhttp3.internal.http2.Header;
 
 public class SearchFragment extends Fragment {
     private View view;
     private ArrayAdapter<String> listAdapter;
     private AlertDialog profileDialog;
+    ReduxStore model = new ViewModelProvider(requireActivity()).get(ReduxStore.class);
+    ApiClient apiClient = new ApiClient();
+
 
     @Nullable
     @Override
@@ -79,13 +95,35 @@ public class SearchFragment extends Fragment {
         searchFriend.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
             @Override
             public boolean onQueryTextSubmit(String query) {
-                listAdapter.clear();                    // Empty current list
-                listAdapter.notifyDataSetChanged();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Headers customHeaders = new Headers.Builder()
+                                .add("user-id", "queryTestId2")
+                                .build();
+                        try {
+                            String response = apiClient.doGetRequest("/users/search/" + query,customHeaders);
+                            // Parse the response and update LiveData.
+                            List<Friend> newFriendsList = parseResponse(response);
+                            model.setFriendsList(newFriendsList);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
 
-                // TODO: if user exist, show it on the list else pop up user does not exist (or just leave it blank?)
+                model.getFriendsList().observe(getViewLifecycleOwner(), new Observer<List<Friend>>() {
+                    @Override
+                    public void onChanged(List<Friend> friends) {
+                        // Update the UI.
+                        listAdapter.clear();
+                        for (Friend friend : friends) {
+                            listAdapter.add(friend.getName());
+                        }
+                        listAdapter.notifyDataSetChanged();
+                    }
+                });
 
-                listAdapter.add(query);
-                listAdapter.notifyDataSetChanged();
                 return true; // Return true to indicate that you've handled the event
             }
 
@@ -97,6 +135,26 @@ public class SearchFragment extends Fragment {
             }
         });
 
+
+
+
+
+
         return view;
+    }
+    public List<Friend> parseResponse(String response) {
+        List<Friend> friends = new ArrayList<>();
+        try {
+            JSONArray jsonArray = new JSONArray(response);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                String name = jsonObject.getString("name");
+                // Create a new Friend object and add it to the list.
+                friends.add(new Friend(name));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return friends;
     }
 }
