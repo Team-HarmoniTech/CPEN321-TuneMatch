@@ -77,7 +77,7 @@ export class UserController {
             "refresh", 
             transformUsers(friends, (user) => {
                 return { 
-                    currentSong: user.currently_song, 
+                    currentSong: user.current_song, 
                     currentSource: user.current_source
                 };
             })
@@ -90,7 +90,7 @@ export class UserController {
         await userService.broadcastToFriends(currentUserId, 
             new FriendsMessage("update", transformUser(user, (user) => {
                 return { 
-                    currentSong: user.currently_song, 
+                    currentSong: user.current_song, 
                     currentSource: user.current_source
                 };
             }))

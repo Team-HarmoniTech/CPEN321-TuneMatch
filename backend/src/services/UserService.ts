@@ -188,12 +188,14 @@ export class UserService {
     // ChatGPT Usage: No
     async updateUserStatus(userId: number, song?: string, source?: { type: string, uri: string }): Promise<User> {
         let user: any = await this.getUserById(userId);
+        let updateData: any = {};
         /* If they are in a session don't update the source */
-        if (!user.session) {
-            user = await this.updateUser({ current_song: song, current_source: source }, userId);
-        } else {
-            user = await this.updateUser({ current_song: song }, userId);
+        if (!user.session && source !== undefined) {
+            updateData["current_source"] = source === null ? Prisma.DbNull : source;
         }
-        return user;
+        if (song !== undefined) {
+            updateData["current_song"] = song
+        }
+        return await this.updateUser(updateData, userId);
     }
 }

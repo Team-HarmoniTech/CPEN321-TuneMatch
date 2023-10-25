@@ -48,7 +48,7 @@ export class RequestController {
             /* Add currently playing and session here too incase the add makes the users friends */
             otherUserSocket.send(JSON.stringify(new RequestsMessage("add", transformUser(user, (user) => {
                     return { 
-                        currentSong: user.currently_song, 
+                        currentSong: user.current_song, 
                         currentSource: user.current_source
                     };
                 }
