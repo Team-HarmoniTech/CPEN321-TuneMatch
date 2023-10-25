@@ -1,3 +1,5 @@
+// ChatGPT Usage: Partial
+
 generator client {
   provider = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
@@ -10,11 +12,12 @@ datasource db {
 
 model User {
   id                  Int     @id @default(autoincrement())
-  spotify_id         String  @unique
+  spotify_id          String  @unique
   username            String
   top_artists         Json
   top_genres          Json
-  currently_listening String?
+  current_song        String?
+  current_source      Json? //Could be album or playlist
   is_banned           Boolean @default(false)
   pfp_url             String?
   bio                 String?
@@ -42,11 +45,11 @@ model Connection {
   id            Int  @id @default(autoincrement())
   user_id_1     Int
   user_id_2     Int
-  match_percent Int?
+  match_percent Int
 
   // Constraints
-  user_1 User @relation("Connections 1", fields: [user_id_1], references: [id])
-  user_2 User @relation("Connections 2", fields: [user_id_2], references: [id])
+  user_1 User @relation("Connections 1", fields: [user_id_1], references: [id], onDelete: Cascade)
+  user_2 User @relation("Connections 2", fields: [user_id_2], references: [id], onDelete: Cascade)
 
   @@unique([user_id_1, user_id_2])
 }

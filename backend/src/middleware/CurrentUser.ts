@@ -2,6 +2,7 @@ import { User } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
 import { database } from "..";
 
+// ChatGPT Usage: No
 export async function findCurrentUser(req: Request, res: Response, next: NextFunction) {
     const userId: string = req.headers['user-id'] || "";
     const user: User = await database.user.findUnique({

@@ -1,21 +1,28 @@
-// For friend activity list
+// Written by ChatGPT and add changes to fit my purpose
 package com.cpen321.tunematch;
 
+
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
-
+import android.widget.Button;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.List;
 
 public class CustomListAdapter extends BaseAdapter {
     private Context context;
+    private Activity parentView;
+    private String listType;
     private List<List<String>> itemList;            // List = [(f1, s1), (f2, s2) ... ]
 
-    public CustomListAdapter(Context context, List<List<String>> itemList) {
+    public CustomListAdapter(Context context, Activity parentView, String listType, List<List<String>> itemList) {
         this.context = context;
+        this.parentView = parentView;
+        this.listType = listType;
         this.itemList = itemList;
     }
 
@@ -38,18 +45,37 @@ public class CustomListAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(R.layout.friend_activity_custom, parent, false);
+            if (listType.equals("FriendsList")) {
+                convertView = inflater.inflate(R.layout.friend_activity_custom, parent, false);
+            } else {
+                convertView = inflater.inflate(R.layout.listening_session_custom, parent, false);
+            }
         }
 
         TextView friendNameText = convertView.findViewById(R.id.friendNameText);
         String nameText = itemList.get(position).get(0);
         friendNameText.setText(nameText);
 
-        // Configure other views in the layout as needed
-        TextView songText = convertView.findViewById(R.id.songTitleText);
-        String titleText = itemList.get(position).get(1);
-        songText.setText(titleText);
+        if (listType.equals("FriendsList")) {
+            TextView songText = convertView.findViewById(R.id.songTitleText);
+            String titleText = itemList.get(position).get(1);
+            songText.setText(titleText);
+        }
 
+        if (listType.equals("SessionsList")) {
+            Button joinBtn = convertView.findViewById(R.id.joinBtn);
+            // TODO: Whatever is required to join to existing listening session, need to send info through itemlist
+            int sessionId = 0;
+
+            joinBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // TODO: send join request
+                    BottomNavigationView bottomNavigationView = parentView.findViewById(R.id.bottomNavi);
+                    bottomNavigationView.setSelectedItemId(R.id.navigation_room);
+                }
+            });
+        }
         return convertView;
     }
 }

@@ -7,6 +7,7 @@ export class WebSocketService {
     connections: BiMap<number, WebSocket> = new BiMap();
     private connectionsLock: Mutex = new Mutex();
 
+    // ChatGPT Usage: No
     async addConnection(userId: number, socket: WebSocket) {
         await this.connectionsLock.runExclusive(async () => {
             const duplicate = !!(await this.connections.getFromKey(userId));
@@ -19,6 +20,7 @@ export class WebSocketService {
         });
     }
 
+    // ChatGPT Usage: No
     async removeConnectionById(userId: number) {
         await this.connectionsLock.runExclusive(() => {
             this.connections.removeByKey(userId);
@@ -26,6 +28,7 @@ export class WebSocketService {
         });
     }
 
+    // ChatGPT Usage: No
     async removeConnectionBySocket(socket: WebSocket) {
         await this.connectionsLock.runExclusive(() => {
             const id = this.connections.getFromValue(socket);
@@ -34,6 +37,7 @@ export class WebSocketService {
         });
     }
 
+    // ChatGPT Usage: No
     async retrieveById(userId: number): Promise<WebSocket> {
         return await this.connectionsLock.runExclusive(() => {
             const socket = this.connections.getFromKey(userId);
@@ -41,6 +45,7 @@ export class WebSocketService {
         });
     }
 
+    // ChatGPT Usage: No
     async retrieveBySocket(socket: WebSocket): Promise<number> {
         return await this.connectionsLock.runExclusive(() => {
             const id = this.connections.getFromValue(socket);
@@ -48,6 +53,7 @@ export class WebSocketService {
         });
     }
 
+    // ChatGPT Usage: No
     async broadcast(userIds: number[], message: SocketMessage) {
         await this.connectionsLock.runExclusive(() => {
             userIds.forEach(id => {
