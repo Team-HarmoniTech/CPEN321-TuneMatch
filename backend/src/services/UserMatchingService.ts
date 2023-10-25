@@ -94,11 +94,11 @@ export class UserMatchingService {
           }
         }
       }
-      await userService.updateConnectionsComputed(userId, true);
+      await userService.updateUser({ connectionsComputed: true }, userId);
     }
 
     async getTopMatches(userId: number): Promise<(User & { match: number })[]> {
-      while (!await userService.connectionsComputed(userId)) {
+      while (!(await userService.getUserById(userId)).connectionComputed) {
         /* Check every second until complete */
         await new Promise(f => setTimeout(f, 1000)); 
       }

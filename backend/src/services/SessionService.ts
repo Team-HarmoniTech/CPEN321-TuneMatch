@@ -5,6 +5,7 @@ import { SessionQueue, SessionWithMembers } from "../models/SessionModels";
 export class SessionService {
     private sessionQueues = new Map<number, SessionQueue>();
 
+    // ChatGPT Usage: Partial
     async joinSession(userId: number, otherUserId?: number): Promise<SessionWithMembers> {
         // Leave old session if exists
         await this.leaveSession(userId);
@@ -36,6 +37,7 @@ export class SessionService {
         }
     }
 
+    // ChatGPT Usage: No
     async leaveSession(userId: number): Promise<SessionWithMembers> {
         // Find user's session if it exists
         const session = await database.session.findFirst({
@@ -57,6 +59,7 @@ export class SessionService {
         return undefined;
     }
 
+    // ChatGPT Usage: No
     async messageSession(sessionId: number, senderId: number, message: any) {
         const session = await database.session.findUnique({
             where: { id: sessionId },
@@ -71,6 +74,7 @@ export class SessionService {
         await socketService.broadcast(recipients, message);
     }
 
+    // ChatGPT Usage: No
     async queueAdd(sessionId: number, songUri: string, durationMs: number, posAfter?: number) {
         const queueData = this.sessionQueues.get(sessionId);
         await queueData.lock.runExclusive(() => {
@@ -78,6 +82,7 @@ export class SessionService {
         });
     }
 
+    // ChatGPT Usage: No
     async queueNext(sessionId: number) {
         const queueData = this.sessionQueues.get(sessionId);
         await queueData.lock.runExclusive(() => {

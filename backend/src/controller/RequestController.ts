@@ -6,6 +6,7 @@ import WebSocket = require("ws");
 export class RequestController {
 
     // Websocket Route Dispatcher
+    // ChatGPT Usage: No
     async acceptRequest(ws: WebSocket, message: SocketMessage, currentUserId: number) {
         const func = (this)[message.action];
         if (!func) {
@@ -20,6 +21,7 @@ export class RequestController {
     }
 
     // WebSocket Routes
+    // ChatGPT Usage: No
     async refresh(ws: WebSocket, message: RequestsMessage, currentUserId: number) {
         const requests = await userService.getUserFriendsRequests(currentUserId);
 
@@ -32,6 +34,7 @@ export class RequestController {
 	    )));
     }
 
+    // ChatGPT Usage: No
     async add(ws: WebSocket, message: RequestsMessage, currentUserId: number) {
         const otherUser = await userService.getUserBySpotifyId(message.body.userId);
         if (!otherUser) {
@@ -53,6 +56,7 @@ export class RequestController {
         }
     }
 
+    // ChatGPT Usage: No
     async remove(ws: WebSocket, message: RequestsMessage, currentUserId: number) {
         const otherUser = await userService.getUserBySpotifyId(message.body.userId);
         if (!otherUser) {

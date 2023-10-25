@@ -6,6 +6,7 @@ import { FriendsMessage, transformUser, transformUsers } from "../models/UserMod
 export class SessionController {
 
     // Websocket Route Dispatcher
+    // ChatGPT Usage: No
     async acceptRequest(ws: WebSocket, message: SessionMessage, currentUserId: number) {
         const func = (this)[message.action];
         if (!func) {
@@ -20,11 +21,13 @@ export class SessionController {
     }
 
     // WebSocket Routes
+    // ChatGPT Usage: No
     async message(ws: WebSocket, message: SessionMessage, currentUserId: number) { 
         const currentUser = await userService.getUserById(currentUserId);
         await sessionService.messageSession(currentUser.session.id, currentUserId, message);
     }
 
+    // ChatGPT Usage: No
     async queueAdd(ws: WebSocket, message: SessionMessage, currentUserId: number) {
         const { uri, duration, idx } = message.body;
         const currentUser = await userService.getUserById(currentUserId);
@@ -32,12 +35,14 @@ export class SessionController {
         await sessionService.messageSession(currentUser.session.id, currentUserId, message);
     }
 
+    // ChatGPT Usage: No
     async queueNext(ws: WebSocket, message: SessionMessage, currentUserId: number) {
         const currentUser = await userService.getUserById(currentUserId);
         await sessionService.queueNext(currentUser.session.id);
         await sessionService.messageSession(currentUser.session.id, currentUserId, message);
     }
 
+    // ChatGPT Usage: No
     async join(ws: WebSocket, message: SessionMessage, currentUserId: number) {
         const session = await sessionService.joinSession(currentUserId, message?.body?.userId || undefined);
         ws.send(JSON.stringify(new SessionMessage("join", 
@@ -55,6 +60,7 @@ export class SessionController {
         );
     }
 
+    // ChatGPT Usage: No
     async leave(ws: WebSocket, message: SessionMessage, currentUserId: number) {
         const session = await sessionService.leaveSession(currentUserId);
         if (session) {

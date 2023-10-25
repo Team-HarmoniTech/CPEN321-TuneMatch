@@ -8,10 +8,12 @@ export type VisibleUser = {
     [key: string]: any;
 }
 
+// ChatGPT Usage: No
 export function transformUsers(users: User[], extras?: (user) => object): VisibleUser[] {
     return users.map(u => transformUser(u, extras));
 }
 
+// ChatGPT Usage: Partial
 export function transformUser(user: User, extras?: (user) => object): VisibleUser {
     return {
         id: user.spotify_id,

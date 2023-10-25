@@ -7,6 +7,7 @@ import { RequestController } from "./RequestController";
 import { SessionController } from "./SessionController";
 import { UserController } from "./UserController";
 
+// ChatGPT Usage: No
 async function authenticateSocket(socket, req): Promise<number> {
 	if (!req.headers["user-id"]) {
 		socket.close();
@@ -48,12 +49,14 @@ async function authenticateSocket(socket, req): Promise<number> {
 	return user.id;
 }
 
+// ChatGPT Usage: No
 export async function handleConnection(ws: WebSocket, req: Request) {
 	// Authenticate and add to our persistant set of connections
 	const currentUserId = await authenticateSocket(ws, req);
 
 	ws.on('error', console.error);
 
+	// ChatGPT Usage: No
 	ws.on('message', function message(data) {
 		try {
 			const req: SocketMessage = JSON.parse(data.toString());
@@ -79,6 +82,7 @@ export async function handleConnection(ws: WebSocket, req: Request) {
 		}
 	});
 
+	// ChatGPT Usage: No
 	ws.on('close', async function close(code, reason) {
 		console.error(`Socket Closed: ${reason.toString()}`);
 		const userId = await socketService.retrieveBySocket(ws);

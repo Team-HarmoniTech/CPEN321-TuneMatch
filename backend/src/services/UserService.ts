@@ -5,6 +5,7 @@ import { SocketMessage } from "../models/WebsocketModels";
 export class UserService {
     private userDB = database.user;
 
+    // ChatGPT Usage: Partial
     async getUserFriends(userId: number): Promise<User[]> {
         const user = await this.userDB.findUnique({
             where: { id: userId },
@@ -17,6 +18,7 @@ export class UserService {
         return user.requested.filter(requested => user.requesting.some(requesting => requesting.id === requested.id));
     }
 
+    // ChatGPT Usage: Partial
     async getUserFriendsRequests(userId: number): Promise<{ requesting: User[], requested: User[] }> {
         const user = await this.userDB.findUnique({
             where: { id: userId },
@@ -32,6 +34,7 @@ export class UserService {
         return { requesting, requested };
     }
 
+    // ChatGPT Usage: No
     async addFriend(userId: number, requestedId: number): Promise<User> {
         try {
             return await this.userDB.update({
@@ -43,6 +46,7 @@ export class UserService {
         }
     }
 
+    // ChatGPT Usage: No
     async removeFriend(userId: number, requestedId: number): Promise<User> {
         try {
             return await this.userDB.update({
@@ -65,6 +69,7 @@ export class UserService {
         await socketService.broadcast(recipients, message);
     }
 
+    // ChatGPT Usage: No
     async getUserBySpotifyId(spotify_id: string): Promise<User & { requesting: User[], requested: User[], session: Session }> {
         return await this.userDB.findUnique({
             where: { spotify_id: spotify_id },
@@ -76,6 +81,7 @@ export class UserService {
         });
     }
 
+    // ChatGPT Usage: No
     async getUserById(id: number): Promise<User & { requesting: User[], requested: User[], session: Session }> {
         return await this.userDB.findUnique({
             where: { id: id },
@@ -87,12 +93,14 @@ export class UserService {
         });
     }
 
+    // ChatGPT Usage: No
     async createUser(userData: object): Promise<User> {
         return await this.userDB.create({
             data: <Prisma.UserCreateInput>userData
         });
     }
 
+    // ChatGPT Usage: No
     async updateUser(userData: object, userId: number): Promise<User> {
         return await this.userDB.update({
             where: {
@@ -102,7 +110,7 @@ export class UserService {
         });
     }
 
-
+    // ChatGPT Usage: No
     async deleteUser(userId: number) {
         if (await socketService.retrieveById(userId)) {
             throw { message: "Cannot delete a user with an active websocket", statusCode: 400 };
@@ -112,6 +120,7 @@ export class UserService {
         });
     }
     
+    // ChatGPT Usage: Partial
     async getUserConnections(userId: number): Promise<(User & { match: number })[]> {
         const user = await this.userDB.findUnique({
             where: { id: userId },
@@ -138,6 +147,7 @@ export class UserService {
         });
     }
 
+    // ChatGPT Usage: No
     async addUserConnection(userId1: number, userId2: number, match: number) {
         if (userId1 === userId2) return;
         await database.connection.create({
@@ -149,12 +159,14 @@ export class UserService {
         })
     }
 
+    // ChatGPT Usage: No
     async getRandomUser(notIn: number[]): Promise<User> {
         return await this.userDB.findFirst({
             where: { id: { notIn: notIn, }, },
         });
     }
 
+    // ChatGPT Usage: No
     async getConnection(userId1: number, userId2: number): Promise<Connection> {
         return await database.connection.findFirst({
             where: {
@@ -164,25 +176,11 @@ export class UserService {
         });
     }
 
+    // ChatGPT Usage: No
     async searchUsers(search: string, max?: number): Promise<User[]> {
         return await this.userDB.findMany({
             where: { username: { contains: search } },
             take: max ?? 50
         });
-    }
-
-    async connectionsComputed(userId: number): Promise<boolean> {
-        const user = await this.userDB.findUnique({
-            where: { id: userId }
-        });
-        return user.connectionComputed;
-    }
-
-    async updateConnectionsComputed(userId: number, complete: boolean): Promise<boolean> {
-        await this.userDB.update({
-            where: { id: userId },
-            data: { connectionComputed: complete }
-        });
-        return true;
     }
 }

@@ -1,5 +1,7 @@
 # TO RUN - docker-compose -f docker-compose.prod.yml up -d
 
+# ChatGPT Usage: Partial
+
 version: '3.8'
 services:
   # MySQL Database Service

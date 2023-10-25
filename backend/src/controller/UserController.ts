@@ -6,6 +6,7 @@ import WebSocket = require("ws");
 export class UserController {
 
     // REST Routes
+    // ChatGPT Usage: No
     async getUser(req: Request, res: Response, next: NextFunction) {
         /* Use currentUserId for the /me endpoint */
         const userId = (req.url.startsWith("/me")) ? req.currentUserSpotifyId : req.params.spotify_id;
@@ -18,6 +19,7 @@ export class UserController {
         }));
     }
 
+    // ChatGPT Usage: No
     async topMatches(req: Request, res: Response, next: NextFunction) {
         const matches = await userMatchingService.getTopMatches(req.currentUserId);
         res.send(transformUsers(matches, (user) => {
@@ -25,12 +27,14 @@ export class UserController {
         }));
     }
 
+    // ChatGPT Usage: No
     async insertUser(req: Request, res: Response, next: NextFunction) {
         const user = await userService.createUser(req.body.userData);
         userMatchingService.matchNewUser(user.id);
         res.send(transformUser(user));
     }
 
+    // ChatGPT Usage: No
     async updateUser(req: Request, res: Response, next: NextFunction) {
         const user = await userService.updateUser(req.body.userData, req.currentUserId);
         res.send(transformUser(user, (user) => {
@@ -38,16 +42,19 @@ export class UserController {
         }));
     }
 
+    // ChatGPT Usage: No
     async deleteUser(req: Request, res: Response, next: NextFunction) {
         await userService.deleteUser(req.currentUserId);
     }
 
+    // ChatGPT Usage: No
     async searchUsers(req: Request, res: Response, next: NextFunction) {
         const options = await userService.searchUsers(req.params.search_term, Number(req.query.max));
-        res.send(transformUsers(options));
+        res.send(transformUsers(options.filter(u => u.id !== req.currentUserId)));
     }
 
     // Websocket Route Dispatcher
+    // ChatGPT Usage: No
     async acceptRequest(ws: WebSocket, message: FriendsMessage, currentUserId: number) {
         const func = (this)[message.action];
         if (!func) {
@@ -62,6 +69,7 @@ export class UserController {
     }
 
     // Websocket Routes
+    // ChatGPT Usage: No
     async refresh(ws: WebSocket, message: FriendsMessage, currentUserId: number) {
         const friends = await userService.getUserFriends(currentUserId);
 
@@ -76,6 +84,7 @@ export class UserController {
         )));
     }
 
+    // ChatGPT Usage: No
     async update(ws: WebSocket, message: FriendsMessage, currentUserId: number) {
         const user = await userService.updateUser({ currently_playing: message?.body.currentlyPlaying }, currentUserId);
         await userService.broadcastToFriends(currentUserId, 

@@ -33,6 +33,7 @@ app.use(bodyParser.json());
 app.use(findCurrentUser);
 
 // Register express routes from defined application routes in routes.ts
+// ChatGPT Usage: No
 Routes.forEach(route => {
   (app as any)[route.method](route.route, route.validation, async (req: Request, res: Response, next: Function) => {
     // Request Validation
@@ -61,6 +62,7 @@ const wss = new WebSocketServer({ server: server, path: "/socket" });
 wss.on('connection', handleConnection);
 
 // Reset sessions then start express server
+// ChatGPT Usage: Partial
 database.session.deleteMany().then(() => {
   server.listen(PORT, () => {
     console.log(`Express server has started on port ${PORT}.`);
