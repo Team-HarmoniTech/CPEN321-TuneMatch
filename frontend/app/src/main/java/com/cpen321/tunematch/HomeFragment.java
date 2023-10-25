@@ -26,20 +26,20 @@ public class HomeFragment extends Fragment {
 
         // Add friends activity
         ListView friendsActivityList = view.findViewById(R.id.friendsList);
-        List<List<String>> friendsListItems = new ArrayList<>();
+        ArrayList<String> friendsListItems = new ArrayList<>();
         // TODO: Need to query server to get the list of friends and what they are currently listening
         for (int i = 0; i < 20; i++) {
-            friendsListItems.add(Arrays.asList(String.format("Item %d", i), String.format("Song %d", i)));
+            friendsListItems.add(String.format("Friend %d;Song", i));
         }
         CustomListAdapter friendsAdapter = new CustomListAdapter(getContext(), getActivity(), "FriendsList", friendsListItems);
         friendsActivityList.setAdapter(friendsAdapter);
 
         // Add existing listening session
         ListView sessionList = view.findViewById(R.id.listeningSessionList);
-        List<List<String>> sessionListItems = new ArrayList<>();
+        List<String> sessionListItems = new ArrayList<>();
         // TODO: get session IDs of existing sessions to send it to the button onclick handler
         for (int i = 0; i < 15; i++) {
-            sessionListItems.add(Arrays.asList(String.format("Friends %d", i), "_"));
+            sessionListItems.add(String.format("Friends %d's Room", i));
         }
         CustomListAdapter sessionAdapter = new CustomListAdapter(getContext(), getActivity(), "SessionsList", sessionListItems);
         sessionList.setAdapter(sessionAdapter);

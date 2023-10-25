@@ -14,9 +14,17 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ProfileFragment extends Fragment {
     private View view;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // TODO: query server to update redux store
+    }
 
     @Nullable
     @Override
@@ -27,7 +35,12 @@ public class ProfileFragment extends Fragment {
         friendsListBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                ListFragment friendsListFragment = ListFragment.newInstance("Friends List");
+                // TODO: query redux store to get list of friends
+                ArrayList<String> friendsList =  new ArrayList<>();
+                for (int i = 0; i < 20; i++) {
+                    friendsList.add(String.format("Friend %d", i));
+                }
+                ListFragment friendsListFragment = ListFragment.newInstance(friendsList, "Friends List");
 
                 // Get the parent activity's fragment manager
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
@@ -46,7 +59,12 @@ public class ProfileFragment extends Fragment {
         topArtistBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                ListFragment topArtistFragment = ListFragment.newInstance("Top Artists");
+                // TODO: query redux store to get list of top artists
+                ArrayList<String> topArtistsList =  new ArrayList<>();
+                for (int i = 0; i < 20; i++) {
+                    topArtistsList.add(String.format("Artists %d", i));
+                }
+                ListFragment topArtistFragment = ListFragment.newInstance(topArtistsList, "Top Artists");
 
                 // Get the parent activity's fragment manager
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
@@ -66,7 +84,12 @@ public class ProfileFragment extends Fragment {
         topGenresBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                ListFragment topArtistFragment = ListFragment.newInstance("Top Genres");
+                // TODO: query redux store to get list of top genres
+                ArrayList<String> topGenresList =  new ArrayList<>();
+                for (int i = 0; i < 20; i++) {
+                    topGenresList.add(String.format("Genre %d", i));
+                }
+                ListFragment topArtistFragment = ListFragment.newInstance(topGenresList,"Top Genres");
 
                 // Get the parent activity's fragment manager
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
