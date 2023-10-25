@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-        homeFrag = new HomeFragment();
+        homeFrag = new HomeFragment(this);
         roomFrag = new RoomFragment();
         searchFrag = new SearchFragment();
         profileFrag = new ProfileFragment();

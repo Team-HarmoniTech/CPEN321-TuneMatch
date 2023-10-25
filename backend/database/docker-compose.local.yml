@@ -1,5 +1,7 @@
 # TO RUN - docker-compose -f docker-compose.local.yml up -d
 
+# ChatGPT Usage: No
+
 version: '3'
 services:
   mysql:

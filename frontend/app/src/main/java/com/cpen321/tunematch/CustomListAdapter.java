@@ -1,24 +1,19 @@
-// For friend activity list
 // Written by ChatGPT and add changes to fit my purpose
 package com.cpen321.tunematch;
 
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.TextView;
-
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
 import java.util.List;
 
 public class CustomListAdapter extends BaseAdapter {
@@ -105,7 +100,6 @@ public class CustomListAdapter extends BaseAdapter {
                 }
             });
         }
-
         return convertView;
     }
 }

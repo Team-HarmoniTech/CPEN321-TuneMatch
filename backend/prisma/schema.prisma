@@ -1,3 +1,5 @@
+// ChatGPT Usage: Partial
+
 generator client {
   provider = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
@@ -14,7 +16,8 @@ model User {
   username            String
   top_artists         Json
   top_genres          Json
-  currently_listening String?
+  current_song        String?
+  current_source      Json? //Could be album or playlist
   is_banned           Boolean @default(false)
   pfp_url             String?
   bio                 String?
