@@ -53,7 +53,7 @@ export const UserRoutes = [{
         body('bio').optional().isString(),
         body().custom((req) => {
             const fields = ['username', 'top_artists', 'top_genres', 'pfp_url', 'bio'];
-            if (!fields.some(field => req[field] !== undefined && req[field] !== null)) {
+            if (!fields.some(field => req?.userData[field] !== undefined && req?.userData[field] !== null)) {
                 throw new Error(`At least one of ${fields.join(', ')} must be provided`);
             }
             return true;
