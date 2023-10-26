@@ -3,6 +3,7 @@ package com.cpen321.tunematch;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,18 +14,20 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProfileFragment extends Fragment {
     private View view;
+    ReduxStore model;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // TODO: query server to update redux store
+        model = new ViewModelProvider(requireActivity()).get(ReduxStore.class);
     }
 
     @Nullable
@@ -36,12 +39,9 @@ public class ProfileFragment extends Fragment {
         friendsListBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                // TODO: query redux store to get list of friends
-                ArrayList<String> friendsList =  new ArrayList<>();
-                for (int i = 0; i < 20; i++) {
-                    friendsList.add(String.format("Friend %d", i));
-                }
-                ListFragment friendsListFragment = ListFragment.newInstance(friendsList, "Friends List");
+                ArrayList<String> friendsNameList = model.friendsNameList();
+                Log.d("ProfileFragment", friendsNameList.toString());
+                ListFragment friendsListFragment = ListFragment.newInstance(friendsNameList, "Friends List");
 
                 // Get the parent activity's fragment manager
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
@@ -50,7 +50,7 @@ public class ProfileFragment extends Fragment {
                 FragmentTransaction transaction = fragmentManager.beginTransaction();
 
                 transaction.replace(R.id.mainFrame, friendsListFragment);
-                transaction.addToBackStack(null);       // If you want to add the transaction to the back stack
+                transaction.addToBackStack(null);
                 transaction.commit();
             }
 
@@ -74,7 +74,7 @@ public class ProfileFragment extends Fragment {
                 FragmentTransaction transaction = fragmentManager.beginTransaction();
 
                 transaction.replace(R.id.mainFrame, topArtistFragment);
-                transaction.addToBackStack(null);       // If you want to add the transaction to the back stack
+                transaction.addToBackStack(null);
                 transaction.commit();
 
             }
@@ -99,7 +99,7 @@ public class ProfileFragment extends Fragment {
                 FragmentTransaction transaction = fragmentManager.beginTransaction();
 
                 transaction.replace(R.id.mainFrame, topArtistFragment);
-                transaction.addToBackStack(null);           // If you want to add the transaction to the back stack
+                transaction.addToBackStack(null);
                 transaction.commit();
             }
 

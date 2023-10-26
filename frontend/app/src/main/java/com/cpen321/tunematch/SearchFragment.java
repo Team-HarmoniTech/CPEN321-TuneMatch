@@ -117,7 +117,6 @@ public class SearchFragment extends Fragment {
             }
         });
 
-
         listAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1);
         recommendedList.setAdapter(listAdapter);
 
@@ -220,13 +219,14 @@ public class SearchFragment extends Fragment {
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 String name = jsonObject.getString("username");
+                String id = jsonObject.getString("id");
                 String match_score = "";
                 if(jsonObject.has("match")){
                     match_score = jsonObject.getString("match");
-                    friends.add(new Friend(name + "("+match_score+"%)"));
+                    friends.add(new Friend(name + "("+match_score+"%)", id));
                 }
                 else {
-                    friends.add(new Friend(name));
+                    friends.add(new Friend(name, id));
                 }
 
                 // Create a new Friend object and add it to the list.
