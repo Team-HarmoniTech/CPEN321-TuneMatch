@@ -20,10 +20,15 @@ public class MainActivity extends AppCompatActivity {
     private SearchFragment searchFrag;
     private ProfileFragment profileFrag;
 
+    private WebSocketClient webSocketClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        webSocketClient = new WebSocketClient();
+        webSocketClient.start();
+
 
         bottomNavigationView = findViewById(R.id.bottomNavi);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener(){
@@ -76,6 +81,12 @@ public class MainActivity extends AppCompatActivity {
                 ft.commit();
                 break;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        webSocketClient.stop();
     }
 }
 
