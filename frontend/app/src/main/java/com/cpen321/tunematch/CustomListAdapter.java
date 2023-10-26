@@ -1,6 +1,6 @@
+
 // Written by ChatGPT and add changes to fit my purpose
 package com.cpen321.tunematch;
-
 
 import android.app.Activity;
 import android.content.Context;
@@ -21,9 +21,11 @@ public class CustomListAdapter extends BaseAdapter {
     private Context context;
     private Activity parentView;
     private String listType;
+
     private List<String> itemList;
 
     public CustomListAdapter(Context context, Activity parentView, String listType, List<String> itemList) {
+
         this.context = context;
         this.parentView = parentView;
         this.listType = listType;
@@ -53,8 +55,10 @@ public class CustomListAdapter extends BaseAdapter {
                 convertView = inflater.inflate(R.layout.friend_activity_custom, parent, false);
             } else if (listType.equals("SessionsList")) {
                 convertView = inflater.inflate(R.layout.listening_session_custom, parent, false);
+
             } else if (listType.equals("EditFriendsList")) {
                 convertView = inflater.inflate(R.layout.friend_remove_custom, parent, false);
+
             }
         }
 
@@ -73,6 +77,7 @@ public class CustomListAdapter extends BaseAdapter {
             TextView roomNameText = convertView.findViewById(R.id.roomNameText);
             String ownerText = itemList.get(position);
             roomNameText.setText(String.format("%s's room", ownerText));
+
 
             Button joinBtn = convertView.findViewById(R.id.joinBtn);
             // TODO: Whatever is required to join to existing listening session, need to send info through itemlist
