@@ -1,3 +1,4 @@
+// Wrote by team member following online tutorial regarding BottomNavigationView usage
 package com.cpen321.tunematch;
 
 import android.os.Bundle;
@@ -14,12 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ListFragment extends Fragment {
+
     private String listTitle;
     private ArrayList<String> listItems;
 
-    public ListFragment() {
-        // Required empty public constructor
-    }
+    public ListFragment() {}
 
     public static ListFragment newInstance(ArrayList<String> listItem, String listTitle) {
         ListFragment fragment = new ListFragment();

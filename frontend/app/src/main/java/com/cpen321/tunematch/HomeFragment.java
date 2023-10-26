@@ -16,6 +16,11 @@ import java.util.List;
 
 public class HomeFragment extends Fragment {
     private View view;
+    private Activity mainActivity;
+
+    public HomeFragment(Activity parent) {
+        this.mainActivity = parent;
+    }
 
     @Nullable
     @Override
@@ -24,16 +29,19 @@ public class HomeFragment extends Fragment {
 
         // Add friends activity
         ListView friendsActivityList = view.findViewById(R.id.friendsList);
+
         ArrayList<String> friendsListItems = new ArrayList<>();
         // TODO: Need to query server to get the list of friends and what they are currently listening
         for (int i = 0; i < 20; i++) {
             friendsListItems.add(String.format("Friend %d;Song", i));
         }
         CustomListAdapter friendsAdapter = new CustomListAdapter(getContext(), getActivity(), "FriendsList", friendsListItems);
+
         friendsActivityList.setAdapter(friendsAdapter);
 
         // Add existing listening session
         ListView sessionList = view.findViewById(R.id.listeningSessionList);
+
         List<String> sessionListItems = new ArrayList<>();
         // TODO: get session IDs of existing sessions to send it to the button onclick handler
         for (int i = 0; i < 15; i++) {
@@ -41,6 +49,7 @@ public class HomeFragment extends Fragment {
         }
         CustomListAdapter sessionAdapter = new CustomListAdapter(getContext(), getActivity(), "SessionsList", sessionListItems);
         sessionList.setAdapter(sessionAdapter);
+
 
         return view;
     }
