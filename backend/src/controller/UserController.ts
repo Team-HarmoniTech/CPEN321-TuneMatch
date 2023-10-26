@@ -15,15 +15,15 @@ export class UserController {
         if (!user) {
             throw { message: `User not found.`, statusCode: 400 };
         }
-        res.send(transformUser(user, (user) => {
-            return req.query.fullProfile ? { bio:user.bio } : { };
+        res.send(await transformUser(user, async (user) => {
+            return req.query.fullProfile ? { bio: user.bio, topArtists: user.top_artists, topGenres: user.top_genres } : { };
         }));
     }
 
     // ChatGPT Usage: No
     async topMatches(req: Request, res: Response, next: NextFunction) {
         const matches = await userMatchingService.getTopMatches(req.currentUserId);
-        res.send(transformUsers(matches, (user) => {
+        res.send(await transformUsers(matches, async (user) => {
             return { match: user.match };
         }));
     }
@@ -33,13 +33,13 @@ export class UserController {
         console.log("hi")
         const user = await userService.createUser(req.body.userData);
         userMatchingService.matchNewUser(user.id);
-        res.send(transformUser(user));
+        res.send(await transformUser(user));
     }
 
     // ChatGPT Usage: No
     async updateUser(req: Request, res: Response, next: NextFunction) {
         const user = await userService.updateUser(req.body.userData, req.currentUserId);
-        res.send(transformUser(user, (user) => {
+        res.send(await transformUser(user, async (user) => {
             return { bio: user.bio };
         }));
     }
@@ -51,15 +51,12 @@ export class UserController {
 
     // ChatGPT Usage: No
     async searchUsers(req: Request, res: Response, next: NextFunction) {
-        const options = await userService.searchUsers(req.body["search_term"], Number(req.query.max));
-        const searchedUsers = options.filter(u => u.id !== req.currentUserId);
-        res.send(transformUsers(searchedUsers, (user) => {
+        const users = await userService.searchUsers(req.currentUserId, req?.body.search_term, Number(req.query.max));
+        res.send(await transformUsers(users, async (user) => {
                     return { 
                         match_percent: (await userMatchingService.getConnection(user.id, req.currentUserId)).match_percent
                     };
                 }));
-        const options = await userService.searchUsers(req.currentUserId, req?.body.search_term, Number(req.query.max));
-        res.send(transformUsers(options.filter(u => u.id !== req.currentUserId)));
     }
 
     // Websocket Route Dispatcher
@@ -84,7 +81,7 @@ export class UserController {
 
         ws.send(JSON.stringify(new FriendsMessage(
             "refresh", 
-            transformUsers(friends, (user) => {
+            await transformUsers(friends, async (user) => {
                 return { 
                     currentSong: user.current_song, 
                     currentSource: user.current_source
@@ -97,7 +94,7 @@ export class UserController {
     async update(ws: WebSocket, message: FriendsMessage, currentUserId: number) {
         const user = await userService.updateUserStatus(currentUserId, message?.body.song, message?.body?.source.uri);
         await userService.broadcastToFriends(currentUserId, 
-            new FriendsMessage("update", transformUser(user, (user) => {
+            new FriendsMessage("update", await transformUser(user, async (user) => {
                 return { 
                     currentSong: user.current_song, 
                     currentSource: user.current_source

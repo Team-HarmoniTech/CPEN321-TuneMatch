@@ -1,4 +1,4 @@
-import { Connection, Prisma, Session, User } from "@prisma/client";
+import { Prisma, Session, User } from "@prisma/client";
 import { database, socketService } from "..";
 import { SocketMessage } from "../models/WebsocketModels";
 
@@ -128,7 +128,8 @@ export class UserService {
     }
 
     // ChatGPT Usage: No
-    async searchUsers(search: string, max?: number): Promise<User[]> {
+    async searchUsers(userId, search: string, max?: number): Promise<User[]> {
+        const friends = await this.getUserFriends(userId);
         return await this.userDB.findMany({
             where: { 
                 username: { contains: search }, 

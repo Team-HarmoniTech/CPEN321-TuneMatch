@@ -36,9 +36,7 @@ export class Queue {
         if (this.songs.length !== 0) {
             this.currentlyPlaying = this.songs.shift();
             this.currentlyPlaying.timeStarted = new Date();
-            console.log(`playing ${this.currentlyPlaying.uri} for ${this.currentlyPlaying.leftMs}`);
             this.runQueue = setTimeout(() => {
-                console.log(`done with ${this.currentlyPlaying.uri}`);
                 this.playNext();
             }, this.currentlyPlaying.leftMs);
         } else {
@@ -52,7 +50,6 @@ export class Queue {
             clearTimeout(this.runQueue);
             const elapsedMs = new Date().getTime() - this.currentlyPlaying.timeStarted.getTime();
             this.currentlyPlaying.leftMs -= elapsedMs;
-            console.log(`paused ${this.currentlyPlaying.uri} with ${this.currentlyPlaying.leftMs} left`);
             /* Add back to the queue if not finished */
             if (this.currentlyPlaying.leftMs > 0) {
                 this.songs.unshift(this.currentlyPlaying);
@@ -78,7 +75,6 @@ export class Queue {
         if (!this.currentlyPlaying && this.songs.length === 1) {
             this.start();
         }
-        console.log("afterAdd", this.songs.map(x => x.uri));
     }
 
     skip() {
@@ -91,12 +87,10 @@ export class Queue {
     }
 
     drag(startIdx: number, endIdx: number) {
-        console.log("before", this.songs.map(x => x.uri));
         const song = this.songs.splice(startIdx, 1)[0];
         if (song) {
             this.addAfter(song, endIdx);
         }
-        console.log("after", this.songs.map(x => x.uri));
     }
 
     seek(seekPosition: number) {

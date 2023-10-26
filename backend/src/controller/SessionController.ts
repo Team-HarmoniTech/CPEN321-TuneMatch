@@ -83,12 +83,12 @@ export class SessionController {
     async join(ws: WebSocket, message: SessionMessage, currentUserId: number) {
         const session = await sessionService.joinSession(currentUserId, message?.body?.userId || undefined);
         ws.send(JSON.stringify(new SessionMessage("join", 
-            transformUsers(session.members.filter(x => x.id !== currentUserId)))));
+            await transformUsers(session.members.filter(x => x.id !== currentUserId)))));
         
         await sessionService.messageSession(session.id, currentUserId, 
-            new SessionMessage("join",  transformUser(session.members.find(x => x.id === currentUserId))));
+            new SessionMessage("join",  await transformUser(session.members.find(x => x.id === currentUserId))));
         await userService.broadcastToFriends(currentUserId, 
-            new FriendsMessage("update", transformUser(session.members.find(x => x.id === currentUserId), (user) => {
+            new FriendsMessage("update", await transformUser(session.members.find(x => x.id === currentUserId), async (user) => {
                 return { 
                     currentSong: user.current_song, 
                     currentSource: user.current_source
@@ -102,9 +102,9 @@ export class SessionController {
         const session = await sessionService.leaveSession(currentUserId);
         if (session) {
             await sessionService.messageSession(session.id, currentUserId, 
-                new SessionMessage("leave", transformUser(session.members.find(x => x.id === currentUserId))));
+                new SessionMessage("leave", await transformUser(session.members.find(x => x.id === currentUserId))));
             await userService.broadcastToFriends(currentUserId, 
-                new FriendsMessage("update", transformUser(session.members.find(x => x.id === currentUserId), (user) => {
+                new FriendsMessage("update", await transformUser(session.members.find(x => x.id === currentUserId), async (user) => {
                     return { 
                         currentSong: user.current_song, 
                         currentSource: user.current_source
