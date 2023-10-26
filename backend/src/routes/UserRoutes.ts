@@ -56,11 +56,11 @@ export const UserRoutes = [{
     action: "updateUser",
     validation: [
         header('user-id').isAlphanumeric(),
-        body('username').optional().isString(),
-        body('top_artists').optional().isArray(),
-        body('top_genres').optional().isArray(),
-        body('pfp_url').optional().isString(),
-        body('bio').optional().isString(),
+        body('userData.username').optional().isString(),
+        body('userData.top_artists').optional().isArray(),
+        body('userData.top_genres').optional().isArray(),
+        body('userData.pfp_url').optional().isString(),
+        body('userData.bio').optional().isString(),
         body().custom((req) => {
             const fields = ['username', 'top_artists', 'top_genres', 'pfp_url', 'bio'];
             if (!fields.some(field => req?.userData[field] !== undefined && req?.userData[field] !== null)) {
