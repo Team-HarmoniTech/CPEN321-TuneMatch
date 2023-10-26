@@ -16,11 +16,6 @@ import java.util.List;
 
 public class HomeFragment extends Fragment {
     private View view;
-    private Activity mainActivity;
-
-    public HomeFragment(Activity parent) {
-        this.mainActivity = parent;
-    }
 
     @Nullable
     @Override
