@@ -130,7 +130,10 @@ export class UserService {
     // ChatGPT Usage: No
     async searchUsers(search: string, max?: number): Promise<User[]> {
         return await this.userDB.findMany({
-            where: { username: { contains: search } },
+            where: { 
+                username: { contains: search }, 
+                id: { notIn: [ userId, ...friends.map(f => f.id) ]} 
+            },
             take: max || 50
         });
     }
@@ -144,7 +147,7 @@ export class UserService {
             updateData["current_source"] = source === null ? Prisma.DbNull : source;
         }
         if (song !== undefined) {
-            updateData["current_song"] = song
+            updateData["current_song"] = song;
         }
         return await this.updateUser(updateData, userId);
     }

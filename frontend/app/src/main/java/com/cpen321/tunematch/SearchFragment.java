@@ -17,11 +17,56 @@ import androidx.appcompat.widget.SearchView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import okhttp3.Headers;
+import okhttp3.internal.http2.Header;
 
 public class SearchFragment extends Fragment {
+
     private View view;
     private ArrayAdapter<String> listAdapter;
     private AlertDialog profileDialog;
+    ReduxStore model;
+    ApiClient apiClient;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Initialize ViewModel and ApiClient here.
+        model = new ViewModelProvider(requireActivity()).get(ReduxStore.class);
+        apiClient = new ApiClient();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Headers customHeaders = new Headers.Builder()
+                        .add("user-id", "queryTestId2")
+                        .build();
+                String response;
+                try {
+                    response = apiClient.doGetRequest("/me/matches",customHeaders);
+                    // Parse the response.
+                    List<Friend> newFriendsList = parseResponse(response);
+                    // Update LiveData.
+                    model.getFriendsList().postValue(newFriendsList);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+    }
 
     @Nullable
     @Override
@@ -79,24 +124,116 @@ public class SearchFragment extends Fragment {
         searchFriend.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
             @Override
             public boolean onQueryTextSubmit(String query) {
-                listAdapter.clear();                    // Empty current list
-                listAdapter.notifyDataSetChanged();
+                Log.d("SearchFragment", "onQueryTextSubmit: " + query);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Headers customHeaders = new Headers.Builder()
+                                .add("user-id", "queryTestId2")
+                                .build();
+                        String response;
+                        try {
+                            if(query.isEmpty()){
+                                Log.d("SearchFragment", "its triggered");
+                                response = apiClient.doGetRequest("/me/matches",customHeaders);
+                                // Parse the response.
+                            }
+                            else{
+                                response = apiClient.doGetRequest("/users/search/" + query,customHeaders);
+                            }
 
-                // TODO: if user exist, show it on the list else pop up user does not exist (or just leave it blank?)
+                            // Parse the response.
+//                            Log.d("SearchFragment", "djvhbjshdbjs: " + response);
+                            List<Friend> newFriendsList = parseResponse(response);
+                            // Update LiveData.
+                            model.getFriendsList().postValue(newFriendsList);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
 
-                listAdapter.add(query);
-                listAdapter.notifyDataSetChanged();
+
+
                 return true; // Return true to indicate that you've handled the event
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                // Called when the query text changes (e.g., as the user types)
-                // You can perform real-time filtering or updates here
+                Log.d("SearchFragment", "onQueryTextSubmit: " + newText);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Headers customHeaders = new Headers.Builder()
+                                .add("user-id", "queryTestId2")
+                                .build();
+                        String response;
+                        try {
+                            if(newText.isEmpty()){
+                                Log.d("SearchFragment", "its triggered");
+                                response = apiClient.doGetRequest("/me/matches",customHeaders);
+                                // Parse the response.
+                            }
+                            else{
+                                response = apiClient.doGetRequest("/users/search/" + newText,customHeaders);
+                            }
+
+                            // Parse the response.
+//                            Log.d("SearchFragment", "djvhbjshdbjs: " + response);
+                            List<Friend> newFriendsList = parseResponse(response);
+                            // Update LiveData.
+                            model.getFriendsList().postValue(newFriendsList);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+
+
                 return true; // Return true to indicate that you've handled the event
             }
         });
 
+        model.getFriendsList().observe(getViewLifecycleOwner(), new Observer<List<Friend>>() {
+            @Override
+            public void onChanged(List<Friend> friends) {
+                // Update the UI.
+                listAdapter.clear();
+                for (Friend friend : friends) {
+                    listAdapter.add(friend.getName());
+                }
+                listAdapter.notifyDataSetChanged();
+            }
+        });
+
+
+
+
+
         return view;
+    }
+    public List<Friend> parseResponse(String response) {
+        Log.d("SearchFragment", "parseResponse: " + response);
+        List<Friend> friends = new ArrayList<>();
+        try {
+            JSONArray jsonArray = new JSONArray(response);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                String name = jsonObject.getString("username");
+                String match_score = "";
+                if(jsonObject.has("match")){
+                    match_score = jsonObject.getString("match");
+                    friends.add(new Friend(name + "("+match_score+"%)"));
+                }
+                else {
+                    friends.add(new Friend(name));
+                }
+
+                // Create a new Friend object and add it to the list.
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return friends;
     }
 }

@@ -90,16 +90,16 @@ export async function handleConnection(ws: WebSocket, req: Request) {
 		if (userId) {
 			const session = await sessionService.leaveSession(userId);
 			await userService.updateUser({ current_song: null, current_source: Prisma.DbNull }, currentUserId);
+			await userService.broadcastToFriends(currentUserId, 
+				new FriendsMessage("update", transformUser(session.members.find(x => x.id === currentUserId), (user) => {
+					return { 
+						currentSong: user.current_song, 
+						currentSource: user.current_source
+					};
+				}))
+			);
 			if (session) {
 				await sessionService.messageSession(session.id, userId, { userLeave: transformUser(session.members.find(x => x.id === userId)) });
-				await userService.broadcastToFriends(currentUserId, 
-					new FriendsMessage("update", transformUser(session.members.find(x => x.id === currentUserId), (user) => {
-						return { 
-							currentSong: user.current_song, 
-							currentSource: user.current_source
-						};
-					}))
-				);
 			}
 			await socketService.removeConnectionBySocket(ws);
 		}

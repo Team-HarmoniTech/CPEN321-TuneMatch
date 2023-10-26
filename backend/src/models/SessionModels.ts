@@ -1,5 +1,6 @@
 import { Session, User } from "@prisma/client";
 import { Mutex } from "async-mutex";
+import { Queue } from "../models/Queue";
 import { SocketMessage } from "./WebsocketModels";
 
 export class SessionMessage extends SocketMessage {
@@ -14,6 +15,6 @@ export type SessionWithMembers = Session & { members: User[] };
 export type UserWithSession = User & { session: Session };
 
 export type SessionQueue = {
-    queue: string[],
+    queue: Queue,
     lock: Mutex
 }

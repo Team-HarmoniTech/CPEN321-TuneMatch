@@ -1,5 +1,6 @@
 import { Mutex } from "async-mutex";
 import { database, socketService, userService } from "..";
+import { Queue, Song } from "../models/Queue";
 import { SessionQueue, SessionWithMembers } from "../models/SessionModels";
 
 export class SessionService {
@@ -32,7 +33,7 @@ export class SessionService {
                 include: { members: true }
             });
             this.sessionQueues.set(session.id, {
-                queue: [],
+                queue: new Queue(),
                 lock: new Mutex()
             });
         }
@@ -89,18 +90,58 @@ export class SessionService {
     }
 
     // ChatGPT Usage: No
-    async queueAdd(sessionId: number, songUri: string, durationMs: number, posAfter?: number) {
+    async queueReplace(sessionId: number, newQueue: { songUri: string, durationMs: number}[]) {
         const queueData = this.sessionQueues.get(sessionId);
         await queueData.lock.runExclusive(() => {
-            queueData.queue.splice((posAfter ?? 0) + 1, 0, songUri);
+            queueData.queue.replace(newQueue.map(s => new Song(s.songUri, s.durationMs)));
         });
     }
 
     // ChatGPT Usage: No
-    async queueNext(sessionId: number) {
+    async queueAdd(sessionId: number, songUri: string, durationMs: number, posAfter?: number) {
         const queueData = this.sessionQueues.get(sessionId);
         await queueData.lock.runExclusive(() => {
-            queueData.queue.shift();
+            queueData.queue.addAfter(new Song(songUri, durationMs), posAfter);
+        });
+    }
+
+    // ChatGPT Usage: No
+    async queueSkip(sessionId: number) {
+        const queueData = this.sessionQueues.get(sessionId);
+        await queueData.lock.runExclusive(() => {
+            queueData.queue.skip();
+        });
+    }
+
+    // ChatGPT Usage: No
+    async queueDrag(sessionId: number, initialPos: number, endPos: number) {
+        const queueData = this.sessionQueues.get(sessionId);
+        await queueData.lock.runExclusive(() => {
+            queueData.queue.drag(initialPos, endPos);
+        });
+    }
+
+    // ChatGPT Usage: No
+    async queuePause(sessionId: number) {
+        const queueData = this.sessionQueues.get(sessionId);
+        await queueData.lock.runExclusive(() => {
+            queueData.queue.stop();
+        });
+    }
+
+    // ChatGPT Usage: No
+    async queuePlay(sessionId: number) {
+        const queueData = this.sessionQueues.get(sessionId);
+        await queueData.lock.runExclusive(() => {
+            queueData.queue.start();
+        });
+    }
+
+    // ChatGPT Usage: No
+    async queueSeek(sessionId: number, seekPosition: number) {
+        const queueData = this.sessionQueues.get(sessionId);
+        await queueData.lock.runExclusive(() => {
+            queueData.queue.seek(seekPosition);
         });
     }
 }
