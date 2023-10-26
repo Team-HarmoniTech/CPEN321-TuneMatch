@@ -2,11 +2,14 @@
 package com.cpen321.tunematch;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,6 +31,8 @@ public class ProfileFragment extends Fragment {
 
     FragmentManager fm;
     FragmentTransaction ft;
+    String name;
+    String id;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -35,7 +40,6 @@ public class ProfileFragment extends Fragment {
 
         model = new ViewModelProvider(requireActivity()).get(ReduxStore.class);
         apiClient = ((MainActivity) getActivity()).getApiClient();;
-
         fm = getActivity().getSupportFragmentManager();
     }
 
@@ -43,6 +47,40 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.frag_profile, container, false);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String response = apiClient.doGetRequest("/me", true);
+                    try {
+                        JSONObject resJson = new JSONObject(response);
+
+                        name = resJson.getString("username");
+                        id = resJson.getString("id");
+                        Log.d("ProfileFragment", "name:"+name+" id:"+id);
+
+                        Handler mainHandler = new Handler(Looper.getMainLooper());
+                        mainHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                // Update your UI components here
+                                TextView nameView = view.findViewById(R.id.profileNameText);
+                                nameView.setText(name);
+                                TextView idView = view.findViewById(R.id.searchIdText);
+                                idView.setText(id);
+                            }
+                        });
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+
 
         Button friendsListBtn = view.findViewById(R.id.friendsListBtn);
         friendsListBtn.setOnClickListener(new View.OnClickListener(){
