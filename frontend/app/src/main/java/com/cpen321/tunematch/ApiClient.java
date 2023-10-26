@@ -9,13 +9,17 @@ import java.io.IOException;
 public class ApiClient {
     private OkHttpClient client;
     private String baseUrl;
+    private Headers customHeader;
 
     public ApiClient() {
         this.baseUrl = "https://zphy19my7b.execute-api.us-west-2.amazonaws.com/v1";
         client = new OkHttpClient();
+        customHeader = new Headers.Builder()
+                        .add("user-id", "queryTestId2")
+                        .build();
     }
 
-    public String doGetRequest(String endpoint, Headers customHeaders) throws IOException {
+    public String doGetRequest(String endpoint, Boolean customHeaders) throws IOException {
 
         String fullUrl = baseUrl + endpoint;
         Log.d("ApiClient", "doGetRequest: " + fullUrl);
@@ -23,8 +27,8 @@ public class ApiClient {
                 .url(fullUrl)
                 .get();
 
-        if (customHeaders != null) {
-            requestBuilder.headers(customHeaders);
+        if (customHeaders) {
+            requestBuilder.headers(customHeader);
         }
 
         Request request = requestBuilder.build();
@@ -37,7 +41,7 @@ public class ApiClient {
         }
     }
 
-    public String doPostRequest(String endpoint, String jsonRequestBody, Headers customHeaders) throws IOException {
+    public String doPostRequest(String endpoint, String jsonRequestBody, Boolean customHeaders) throws IOException {
         String fullUrl = baseUrl + endpoint;
 
         RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonRequestBody);
@@ -46,8 +50,8 @@ public class ApiClient {
                 .url(fullUrl)
                 .post(body);
 
-        if (customHeaders != null) {
-            requestBuilder.headers(customHeaders);
+        if (customHeaders) {
+            requestBuilder.headers(customHeader);
         }
 
         Request request = requestBuilder.build();
@@ -60,7 +64,7 @@ public class ApiClient {
         }
     }
 
-    public String doPutRequest(String endpoint, String jsonRequestBody, Headers customHeaders) throws IOException {
+    public String doPutRequest(String endpoint, String jsonRequestBody, Boolean customHeaders) throws IOException {
         String fullUrl = baseUrl + endpoint;
 
         RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonRequestBody);
@@ -69,8 +73,8 @@ public class ApiClient {
                 .url(fullUrl)
                 .put(body);
 
-        if (customHeaders != null) {
-            requestBuilder.headers(customHeaders);
+        if (customHeaders) {
+            requestBuilder.headers(customHeader);
         }
 
         Request request = requestBuilder.build();
@@ -83,15 +87,15 @@ public class ApiClient {
         }
     }
 
-    public String doDeleteRequest(String endpoint, Headers customHeaders) throws IOException {
+    public String doDeleteRequest(String endpoint, Boolean customHeaders) throws IOException {
         String fullUrl = baseUrl + endpoint;
 
         Request.Builder requestBuilder = new Request.Builder()
                 .url(fullUrl)
                 .delete();
 
-        if (customHeaders != null) {
-            requestBuilder.headers(customHeaders);
+        if (customHeaders) {
+            requestBuilder.headers(customHeader);
         }
 
         Request request = requestBuilder.build();

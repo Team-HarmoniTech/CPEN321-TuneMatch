@@ -1,7 +1,6 @@
 // Wrote by team member following online tutorial regarding BottomNavigationView usage
 package com.cpen321.tunematch;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,12 +21,13 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import okhttp3.Headers;
-
 public class ProfileFragment extends Fragment {
     private View view;
     ReduxStore model;
     ApiClient apiClient;
+
+    FragmentManager fm;
+    FragmentTransaction ft;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -35,6 +35,8 @@ public class ProfileFragment extends Fragment {
 
         model = new ViewModelProvider(requireActivity()).get(ReduxStore.class);
         apiClient = new ApiClient();
+
+        fm = getActivity().getSupportFragmentManager();
     }
 
     @Nullable
@@ -47,18 +49,14 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 ArrayList<String> friendsNameList = model.friendsNameList();
-                Log.d("ProfileFragment", friendsNameList.toString());
+                Log.d("ProfileFragment", "friendsNameList:"+friendsNameList.toString());        // TODO: crash due to empty friendlist
                 ListFragment friendsListFragment = ListFragment.newInstance(friendsNameList, "Friends List");
 
-                // Get the parent activity's fragment manager
-                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                ft = fm.beginTransaction();
 
-                // Begin a fragment transaction
-                FragmentTransaction transaction = fragmentManager.beginTransaction();
-
-                transaction.replace(R.id.mainFrame, friendsListFragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
+                ft.replace(R.id.mainFrame, friendsListFragment);
+                ft.addToBackStack(null);
+                ft.commit();
             }
 
         });
@@ -71,25 +69,17 @@ public class ProfileFragment extends Fragment {
                     @Override
                     public void run() {
                         Log.d("ProfileFragment", "line80:in run() thread");
-                        Headers customHeaders = new Headers.Builder()
-                                .add("user-id", "queryTestId2")
-                                .build();
-
                         try {
-                            String response = apiClient.doGetRequest("/me?fullProfile=true", customHeaders);
+                            String response = apiClient.doGetRequest("/me?fullProfile=true", true);
                             ArrayList<String> topArtistsList = parseList(response, "topArtists");
 
                             ListFragment topArtistFragment = ListFragment.newInstance(topArtistsList, "Top Artists");
 
-                            // Get the parent activity's fragment manager
-                            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-
                             // Begin a fragment transaction
-                            FragmentTransaction transaction = fragmentManager.beginTransaction();
-
-                            transaction.replace(R.id.mainFrame, topArtistFragment);
-                            transaction.addToBackStack(null);
-                            transaction.commit();
+                            ft = fm.beginTransaction();
+                            ft.replace(R.id.mainFrame, topArtistFragment);
+                            ft.addToBackStack(null);
+                            ft.commit();
 
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -104,24 +94,26 @@ public class ProfileFragment extends Fragment {
         topGenresBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                // TODO: query redux store to get list of top genres
-                ArrayList<String> topGenresList =  new ArrayList<>();
-                for (int i = 0; i < 20; i++) {
-                    topGenresList.add(String.format("Genre %d", i));
-                }
-                ListFragment topArtistFragment = ListFragment.newInstance(topGenresList,"Top Genres");
+                new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        try {
+                            String response = apiClient.doGetRequest("/me?fullProfile=true", true);
+                            ArrayList<String> topGenreList = parseList(response, "topGenres");
 
-                // Get the parent activity's fragment manager
-                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                            ListFragment topGenresFragment = ListFragment.newInstance(topGenreList, "Top Genres");
 
-                // Begin a fragment transaction
-                FragmentTransaction transaction = fragmentManager.beginTransaction();
-
-                transaction.replace(R.id.mainFrame, topArtistFragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
+                            // Begin a fragment transaction
+                            ft = fm.beginTransaction();
+                            ft.replace(R.id.mainFrame, topGenresFragment);
+                            ft.addToBackStack(null);
+                            ft.commit();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
             }
-
         });
 
         return view;

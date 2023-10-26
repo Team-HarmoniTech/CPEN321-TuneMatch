@@ -50,12 +50,9 @@ public class SearchFragment extends Fragment {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Headers customHeaders = new Headers.Builder()
-                        .add("user-id", "queryTestId2")
-                        .build();
                 String response;
                 try {
-                    response = apiClient.doGetRequest("/me/matches",customHeaders);
+                    response = apiClient.doGetRequest("/me/matches", true);
                     // Parse the response.
                     List<Friend> newFriendsList = parseResponse(response);
                     // Update LiveData.
@@ -126,18 +123,15 @@ public class SearchFragment extends Fragment {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        Headers customHeaders = new Headers.Builder()
-                                .add("user-id", "queryTestId2")
-                                .build();
                         String response;
                         try {
                             if(query.isEmpty()){
                                 Log.d("SearchFragment", "its triggered");
-                                response = apiClient.doGetRequest("/me/matches", customHeaders);
+                                response = apiClient.doGetRequest("/me/matches", true);
                                 // Parse the response.
                             }
                             else{
-                                response = apiClient.doGetRequest("/users/search/" + query,customHeaders);
+                                response = apiClient.doGetRequest("/users/search/" + query, true);
                             }
 
                             // Parse the response.
@@ -162,18 +156,15 @@ public class SearchFragment extends Fragment {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        Headers customHeaders = new Headers.Builder()
-                                .add("user-id", "queryTestId2")
-                                .build();
                         String response;
                         try {
                             if(newText.isEmpty()){
                                 Log.d("SearchFragment", "its triggered");
-                                response = apiClient.doGetRequest("/me/matches",customHeaders);
+                                response = apiClient.doGetRequest("/me/matches", true);
                                 // Parse the response.
                             }
                             else{
-                                response = apiClient.doGetRequest("/users/search/" + newText,customHeaders);
+                                response = apiClient.doGetRequest("/users/search/" + newText, true);
                             }
 
                             // Parse the response.
