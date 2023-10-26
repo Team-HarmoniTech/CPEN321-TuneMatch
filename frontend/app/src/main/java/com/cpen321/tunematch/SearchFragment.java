@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import org.json.JSONArray;
@@ -45,7 +46,7 @@ public class SearchFragment extends Fragment {
 
         // Initialize ViewModel and ApiClient here.
         model = new ViewModelProvider(requireActivity()).get(ReduxStore.class);
-        apiClient = new ApiClient();
+        apiClient = ((MainActivity) getActivity()).getApiClient();;
 
         new Thread(new Runnable() {
             @Override
@@ -131,6 +132,7 @@ public class SearchFragment extends Fragment {
                                 // Parse the response.
                             }
                             else{
+                                // TODO: broken due to changes in the method. need to add query to body
                                 response = apiClient.doGetRequest("/users/search/" + query, true);
                             }
 

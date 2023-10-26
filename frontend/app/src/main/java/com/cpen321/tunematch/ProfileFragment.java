@@ -34,7 +34,7 @@ public class ProfileFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         model = new ViewModelProvider(requireActivity()).get(ReduxStore.class);
-        apiClient = new ApiClient();
+        apiClient = ((MainActivity) getActivity()).getApiClient();;
 
         fm = getActivity().getSupportFragmentManager();
     }

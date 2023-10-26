@@ -11,11 +11,11 @@ public class ApiClient {
     private String baseUrl;
     private Headers customHeader;
 
-    public ApiClient() {
+    public ApiClient(String userId) {
         this.baseUrl = "https://zphy19my7b.execute-api.us-west-2.amazonaws.com/v1";
         client = new OkHttpClient();
         customHeader = new Headers.Builder()
-                        .add("user-id", "queryTestId2")
+                        .add("user-id", userId)
                         .build();
     }
 
