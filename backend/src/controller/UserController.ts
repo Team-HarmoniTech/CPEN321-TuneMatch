@@ -30,7 +30,6 @@ export class UserController {
 
     // ChatGPT Usage: No
     async insertUser(req: Request, res: Response, next: NextFunction) {
-        console.log("hi")
         const user = await userService.createUser(req.body.userData);
         userMatchingService.matchNewUser(user.id);
         res.send(await transformUser(user));

@@ -27,7 +27,6 @@ export class UserMatchingService {
 				},
 			});
 		}
-		console.log(existingConnection);
 		return existingConnection;
 	}
 
