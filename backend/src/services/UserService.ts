@@ -181,7 +181,7 @@ export class UserService {
     async searchUsers(search: string, max?: number): Promise<User[]> {
         return await this.userDB.findMany({
             where: { username: { contains: search } },
-            take: max ?? 50
+            take: max || 50
         });
     }
 

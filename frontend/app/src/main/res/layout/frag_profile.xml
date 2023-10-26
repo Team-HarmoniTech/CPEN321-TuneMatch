@@ -33,12 +33,12 @@
         app:layout_constraintVertical_bias="0.106" />
 
     <Button
-        android:id="@+id/topSongsBtn"
+        android:id="@+id/topGenresBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="65dp"
         android:background="@android:color/transparent"
-        android:text="Top Songs"
+        android:text="Top Genres"
         android:textAlignment="textStart"
         android:textAllCaps="false"
         android:textSize="18sp"

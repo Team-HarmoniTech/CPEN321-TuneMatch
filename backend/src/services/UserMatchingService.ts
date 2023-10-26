@@ -28,6 +28,7 @@ export class UserMatchingService {
 		return (arrayScore(u1.top_artists, u2.top_artists) + arrayScore(u1.top_genres, u2.top_genres)) * 50;
 	}
 
+	// ChatGPT usage: Partial
 	async matchNewUser(userId: number, maxComputed?: number) {
 		const matchedUsers: number[] = (await userService.getUserConnections(userId)).map(u => u.id);
 		const maxMatches: number = (maxComputed ?? 80) + matchedUsers.length;
@@ -95,6 +96,7 @@ export class UserMatchingService {
 		await userService.updateUser({ connectionComputed: true }, userId);
 	}
 
+	// ChatGPT usage: No
 	async getTopMatches(userId: number): Promise<(User & { match: number })[]> {
 		while (!(await userService.getUserById(userId)).connectionComputed) {
 			/* Check every second until complete */

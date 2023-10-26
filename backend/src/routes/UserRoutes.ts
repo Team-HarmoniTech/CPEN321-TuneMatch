@@ -3,6 +3,16 @@ import { UserController } from "../controller/UserController";
 
 export const UserRoutes = [{
     method: "get",
+    route: "/users/search",
+    controller: UserController,
+    action: "searchUsers",
+    validation: [
+        header('user-id').isAlphanumeric(),
+        body('search_term').isString(),
+        query('max').optional().isInt()
+    ]
+}, {
+    method: "get",
     route: "/users/:spotify_id",
     controller: UserController,
     action: "getUser",
@@ -53,7 +63,7 @@ export const UserRoutes = [{
         body('bio').optional().isString(),
         body().custom((req) => {
             const fields = ['username', 'top_artists', 'top_genres', 'pfp_url', 'bio'];
-            if (!fields.some(field => req[field] !== undefined && req[field] !== null)) {
+            if (!fields.some(field => req?.userData[field] !== undefined && req?.userData[field] !== null)) {
                 throw new Error(`At least one of ${fields.join(', ')} must be provided`);
             }
             return true;
@@ -66,15 +76,5 @@ export const UserRoutes = [{
     action: "deleteUser",
     validation: [
         header('user-id').isAlphanumeric()
-    ]
-}, {
-    method: "get",
-    route: "/users/search/:search_term",
-    controller: UserController,
-    action: "searchUsers",
-    validation: [
-        header('user-id').isAlphanumeric(),
-        param('search_term').isString(),
-        query('max').optional().isInt()
     ]
 }]

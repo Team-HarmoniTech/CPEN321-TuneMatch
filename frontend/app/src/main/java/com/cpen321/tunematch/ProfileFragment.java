@@ -14,9 +14,17 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ProfileFragment extends Fragment {
     private View view;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // TODO: query server to update redux store
+    }
 
     @Nullable
     @Override
@@ -27,10 +35,11 @@ public class ProfileFragment extends Fragment {
         friendsListBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                ArrayList<String> friendsList = new ArrayList<String>();
-                friendsList.add("cassiel");                 //TODO: Need to query server to get list of friends
-                friendsList.add("Aryan");
-
+                // TODO: query redux store to get list of friends
+                ArrayList<String> friendsList =  new ArrayList<>();
+                for (int i = 0; i < 20; i++) {
+                    friendsList.add(String.format("Friend %d", i));
+                }
                 ListFragment friendsListFragment = ListFragment.newInstance(friendsList, "Friends List");
 
                 // Get the parent activity's fragment manager
@@ -42,7 +51,6 @@ public class ProfileFragment extends Fragment {
                 transaction.replace(R.id.mainFrame, friendsListFragment);
                 transaction.addToBackStack(null);       // If you want to add the transaction to the back stack
                 transaction.commit();
-
             }
 
         });
@@ -51,11 +59,12 @@ public class ProfileFragment extends Fragment {
         topArtistBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                ArrayList<String> topArtistList = new ArrayList<String>();
-                topArtistList.add("yoonha");                 //TODO: Need to query server to get list of top artists
-                topArtistList.add("day6");
-
-                ListFragment topArtistFragment = ListFragment.newInstance(topArtistList, "Top Artists");
+                // TODO: query redux store to get list of top artists
+                ArrayList<String> topArtistsList =  new ArrayList<>();
+                for (int i = 0; i < 20; i++) {
+                    topArtistsList.add(String.format("Artists %d", i));
+                }
+                ListFragment topArtistFragment = ListFragment.newInstance(topArtistsList, "Top Artists");
 
                 // Get the parent activity's fragment manager
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
@@ -71,15 +80,16 @@ public class ProfileFragment extends Fragment {
 
         });
 
-        Button topSongsBtn = view.findViewById(R.id.topSongsBtn);
-        topSongsBtn.setOnClickListener(new View.OnClickListener(){
+        Button topGenresBtn = view.findViewById(R.id.topGenresBtn);
+        topGenresBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                ArrayList<String> topSongList = new ArrayList<String>();
-                topSongList.add("a");                      //TODO: Need to query server to get list of top songs
-                topSongList.add("b");
-
-                ListFragment topArtistFragment = ListFragment.newInstance(topSongList, "Top Songs");
+                // TODO: query redux store to get list of top genres
+                ArrayList<String> topGenresList =  new ArrayList<>();
+                for (int i = 0; i < 20; i++) {
+                    topGenresList.add(String.format("Genre %d", i));
+                }
+                ListFragment topArtistFragment = ListFragment.newInstance(topGenresList,"Top Genres");
 
                 // Get the parent activity's fragment manager
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
@@ -90,7 +100,6 @@ public class ProfileFragment extends Fragment {
                 transaction.replace(R.id.mainFrame, topArtistFragment);
                 transaction.addToBackStack(null);           // If you want to add the transaction to the back stack
                 transaction.commit();
-
             }
 
         });
