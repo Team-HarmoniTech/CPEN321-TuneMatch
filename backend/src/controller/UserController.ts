@@ -51,7 +51,7 @@ export class UserController {
 
     // ChatGPT Usage: No
     async searchUsers(req: Request, res: Response, next: NextFunction) {
-        const options = await userService.searchUsers(req.body["search_term"], Number(req.query.max));
+        const options = await userService.searchUsers(req.currentUserId, req?.body.search_term, Number(req.query.max));
         res.send(transformUsers(options.filter(u => u.id !== req.currentUserId)));
     }
 
