@@ -16,18 +16,25 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
+
+import okhttp3.Headers;
 
 public class ProfileFragment extends Fragment {
     private View view;
     ReduxStore model;
+    ApiClient apiClient;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         model = new ViewModelProvider(requireActivity()).get(ReduxStore.class);
+        apiClient = new ApiClient();
     }
 
     @Nullable
@@ -60,23 +67,35 @@ public class ProfileFragment extends Fragment {
         topArtistBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                // TODO: query redux store to get list of top artists
-                ArrayList<String> topArtistsList =  new ArrayList<>();
-                for (int i = 0; i < 20; i++) {
-                    topArtistsList.add(String.format("Artists %d", i));
-                }
-                ListFragment topArtistFragment = ListFragment.newInstance(topArtistsList, "Top Artists");
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d("ProfileFragment", "line80:in run() thread");
+                        Headers customHeaders = new Headers.Builder()
+                                .add("user-id", "queryTestId2")
+                                .build();
 
-                // Get the parent activity's fragment manager
-                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                        try {
+                            String response = apiClient.doGetRequest("/me?fullProfile=true", customHeaders);
+                            ArrayList<String> topArtistsList = parseList(response, "topArtists");
 
-                // Begin a fragment transaction
-                FragmentTransaction transaction = fragmentManager.beginTransaction();
+                            ListFragment topArtistFragment = ListFragment.newInstance(topArtistsList, "Top Artists");
 
-                transaction.replace(R.id.mainFrame, topArtistFragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
+                            // Get the parent activity's fragment manager
+                            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
 
+                            // Begin a fragment transaction
+                            FragmentTransaction transaction = fragmentManager.beginTransaction();
+
+                            transaction.replace(R.id.mainFrame, topArtistFragment);
+                            transaction.addToBackStack(null);
+                            transaction.commit();
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
             }
 
         });
@@ -106,5 +125,23 @@ public class ProfileFragment extends Fragment {
         });
 
         return view;
+    }
+
+    public ArrayList<String> parseList(String response, String key) {
+        Log.d("ProfileFragment", "parseList: "+key);
+
+        ArrayList<String> parsedList = new ArrayList<>();
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            String tempList = jsonObject.getString(key).replace("[", "").replace("]","").trim();
+            Log.d("ProfileFragment", "tempList:"+tempList);
+
+            for (String item : tempList.split(",")) {
+                parsedList.add(item.replace("\"", ""));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return parsedList;
     }
 }

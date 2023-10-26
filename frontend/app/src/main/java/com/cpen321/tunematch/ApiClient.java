@@ -6,12 +6,6 @@ import android.util.Log;
 import okhttp3.*;
 import java.io.IOException;
 
-import okhttp3.*;
-import java.io.IOException;
-
-import okhttp3.*;
-import java.io.IOException;
-
 public class ApiClient {
     private OkHttpClient client;
     private String baseUrl;

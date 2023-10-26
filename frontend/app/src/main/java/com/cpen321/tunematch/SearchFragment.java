@@ -65,7 +65,6 @@ public class SearchFragment extends Fragment {
                 }
             }
         }).start();
-
     }
 
     @Nullable
@@ -134,7 +133,7 @@ public class SearchFragment extends Fragment {
                         try {
                             if(query.isEmpty()){
                                 Log.d("SearchFragment", "its triggered");
-                                response = apiClient.doGetRequest("/me/matches",customHeaders);
+                                response = apiClient.doGetRequest("/me/matches", customHeaders);
                                 // Parse the response.
                             }
                             else{
@@ -204,10 +203,6 @@ public class SearchFragment extends Fragment {
                 listAdapter.notifyDataSetChanged();
             }
         });
-
-
-
-
 
         return view;
     }
