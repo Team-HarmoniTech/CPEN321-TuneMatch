@@ -51,7 +51,12 @@ export class UserController {
     // ChatGPT Usage: No
     async searchUsers(req: Request, res: Response, next: NextFunction) {
         const options = await userService.searchUsers(req.body["search_term"], Number(req.query.max));
-        res.send(transformUsers(options.filter(u => u.id !== req.currentUserId)));
+        const searchedUsers = options.filter(u => u.id !== req.currentUserId);
+        res.send(transformUsers(searchedUsers, (user) => {
+                    return { 
+                        match_percent: (await userMatchingService.getConnection(user.id, req.currentUserId)).match_percent
+                    };
+                }));
     }
 
     // Websocket Route Dispatcher
