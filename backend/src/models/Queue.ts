@@ -61,6 +61,16 @@ export class Queue {
         }
     }
 
+    replace(songs: Song[]) {
+        if (this.runQueue) {
+            clearTimeout(this.runQueue);
+        }
+        this.songs = songs;
+        this.running = false;
+        this.currentlyPlaying = null;
+        this.start();
+    }
+
     addAfter(song: Song, index?: number) {
         const splicePos = index ? index : Infinity;
         this.songs.splice(splicePos, 0, song);

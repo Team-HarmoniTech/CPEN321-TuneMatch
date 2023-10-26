@@ -28,6 +28,13 @@ export class SessionController {
     }
 
     // ChatGPT Usage: No
+    async queueReplace(ws: WebSocket, message: SessionMessage, currentUserId: number) {
+        const currentUser = await userService.getUserById(currentUserId);
+        await sessionService.queueReplace(currentUser.session.id, message.body);
+        await sessionService.messageSession(currentUser.session.id, currentUserId, message);
+    }
+
+    // ChatGPT Usage: No
     async queueAdd(ws: WebSocket, message: SessionMessage, currentUserId: number) {
         const { uri, durationMs, index } = message.body;
         const currentUser = await userService.getUserById(currentUserId);
