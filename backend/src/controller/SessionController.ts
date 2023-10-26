@@ -29,16 +29,46 @@ export class SessionController {
 
     // ChatGPT Usage: No
     async queueAdd(ws: WebSocket, message: SessionMessage, currentUserId: number) {
-        const { uri, duration, idx } = message.body;
+        const { uri, durationMs, index } = message.body;
         const currentUser = await userService.getUserById(currentUserId);
-        await sessionService.queueAdd(currentUser.session.id, uri, duration, idx);
+        await sessionService.queueAdd(currentUser.session.id, uri, durationMs, index);
         await sessionService.messageSession(currentUser.session.id, currentUserId, message);
     }
 
     // ChatGPT Usage: No
-    async queueNext(ws: WebSocket, message: SessionMessage, currentUserId: number) {
+    async queueSkip(ws: WebSocket, message: SessionMessage, currentUserId: number) {
         const currentUser = await userService.getUserById(currentUserId);
-        await sessionService.queueNext(currentUser.session.id);
+        await sessionService.queueSkip(currentUser.session.id);
+        await sessionService.messageSession(currentUser.session.id, currentUserId, message);
+    }
+
+    // ChatGPT Usage: No
+    async queueDrag(ws: WebSocket, message: SessionMessage, currentUserId: number) {
+        const currentUser = await userService.getUserById(currentUserId);
+        const { startIndex, endIndex } = message.body;
+        await sessionService.queueDrag(currentUser.session.id, startIndex, endIndex);
+        await sessionService.messageSession(currentUser.session.id, currentUserId, message);
+    }
+
+    // ChatGPT Usage: No
+    async queuePause(ws: WebSocket, message: SessionMessage, currentUserId: number) {
+        const currentUser = await userService.getUserById(currentUserId);
+        await sessionService.queuePause(currentUser.session.id);
+        await sessionService.messageSession(currentUser.session.id, currentUserId, message);
+    }
+
+    // ChatGPT Usage: No
+    async queueResume(ws: WebSocket, message: SessionMessage, currentUserId: number) {
+        const currentUser = await userService.getUserById(currentUserId);
+        await sessionService.queuePlay(currentUser.session.id);
+        await sessionService.messageSession(currentUser.session.id, currentUserId, message);
+    }
+
+    // ChatGPT Usage: No
+    async queueSeek(ws: WebSocket, message: SessionMessage, currentUserId: number) {
+        const currentUser = await userService.getUserById(currentUserId);
+        const { seekPosition } = message.body;
+        await sessionService.queuePlay(currentUser.session.id);
         await sessionService.messageSession(currentUser.session.id, currentUserId, message);
     }
 

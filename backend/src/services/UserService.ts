@@ -194,7 +194,7 @@ export class UserService {
             updateData["current_source"] = source === null ? Prisma.DbNull : source;
         }
         if (song !== undefined) {
-            updateData["current_song"] = song
+            updateData["current_song"] = song;
         }
         return await this.updateUser(updateData, userId);
     }
