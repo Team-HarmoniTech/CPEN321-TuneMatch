@@ -12,18 +12,19 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ListFragment extends Fragment {
-    private ArrayList<String> itemList;
-    private ArrayAdapter<String> adapter;
+
     private String listTitle;
+    private ArrayList<String> listItems;
 
     public ListFragment() {}
 
-    public static ListFragment newInstance(ArrayList<String> itemList, String listTitle) {
+    public static ListFragment newInstance(ArrayList<String> listItem, String listTitle) {
         ListFragment fragment = new ListFragment();
         Bundle args = new Bundle();
-        args.putStringArrayList("itemList", itemList);
+        args.putStringArrayList("itemList", listItem);
         args.putString("listTitle", listTitle);
         fragment.setArguments(args);
         return fragment;
@@ -34,7 +35,7 @@ public class ListFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            itemList = getArguments().getStringArrayList("itemList");
+            listItems = getArguments().getStringArrayList("itemList");
             listTitle = getArguments().getString("listTitle");
         }
     }
@@ -47,16 +48,17 @@ public class ListFragment extends Fragment {
         TextView titleTextView = view.findViewById(R.id.titleText);
         titleTextView.setText(listTitle);
 
-        // Create an ArrayAdapter to populate the ListView
-        if (listTitle.equals("Friends List")) {
-//            adapter = new CustomListAdapter(getContext(), null, "EditFriendsList", itemList); // TODO: Do we support deleting friends?
-        } else {
-            adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, itemList);
-        }
-
         // Find the ListView and set the adapter
         ListView listView = view.findViewById(R.id.listView);
-        listView.setAdapter(adapter);
+
+        // Create an ArrayAdapter to populate the ListView
+        if (listTitle.equals("Friends List")) {
+            CustomListAdapter adapter = new CustomListAdapter(getContext(), null, "EditFriendsList", listItems);
+            listView.setAdapter(adapter);
+        } else {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, listItems);
+            listView.setAdapter(adapter);
+        }
 
         return view;
     }

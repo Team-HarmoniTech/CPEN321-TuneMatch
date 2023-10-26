@@ -1,19 +1,26 @@
 import { NextFunction, Request, Response } from "express";
-import { userMatchingService, userService } from "..";
-import { transformUser, transformUsers } from "../models/SessionModels";
-import { SocketMessage } from "../models/WebsocketModels";
+import { sessionService, userMatchingService, userService } from "..";
+import { SessionMessage } from "../models/SessionModels";
+import { FriendsMessage, transformUser, transformUsers } from "../models/UserModels";
 import WebSocket = require("ws");
 
 export class UserController {
 
     // REST Routes
-    async get(req: Request, res: Response, next: NextFunction) {
-        const user = await userService.getUserBySpotifyId(req.params.spotify_id);
+    // ChatGPT Usage: No
+    async getUser(req: Request, res: Response, next: NextFunction) {
+        /* Use currentUserId for the /me endpoint */
+        const userId = (req.url.startsWith("/me")) ? req.currentUserSpotifyId : req.params.spotify_id;
+        const user = await userService.getUserBySpotifyId(userId);
+        if (!user) {
+            throw { message: `User not found.`, statusCode: 400 };
+        }
         res.send(transformUser(user, (user) => {
             return req.query.fullProfile ? { bio:user.bio } : { };
         }));
     }
 
+    // ChatGPT Usage: No
     async topMatches(req: Request, res: Response, next: NextFunction) {
         const matches = await userMatchingService.getTopMatches(req.currentUserId);
         res.send(transformUsers(matches, (user) => {
@@ -21,41 +28,78 @@ export class UserController {
         }));
     }
 
-    async insert(req: Request, res: Response, next: NextFunction) {
-        const user = await userService.upsertUser(req.body.userData);
+    // ChatGPT Usage: No
+    async insertUser(req: Request, res: Response, next: NextFunction) {
+        console.log("hi")
+        const user = await userService.createUser(req.body.userData);
         userMatchingService.matchNewUser(user.id);
-        res.send(user);
+        res.send(transformUser(user));
     }
 
-    async update(req: Request, res: Response, next: NextFunction) {
-        if (req.params.spotify_id && req.currentUserSpotifyId !== req.params.spotify_id) {
-            throw { message: 'You many not update other users', statusCode: 400 };
-        }
-        const user = await userService.upsertUser(req.body.userData, req.currentUserId);
-        res.send(user);
-    }
-
-    async delete(req: Request, res: Response, next: NextFunction) {
-        if (req.params.spotify_id && req.currentUserSpotifyId !== req.params.spotify_id) {
-            throw { message: 'You many not delete other users', statusCode: 400 };
-        }
-        const user = await userService.deleteUser(req.currentUserId);
-        res.send(user);
-    }
-
-    async getFriends(req: Request, res: Response, next: NextFunction) {
-        const friends = await userService.getUserFriends(req.currentUserId);
-        res.send(transformUsers(friends, (user) => {
-            return { currentlyPlaying: user.currently_listening, session: !!user.sessionId };
+    // ChatGPT Usage: No
+    async updateUser(req: Request, res: Response, next: NextFunction) {
+        const user = await userService.updateUser(req.body.userData, req.currentUserId);
+        res.send(transformUser(user, (user) => {
+            return { bio: user.bio };
         }));
     }
 
+    // ChatGPT Usage: No
+    async deleteUser(req: Request, res: Response, next: NextFunction) {
+        await userService.deleteUser(req.currentUserId);
+    }
+
+    // ChatGPT Usage: No
+    async searchUsers(req: Request, res: Response, next: NextFunction) {
+        const options = await userService.searchUsers(req.currentUserId, req?.body.search_term, Number(req.query.max));
+        res.send(transformUsers(options.filter(u => u.id !== req.currentUserId)));
+    }
+
+    // Websocket Route Dispatcher
+    // ChatGPT Usage: No
+    async acceptRequest(ws: WebSocket, message: FriendsMessage, currentUserId: number) {
+        const func = (this)[message.action];
+        if (!func) {
+            ws.send(JSON.stringify({ Error: `Session endpoint ${message.action} does not exist.`}));
+        } else {
+            try {
+                await func(ws, message, currentUserId);
+            } catch (err) {
+                ws.send(JSON.stringify(new FriendsMessage("error", err.message)));
+            }
+        }
+    }
+
     // Websocket Routes
-    async updateCurrentlyPlaying(ws: WebSocket, message: SocketMessage, currentUserId: number) {
-        try {
-            userService.broadcastToFriends(currentUserId, message);
-        } catch(err) {
-            ws.send(JSON.stringify({ success: false, Error: err.message }));
+    // ChatGPT Usage: No
+    async refresh(ws: WebSocket, message: FriendsMessage, currentUserId: number) {
+        const friends = await userService.getUserFriends(currentUserId);
+
+        ws.send(JSON.stringify(new FriendsMessage(
+            "refresh", 
+            transformUsers(friends, (user) => {
+                return { 
+                    currentSong: user.current_song, 
+                    currentSource: user.current_source
+                };
+            })
+        )));
+    }
+
+    // ChatGPT Usage: No
+    async update(ws: WebSocket, message: FriendsMessage, currentUserId: number) {
+        const user = await userService.updateUserStatus(currentUserId, message?.body.song, message?.body?.source.uri);
+        await userService.broadcastToFriends(currentUserId, 
+            new FriendsMessage("update", transformUser(user, (user) => {
+                return { 
+                    currentSong: user.current_song, 
+                    currentSource: user.current_source
+                };
+            }))
+        );
+        if (user.sessionId) {
+            await sessionService.messageSession(user.sessionId, currentUserId, 
+                new SessionMessage("music", message?.body.song));
         }
     }
 }

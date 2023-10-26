@@ -7,7 +7,7 @@
 
     <TextView
         android:id="@+id/friendNameText"
-        android:layout_width="wrap_content"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="30dp"
         android:layout_marginTop="8dp"
@@ -15,17 +15,21 @@
         android:text="Friend's Name"
         android:textColor="@color/white"
         android:textSize="16sp"
+        android:ellipsize="end"
+        android:singleLine="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/songTitleText"
-        android:layout_width="wrap_content"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="30dp"
         android:text="Song title"
         android:textAlignment="viewEnd"
+        android:ellipsize="end"
+        android:singleLine="true"
         android:textColor="@color/pointGreen"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"

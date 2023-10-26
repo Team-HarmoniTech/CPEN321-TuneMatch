@@ -1,10 +1,12 @@
-import { Prisma, Session, User } from "@prisma/client";
+import { Connection, Prisma, Session, User } from "@prisma/client";
 import { database, socketService } from "..";
 import { SocketMessage } from "../models/WebsocketModels";
 
 export class UserService {
     private userDB = database.user;
+    private connectionDB = database.connection;
 
+    // ChatGPT Usage: Partial
     async getUserFriends(userId: number): Promise<User[]> {
         const user = await this.userDB.findUnique({
             where: { id: userId },
@@ -13,33 +15,62 @@ export class UserService {
                 requesting: true
             }
         });
-        return user.requested.filter(requested => user.requesting.includes(requested));
+        // Only keep overlapping values
+        return user.requested.filter(requested => user.requesting.some(requesting => requesting.id === requested.id));
     }
 
-    async addFriend(requestingId: number, requestedId: number) {
-        await this.userDB.update({
-            where: { id: requestingId },
-            data: { requesting: { connect: { id: requestedId } } }
-        });
-    }
-
-    async removeFriend(userId: number, friendId: number) {
-        await this.userDB.update({
+    // ChatGPT Usage: Partial
+    async getUserFriendsRequests(userId: number): Promise<{ requesting: User[], requested: User[] }> {
+        const user = await this.userDB.findUnique({
             where: { id: userId },
-            data: {
-                requesting: { disconnect: { id: friendId } },
-                requested: { disconnect: { id: friendId } }
+            include: {
+                requested: true,
+                requesting: true
             }
         });
+        // Filter out overlapping users
+        const requesting = user.requesting.filter(requesting => !user.requested.some(requested => requested.id === requesting.id));
+        const requested = user.requested.filter(requested => !user.requesting.some(requesting => requesting.id === requested.id));
+
+        return { requesting, requested };
+    }
+
+    // ChatGPT Usage: No
+    async addFriend(userId: number, requestedId: number): Promise<User> {
+        try {
+            return await this.userDB.update({
+                where: { id: userId },
+                data: { requested: { connect: { id: requestedId } } }
+            });
+        } catch {
+            throw { message: 'User does not exist', statusCode: 400 };
+        }
+    }
+
+    // ChatGPT Usage: No
+    async removeFriend(userId: number, requestedId: number): Promise<User> {
+        try {
+            return await this.userDB.update({
+                where: { id: userId },
+                data: {
+                    requesting: { disconnect: { id: requestedId } },
+                    requested: { disconnect: { id: requestedId } }
+                }
+            });
+        } catch {
+            throw { message: 'User does not exist', statusCode: 400 };
+        }
     }
 
     async broadcastToFriends(userId: number, message: SocketMessage) {
         const user = await this.getUserById(userId);
         const recipients = (await this.getUserFriends(user.id)).map(user => user.id);
+        
         message = { ...message, from: user.spotify_id };
         await socketService.broadcast(recipients, message);
     }
 
+    // ChatGPT Usage: No
     async getUserBySpotifyId(spotify_id: string): Promise<User & { requesting: User[], requested: User[], session: Session }> {
         return await this.userDB.findUnique({
             where: { spotify_id: spotify_id },
@@ -51,6 +82,7 @@ export class UserService {
         });
     }
 
+    // ChatGPT Usage: No
     async getUserById(id: number): Promise<User & { requesting: User[], requested: User[], session: Session }> {
         return await this.userDB.findUnique({
             where: { id: id },
@@ -62,30 +94,38 @@ export class UserService {
         });
     }
 
-    async upsertUser(userData: object, userId?: number): Promise<User> {
-        return await this.userDB.upsert({
-            where: {
-                id: userId ?? -1
-            },
-            create: <Prisma.UserCreateInput>userData,
-            update: <Prisma.UserUpdateInput>userData
+    // ChatGPT Usage: No
+    async createUser(userData: object): Promise<User> {
+        return await this.userDB.create({
+            data: <Prisma.UserCreateInput>userData
         });
     }
 
-    async deleteUser(userId: number) {
-        await this.userDB.delete({
-            where: {
-                id: userId
-            }
-        });
-    }
-    
-    async getUserConnections(userId: number): Promise<(User & { match: number })[]> {
-        const user = await this.userDB.findUnique({
+    // ChatGPT Usage: No
+    async updateUser(userData: object, userId: number): Promise<User> {
+        return await this.userDB.update({
             where: {
                 id: userId
             },
-            include: {
+            data: <Prisma.UserUpdateInput>userData
+        });
+    }
+
+    // ChatGPT Usage: No
+    async deleteUser(userId: number) {
+        if (await socketService.retrieveById(userId)) {
+            throw { message: "Cannot delete a user with an active websocket", statusCode: 400 };
+        }
+        await this.userDB.delete({
+            where: { id: userId }
+        });
+    }
+    
+    // ChatGPT Usage: Partial
+    async getUserConnections(userId: number): Promise<(User & { match: number })[]> {
+        const user = await this.userDB.findUnique({
+            where: { id: userId },
+            include: { 
                 connections1: {
                     include: {
                         user_1: true,
@@ -108,8 +148,10 @@ export class UserService {
         });
     }
 
+    // ChatGPT Usage: No
     async addUserConnection(userId1: number, userId2: number, match: number) {
-        await database.connection.create({
+        if (userId1 === userId2) return;
+        await this.connectionDB.create({
             data: {
                 match_percent: match,
                 user_1: { connect: { id: userId1 } },
@@ -118,36 +160,46 @@ export class UserService {
         })
     }
 
-    async getRandomUser(): Promise<User> {
-        const users = await this.userDB.findMany();
-        return users[Math.floor(Math.random() * users.length)];
+    // ChatGPT Usage: No
+    async getRandomUser(notIn: number[]): Promise<User> {
+        return await this.userDB.findFirst({
+            where: { id: { notIn: notIn, }, },
+        });
     }
 
-    async searchUsers(search: string, max?: number): Promise<User[]> {
-        if (max) {
-            return await this.userDB.findMany({
-                where: { username: { contains: search } },
-                take: max
-            });
-        } else {
-            return await this.userDB.findMany({
-                where: { username: { contains: search } }
-            });
-        }
+    // ChatGPT Usage: No
+    async getConnection(userId1: number, userId2: number): Promise<Connection> {
+        return await this.connectionDB.findFirst({
+            where: {
+              user_id_1: userId1,
+              user_id_2: userId2,
+            },
+        });
     }
 
-    async connectionsComputed(userId: number, complete?: boolean): Promise<boolean> {
-        if (complete) {
-            await this.userDB.update({
-                where: { id: userId },
-                data: { connectionComputed: true }
-            });
-            return true;
-        } else {
-            const user = await database.user.findUnique({
-                where: { id: userId }
-            });
-            return user.connectionComputed;
+    // ChatGPT Usage: No
+    async searchUsers(userId: number, search: string, max?: number): Promise<User[]> {
+        const friends = await this.getUserFriends(userId);
+        return await this.userDB.findMany({
+            where: { 
+                username: { contains: search }, 
+                id: { notIn: [ userId, ...friends.map(f => f.id) ]} 
+            },
+            take: max || 50
+        });
+    }
+
+    // ChatGPT Usage: No
+    async updateUserStatus(userId: number, song?: string, source?: { type: string, uri: string }): Promise<User> {
+        let user: any = await this.getUserById(userId);
+        let updateData: any = {};
+        /* If they are in a session don't update the source */
+        if (!user.session && source !== undefined) {
+            updateData["current_source"] = source === null ? Prisma.DbNull : source;
         }
+        if (song !== undefined) {
+            updateData["current_song"] = song;
+        }
+        return await this.updateUser(updateData, userId);
     }
 }

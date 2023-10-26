@@ -3,60 +3,67 @@ import { UserController } from "../controller/UserController";
 
 export const UserRoutes = [{
     method: "get",
-    route: "/users/:spotify_id",
+    route: "/users/search",
     controller: UserController,
-    action: "get",
+    action: "searchUsers",
     validation: [
         header('user-id').isAlphanumeric(),
+        body('search_term').isString(),
+        query('max').optional().isInt()
+    ]
+}, {
+    method: "get",
+    route: "/users/:spotify_id",
+    controller: UserController,
+    action: "getUser",
+    validation: [
         param('spotify_id').isAlphanumeric(),
         query('fullProfile').optional().isBoolean()
     ]
 }, {
     method: "get",
-    route: "/users/friends/:spotify_id",
+    route: "/me",
     controller: UserController,
-    action: "getFriends",
+    action: "getUser",
     validation: [
         header('user-id').isAlphanumeric(),
-        param('spotify_id').isAlphanumeric(),
+        query('fullProfile').optional().isBoolean()
     ]
 }, {
     method: "get",
-    route: "/users/matches/:spotify_id",
+    route: "/me/matches",
     controller: UserController,
     action: "topMatches",
     validation: [
-        header('user-id').isAlphanumeric(),
-        param('spotify_id').isAlphanumeric(),
+        header('user-id').isAlphanumeric()
     ]
 }, {
     method: "post",
     route: "/users/create",
     controller: UserController,
-    action: "insert",
+    action: "insertUser",
     validation: [
         body('userData.spotify_id').isAlphanumeric(),
         body('userData.username').isString(),
-        body('userData.top_artists').isJSON(),
-        body('userData.top_genres').isJSON(),
+        body('userData.top_artists').isArray(),
+        body('userData.top_genres').isArray(),
         body('userData.pfp_url').optional().isURL()
     ]
 }, {
     method: "put",
-    route: "/users/update/:spotify_id",
+    route: "/me/update",
     controller: UserController,
-    action: "update",
+    action: "updateUser",
     validation: [
         header('user-id').isAlphanumeric(),
-        param('id').isAlphanumeric(),
         body('username').optional().isString(),
-        body('top_artists').optional().isJSON(),
-        body('top_genres').optional().isJSON(),
+        body('top_artists').optional().isArray(),
+        body('top_genres').optional().isArray(),
         body('pfp_url').optional().isString(),
         body('bio').optional().isString(),
         body().custom((req) => {
             const fields = ['username', 'top_artists', 'top_genres', 'pfp_url', 'bio'];
-            if (!fields.some(field => req[field] !== undefined && req[field] !== null)) {
+            if (!fields.some(field => req?.userData[field] !== undefined && req?.userData[field] !== null)) {
                 throw new Error(`At least one of ${fields.join(', ')} must be provided`);
             }
             return true;
@@ -64,11 +71,10 @@ export const UserRoutes = [{
     ]
 }, {
     method: "delete",
-    route: "/users/delete/:spotify_id",
+    route: "/me/delete",
     controller: UserController,
-    action: "remove",
+    action: "deleteUser",
     validation: [
-        header('user-id').isAlphanumeric(),
-        param('id').isAlphanumeric(),
+        header('user-id').isAlphanumeric()
     ]
 }]
