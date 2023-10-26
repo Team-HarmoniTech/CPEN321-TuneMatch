@@ -1,6 +1,8 @@
 // Class written by ChatGPT
 package com.cpen321.tunematch;
 
+import android.util.Log;
+
 import okhttp3.*;
 import java.io.IOException;
 
@@ -20,8 +22,9 @@ public class ApiClient {
     }
 
     public String doGetRequest(String endpoint, Headers customHeaders) throws IOException {
-        String fullUrl = baseUrl + endpoint;
 
+        String fullUrl = baseUrl + endpoint;
+        Log.d("ApiClient", "doGetRequest: " + fullUrl);
         Request.Builder requestBuilder = new Request.Builder()
                 .url(fullUrl)
                 .get();
