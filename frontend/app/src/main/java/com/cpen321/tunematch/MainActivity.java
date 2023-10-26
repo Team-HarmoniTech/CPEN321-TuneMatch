@@ -19,11 +19,14 @@ public class MainActivity extends AppCompatActivity {
     private RoomFragment roomFrag;
     private SearchFragment searchFrag;
     private ProfileFragment profileFrag;
+    private ApiClient apiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        apiClient = new ApiClient("queryTestId2");
 
         bottomNavigationView = findViewById(R.id.bottomNavi);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener(){
@@ -77,5 +80,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
     }
+
+    public ApiClient getApiClient() {return apiClient;}
 }
 

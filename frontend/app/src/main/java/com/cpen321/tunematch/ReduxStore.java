@@ -3,6 +3,7 @@ package com.cpen321.tunematch;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.MutableLiveData;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ReduxStore extends ViewModel {
@@ -18,6 +19,25 @@ public class ReduxStore extends ViewModel {
 
     public MutableLiveData<List<Friend>> getFriendsList() {
         return friendsList;
+    }
+
+    public ArrayList<String> friendsNameList() {
+        ArrayList<String> nameList = new ArrayList<>();
+        for (Friend f : friendsList.getValue()) {
+            nameList.add(f.getName());
+        }
+        return nameList;
+    }
+
+    public String getFriendId(String name) {
+        String id = new String();
+        for (Friend f : friendsList.getValue()) {
+            if ((f.getName()).equals(name)) {
+                id = f.getId();
+                break;
+            }
+        }
+        return id;
     }
 
     public void setFriendsList(List<Friend> friends) {
