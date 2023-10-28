@@ -71,7 +71,7 @@ export class Queue {
     addAfter(song: Song, index?: number) {
         const splicePos = index ? index : Infinity;
         this.songs.splice(splicePos, 0, song);
-        /* Start Automatically but only if the added song is at the start of the queue */
+        /* Start Automatically but only if the song is added to an empty queue */
         if (!this.currentlyPlaying && this.songs.length === 1) {
             this.start();
         }
@@ -81,7 +81,6 @@ export class Queue {
         if (this.currentlyPlaying != null) {
             clearTimeout(this.runQueue);
             this.songs.shift();
-            console.log(this.songs.length);
             this.playNext();
         }
     }
