@@ -27,7 +27,7 @@ services:
     environment:
       DATABASE_URL: "mysql://root:5KvX9bzs8x8VSAmwcD9S@mysql:3306/TuneMatchDB"
     ports:
-      - "3000:3000"
+      - "3000:80"
     depends_on:
       - mysql
     command: sh -c "npx prisma generate && npx prisma migrate deploy && npm start"
