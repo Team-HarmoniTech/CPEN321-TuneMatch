@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import org.json.JSONArray;
@@ -45,17 +46,14 @@ public class SearchFragment extends Fragment {
 
         // Initialize ViewModel and ApiClient here.
         model = new ViewModelProvider(requireActivity()).get(ReduxStore.class);
-        apiClient = new ApiClient();
+        apiClient = ((MainActivity) getActivity()).getApiClient();;
 
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Headers customHeaders = new Headers.Builder()
-                        .add("user-id", "queryTestId2")
-                        .build();
                 String response;
                 try {
-                    response = apiClient.doGetRequest("/me/matches",customHeaders);
+                    response = apiClient.doGetRequest("/me/matches", true);
                     // Parse the response.
                     List<Friend> newFriendsList = parseResponse(response);
                     // Update LiveData.
@@ -65,7 +63,6 @@ public class SearchFragment extends Fragment {
                 }
             }
         }).start();
-
     }
 
     @Nullable
@@ -94,7 +91,8 @@ public class SearchFragment extends Fragment {
                 // Set information
                 // TODO: Need to query server to get these information about matched user
 //                profilePic.setImageResource(R.drawable.ic_profile_gray_24dp);
-                nameText.setText("Cassiel"+"(80%)");
+                String selectedUser = (String) parent.getItemAtPosition(position);
+                nameText.setText(selectedUser + " (80%)");
                 favArtistText.setText("Favorite Artist: "+"Yoonha");
                 favSongText.setText("Favorite Song: "+"Event Horizon");
 
@@ -117,7 +115,6 @@ public class SearchFragment extends Fragment {
             }
         });
 
-
         listAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1);
         recommendedList.setAdapter(listAdapter);
 
@@ -128,18 +125,16 @@ public class SearchFragment extends Fragment {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        Headers customHeaders = new Headers.Builder()
-                                .add("user-id", "queryTestId2")
-                                .build();
                         String response;
                         try {
                             if(query.isEmpty()){
                                 Log.d("SearchFragment", "its triggered");
-                                response = apiClient.doGetRequest("/me/matches",customHeaders);
+                                response = apiClient.doGetRequest("/me/matches", true);
                                 // Parse the response.
                             }
                             else{
-                                response = apiClient.doGetRequest("/users/search/" + query,customHeaders);
+                                // TODO: broken due to changes in the method. need to add query to body
+                                response = apiClient.doGetRequest("/users/search/" + query, true);
                             }
 
                             // Parse the response.
@@ -164,22 +159,18 @@ public class SearchFragment extends Fragment {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        Headers customHeaders = new Headers.Builder()
-                                .add("user-id", "queryTestId2")
-                                .build();
                         String response;
                         try {
                             if(newText.isEmpty()){
                                 Log.d("SearchFragment", "its triggered");
-                                response = apiClient.doGetRequest("/me/matches",customHeaders);
+                                response = apiClient.doGetRequest("/me/matches", true);
                                 // Parse the response.
                             }
                             else{
-                                response = apiClient.doGetRequest("/users/search/" + newText,customHeaders);
+                                response = apiClient.doGetRequest("/users/search/" + newText, true);
                             }
 
                             // Parse the response.
-//                            Log.d("SearchFragment", "djvhbjshdbjs: " + response);
                             List<Friend> newFriendsList = parseResponse(response);
                             // Update LiveData.
                             model.getFriendsList().postValue(newFriendsList);
@@ -206,10 +197,6 @@ public class SearchFragment extends Fragment {
             }
         });
 
-
-
-
-
         return view;
     }
     public List<Friend> parseResponse(String response) {
@@ -220,13 +207,14 @@ public class SearchFragment extends Fragment {
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 String name = jsonObject.getString("username");
+                String id = jsonObject.getString("id");
                 String match_score = "";
                 if(jsonObject.has("match")){
                     match_score = jsonObject.getString("match");
-                    friends.add(new Friend(name + "("+match_score+"%)"));
+                    friends.add(new Friend(name + " ("+match_score+"%)", id));
                 }
                 else {
-                    friends.add(new Friend(name));
+                    friends.add(new Friend(name, id));
                 }
 
                 // Create a new Friend object and add it to the list.

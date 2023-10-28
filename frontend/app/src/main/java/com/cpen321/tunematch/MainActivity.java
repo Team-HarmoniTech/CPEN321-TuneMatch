@@ -5,10 +5,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import com.spotify.android.appremote.api.ConnectionParams;
+import com.spotify.android.appremote.api.SpotifyAppRemote;
+
+import okhttp3.Headers;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -19,11 +26,24 @@ public class MainActivity extends AppCompatActivity {
     private RoomFragment roomFrag;
     private SearchFragment searchFrag;
     private ProfileFragment profileFrag;
+    private ApiClient apiClient;
+    private WebSocketClient webSocketClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        webSocketClient = new WebSocketClient();
+        webSocketClient.start();
+
+        // Retrieve the Spotify User ID from the Intent
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("spotifyUserId")) {
+            String spotifyUserId = intent.getStringExtra("spotifyUserId");
+
+            apiClient = new ApiClient("https://zphy19my7b.execute-api.us-west-2.amazonaws.com/v1",
+                    new Headers.Builder().add("user-id", spotifyUserId).build());
+        }
 
         bottomNavigationView = findViewById(R.id.bottomNavi);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener(){
@@ -77,5 +97,14 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        webSocketClient.stop();
+    }
+
+    public ApiClient getApiClient() {return apiClient;}
+
 }
 

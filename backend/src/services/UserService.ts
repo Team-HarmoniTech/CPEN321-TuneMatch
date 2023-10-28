@@ -128,7 +128,7 @@ export class UserService {
     }
 
     // ChatGPT Usage: No
-    async searchUsers(userId, search: string, max?: number): Promise<User[]> {
+    async searchUsers(userId: number, search: string, max?: number): Promise<User[]> {
         const friends = await this.getUserFriends(userId);
         return await this.userDB.findMany({
             where: { 
