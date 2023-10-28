@@ -58,7 +58,7 @@ public class LoginActivity extends AppCompatActivity {
             AuthorizationRequest.Builder builder =
                     new AuthorizationRequest.Builder(CLIENT_ID, AuthorizationResponse.Type.TOKEN, REDIRECT_URI);
 
-            builder.setScopes(new String[]{"user-read-private", "user-top-read", "user-read-recently-played", "streaming"});
+            builder.setScopes(new String[]{"user-read-private", "user-library-read", "user-top-read", "user-read-email", "playlist-read-private"});
             AuthorizationRequest request = builder.build();
             AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request);
         }
@@ -102,8 +102,6 @@ public class LoginActivity extends AppCompatActivity {
             switch (response.getType()) {
                 // Response was successful and contains auth token
                 case TOKEN:
-//                    print the token
-                    System.out.println(response.getAccessToken());
                     Log.d(TAG, "onActivityResult: " + response.getAccessToken());
                     // Send to main activity
                     String auth_token = response.getAccessToken();
@@ -262,6 +260,12 @@ public class LoginActivity extends AppCompatActivity {
                                 // Retry login activity
                                 startActivity(new Intent(LoginActivity.this, LoginActivity.class));
                                 finish(); // Finish the current instance of LoginActivity
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                finish();
                             }
                         });
                 AlertDialog dialog = builder.create();
