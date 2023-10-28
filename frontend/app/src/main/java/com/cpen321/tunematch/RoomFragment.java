@@ -49,7 +49,7 @@ import jp.wasabeef.blurry.Blurry;
 public class RoomFragment extends Fragment {
     private View view;
     private static final String CLIENT_ID = "0dcb406f508a4845b32a1342a91a71af";
-    private static final String REDIRECT_URI = "https://localhost:3000";
+    private static final String REDIRECT_URI = "cpen321tunematch://callback";
     private SpotifyAppRemote mSpotifyAppRemote;
 
     private Button playpauseButton;
@@ -65,6 +65,12 @@ public class RoomFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.frag_room, container, false);
+
+        Button chatBtn = view.findViewById(R.id.chatBtn);
+        Button queueBtn = view.findViewById(R.id.queueBtn);
+
+
+
         return view;
     }
 

@@ -19,7 +19,7 @@ model User {
   current_song        String?
   current_source      Json? //Could be album or playlist
   is_banned           Boolean @default(false)
-  pfp_url             String?
+  pfp_url             String? @db.VarChar(500)
   bio                 String?
 
   // Sessions

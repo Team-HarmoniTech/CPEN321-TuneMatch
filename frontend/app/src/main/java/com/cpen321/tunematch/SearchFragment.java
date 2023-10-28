@@ -26,9 +26,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import kotlin.text.Charsets;
 import okhttp3.Headers;
 import okhttp3.internal.http2.Header;
 
@@ -122,6 +126,14 @@ public class SearchFragment extends Fragment {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 Log.d("SearchFragment", "onQueryTextSubmit: " + query);
+                String encodedQuery;
+//               url encode the query
+                try {
+                     encodedQuery= URLEncoder.encode(query, Charsets.UTF_8.toString());
+                    Log.d("SearchFragment", "onQueryTextSubmit: " + encodedQuery);
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException(e);
+                }
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -134,7 +146,7 @@ public class SearchFragment extends Fragment {
                             }
                             else{
                                 // TODO: broken due to changes in the method. need to add query to body
-                                response = apiClient.doGetRequest("/users/search/" + query, true);
+                                response = apiClient.doGetRequest("/users/search/" + encodedQuery, true);
                             }
 
                             // Parse the response.
@@ -156,6 +168,13 @@ public class SearchFragment extends Fragment {
             @Override
             public boolean onQueryTextChange(String newText) {
                 Log.d("SearchFragment", "onQueryTextSubmit: " + newText);
+                String encoded_newText;
+                try {
+                    encoded_newText = URLEncoder.encode(newText, Charsets.UTF_8.toString());
+                    Log.d("SearchFragment", "onQueryTextSubmit: " + encoded_newText);
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException(e);
+                }
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -167,7 +186,7 @@ public class SearchFragment extends Fragment {
                                 // Parse the response.
                             }
                             else{
-                                response = apiClient.doGetRequest("/users/search/" + newText, true);
+                                response = apiClient.doGetRequest("/users/search/" + encoded_newText, true);
                             }
 
                             // Parse the response.
