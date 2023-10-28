@@ -87,8 +87,6 @@ public class LoginActivity extends AppCompatActivity {
                 AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request);
             }
         });
-
-
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {

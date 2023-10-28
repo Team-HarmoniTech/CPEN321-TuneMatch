@@ -93,7 +93,12 @@ public class RoomFragment extends Fragment {
             }
         });
 
-
+        // initialize to chat
+        getFragmentManager()
+                .beginTransaction()
+                .replace(R.id.subFrame, new ChatFragment())
+                .addToBackStack(null)
+                .commit();
         return view;
     }
 
