@@ -21,10 +21,15 @@ public class MainActivity extends AppCompatActivity {
     private ProfileFragment profileFrag;
     private ApiClient apiClient;
 
+    private WebSocketClient webSocketClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        webSocketClient = new WebSocketClient();
+        webSocketClient.start();
+
 
         apiClient = new ApiClient("queryTestId2");
 
@@ -81,6 +86,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        webSocketClient.stop();
+    }
+
     public ApiClient getApiClient() {return apiClient;}
+
 }
 
