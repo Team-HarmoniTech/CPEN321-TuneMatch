@@ -127,8 +127,9 @@ public class LoginActivity extends AppCompatActivity {
         Log.d("fetchSpotifyUserId", "Inside function");
         // Set up your custom headers (including the Authorization header with the access token)
         Headers headers = new Headers.Builder()
-                .add("Authorization", "Bearer " + authToken)
+                .add("Authorization", "Bearer "+authToken)
                 .build();
+        Log.d(TAG, "in fetchSpotifyUserId, authToken="+authToken);
 
         // Initialize your ApiClient with the base URL and custom headers
         String spotifyBaseUrl = "https://api.spotify.com/v1/";

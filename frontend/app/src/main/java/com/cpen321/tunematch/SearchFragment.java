@@ -91,7 +91,8 @@ public class SearchFragment extends Fragment {
                 // Set information
                 // TODO: Need to query server to get these information about matched user
 //                profilePic.setImageResource(R.drawable.ic_profile_gray_24dp);
-                nameText.setText("Cassiel"+"(80%)");
+                String selectedUser = (String) parent.getItemAtPosition(position);
+                nameText.setText(selectedUser + " (80%)");
                 favArtistText.setText("Favorite Artist: "+"Yoonha");
                 favSongText.setText("Favorite Song: "+"Event Horizon");
 
@@ -170,7 +171,6 @@ public class SearchFragment extends Fragment {
                             }
 
                             // Parse the response.
-//                            Log.d("SearchFragment", "djvhbjshdbjs: " + response);
                             List<Friend> newFriendsList = parseResponse(response);
                             // Update LiveData.
                             model.getFriendsList().postValue(newFriendsList);
@@ -211,7 +211,7 @@ public class SearchFragment extends Fragment {
                 String match_score = "";
                 if(jsonObject.has("match")){
                     match_score = jsonObject.getString("match");
-                    friends.add(new Friend(name + "("+match_score+"%)", id));
+                    friends.add(new Friend(name + " ("+match_score+"%)", id));
                 }
                 else {
                     friends.add(new Friend(name, id));
