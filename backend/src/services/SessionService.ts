@@ -90,6 +90,14 @@ export class SessionService {
     }
 
     // ChatGPT Usage: No
+    async queueReplace(sessionId: number, newQueue: { songUri: string, durationMs: number}[]) {
+        const queueData = this.sessionQueues.get(sessionId);
+        await queueData.lock.runExclusive(() => {
+            queueData.queue.replace(newQueue.map(s => new Song(s.songUri, s.durationMs)));
+        });
+    }
+
+    // ChatGPT Usage: No
     async queueAdd(sessionId: number, songUri: string, durationMs: number, posAfter?: number) {
         const queueData = this.sessionQueues.get(sessionId);
         await queueData.lock.runExclusive(() => {
