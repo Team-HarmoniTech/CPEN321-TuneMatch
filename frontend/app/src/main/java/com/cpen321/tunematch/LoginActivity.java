@@ -32,10 +32,11 @@ import okhttp3.Headers;
 public class LoginActivity extends AppCompatActivity {
     // Request code will be used to verify if result comes from the login activity. Can be set to any integer.
     private static final int REQUEST_CODE = 1337;
-    private static final String REDIRECT_URI = "https://localhost:3000";
+    private static final String REDIRECT_URI = "cpen321tunematch://callback";
     private static final String TAG = "LoginActivity";
     private static final String CLIENT_ID = "0dcb406f508a4845b32a1342a91a71af";
 
+    private static final int MAX_IMAGE_URL_LEN = 500;
     private String spotifyUserId;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,8 +88,6 @@ public class LoginActivity extends AppCompatActivity {
                 AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request);
             }
         });
-
-
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -169,6 +168,7 @@ public class LoginActivity extends AppCompatActivity {
                         });
                     } catch (IOException e) {
                         try {
+                            Log.d(TAG, "Account does not exist for "+spotifyUserId);
                             // account does not exist need to create
                             String spotifyUserName = jsonResponse.getString("display_name");
                             JSONArray spotifyImage = jsonResponse.getJSONArray("images");
@@ -176,6 +176,9 @@ public class LoginActivity extends AppCompatActivity {
                             for (int i = 0; i < spotifyImage.length(); i++) {
                                 JSONObject imageObject = spotifyImage.getJSONObject(i);
                                 spotifyImageUrl = imageObject.getString("url");
+                            }
+                            if (spotifyImageUrl.length() > MAX_IMAGE_URL_LEN) {
+                                spotifyImageUrl = "profile.com/url";
                             }
 
                             // get top artists
