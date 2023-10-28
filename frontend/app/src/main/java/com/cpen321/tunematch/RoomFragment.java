@@ -69,6 +69,29 @@ public class RoomFragment extends Fragment {
         Button chatBtn = view.findViewById(R.id.chatBtn);
         Button queueBtn = view.findViewById(R.id.queueBtn);
 
+        chatBtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                // Replace the current fragment with the ChatFragment
+                getFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.subFrame, new ChatFragment())
+                        .addToBackStack(null)
+                        .commit();
+            }
+        });
+
+        queueBtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                // Replace the current fragment with the ChatFragment
+                getFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.subFrame, new QueueFragment())
+                        .addToBackStack(null)
+                        .commit();
+            }
+        });
 
 
         return view;
