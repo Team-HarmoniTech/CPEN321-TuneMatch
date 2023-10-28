@@ -1,6 +1,5 @@
 import { Connection, User } from "@prisma/client";
-import { database } from "..";
-import { userService } from "..";
+import { database, userService } from "..";
 
 export class UserMatchingService {
 	private userDB = database.user;
@@ -27,7 +26,6 @@ export class UserMatchingService {
 				},
 			});
 		}
-		console.log(existingConnection);
 		return existingConnection;
 	}
 

@@ -29,8 +29,19 @@ export class UserController {
     }
 
     // ChatGPT Usage: No
+    async getMatch(req: Request, res: Response, next: NextFunction) {
+        const otherUser = await userService.getUserBySpotifyId(req.params.spotify_id);
+        if (!otherUser) {
+            throw { message: `User not found.`, statusCode: 400 };
+        }
+        const match = await userMatchingService.getConnection(req.currentUserId, otherUser.id);
+        res.send(await transformUser(otherUser, async () => {
+            return { match: match.match_percent };
+        }));
+    }
+
+    // ChatGPT Usage: No
     async insertUser(req: Request, res: Response, next: NextFunction) {
-        console.log("hi")
         const user = await userService.createUser(req.body.userData);
         userMatchingService.matchNewUser(user.id);
         res.send(await transformUser(user));
@@ -51,7 +62,7 @@ export class UserController {
 
     // ChatGPT Usage: No
     async searchUsers(req: Request, res: Response, next: NextFunction) {
-        const users = await userService.searchUsers(req.currentUserId, req?.body.search_term, Number(req.query.max));
+        const users = await userService.searchUsers(req.currentUserId, req.params.search_term, Number(req.query.max));
         res.send(await transformUsers(users, async (user) => {
                     return { 
                         match_percent: (await userMatchingService.getConnection(user.id, req.currentUserId)).match_percent
