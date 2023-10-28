@@ -32,7 +32,7 @@ import okhttp3.Headers;
 public class LoginActivity extends AppCompatActivity {
     // Request code will be used to verify if result comes from the login activity. Can be set to any integer.
     private static final int REQUEST_CODE = 1337;
-    private static final String REDIRECT_URI = "https://localhost:3000";
+    private static final String REDIRECT_URI = "cpen321tunematch://callback";
     private static final String TAG = "LoginActivity";
     private static final String CLIENT_ID = "0dcb406f508a4845b32a1342a91a71af";
 
@@ -127,8 +127,9 @@ public class LoginActivity extends AppCompatActivity {
         Log.d("fetchSpotifyUserId", "Inside function");
         // Set up your custom headers (including the Authorization header with the access token)
         Headers headers = new Headers.Builder()
-                .add("Authorization", "Bearer " + authToken)
+                .add("Authorization", "Bearer "+authToken)
                 .build();
+        Log.d(TAG, "in fetchSpotifyUserId, authToken="+authToken);
 
         // Initialize your ApiClient with the base URL and custom headers
         String spotifyBaseUrl = "https://api.spotify.com/v1/";
