@@ -5,13 +5,22 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import com.spotify.android.appremote.api.ConnectionParams;
+import com.spotify.android.appremote.api.SpotifyAppRemote;
+
+import okhttp3.Headers;
+
 public class MainActivity extends AppCompatActivity {
 
+    private static final String CLIENT_ID = "0dcb406f508a4845b32a1342a91a71af";
+    private static final String REDIRECT_URI = "https://localhost:3000";
     private BottomNavigationView bottomNavigationView;
     private FragmentManager fm;
     private FragmentTransaction ft;
@@ -20,7 +29,6 @@ public class MainActivity extends AppCompatActivity {
     private SearchFragment searchFrag;
     private ProfileFragment profileFrag;
     private ApiClient apiClient;
-
     private WebSocketClient webSocketClient;
 
     @Override
@@ -32,6 +40,15 @@ public class MainActivity extends AppCompatActivity {
 
 
         apiClient = new ApiClient("queryTestId2");
+
+        // Retrieve the Spotify User ID from the Intent
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("spotifyUserId")) {
+            String spotifyUserId = intent.getStringExtra("spotifyUserId");
+
+            apiClient = new ApiClient("https://zphy19my7b.execute-api.us-west-2.amazonaws.com/v1",
+                    new Headers.Builder().add("user-id", spotifyUserId).build());
+        }
 
         bottomNavigationView = findViewById(R.id.bottomNavi);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener(){
@@ -85,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
     }
-
 
     @Override
     protected void onDestroy() {
