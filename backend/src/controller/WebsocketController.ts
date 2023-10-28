@@ -31,7 +31,7 @@ async function authenticateSocket(socket, req): Promise<number> {
 	const friends = await userService.getUserFriends(user.id);
 	socket.send(JSON.stringify(new FriendsMessage(
 		"refresh", 
-		transformUsers(friends, (user) => {
+		await transformUsers(friends, async (user) => {
 			return { 
 				currentSong: user.current_song, 
 				currentSource: user.current_source
@@ -42,8 +42,8 @@ async function authenticateSocket(socket, req): Promise<number> {
 	socket.send(JSON.stringify(new RequestsMessage(
 		"refresh", 
 		{ 
-			requesting: transformUsers(requests.requesting), 
-			requested: transformUsers(requests.requested) 
+			requesting: await transformUsers(requests.requesting), 
+			requested: await transformUsers(requests.requested) 
 		}
 	)));
 
@@ -91,7 +91,7 @@ export async function handleConnection(ws: WebSocket, req: Request) {
 			const session = await sessionService.leaveSession(userId);
 			await userService.updateUser({ current_song: null, current_source: Prisma.DbNull }, currentUserId);
 			await userService.broadcastToFriends(currentUserId, 
-				new FriendsMessage("update", transformUser(session.members.find(x => x.id === currentUserId), (user) => {
+				new FriendsMessage("update", await transformUser(session.members.find(x => x.id === currentUserId), async (user) => {
 					return { 
 						currentSong: user.current_song, 
 						currentSource: user.current_source
@@ -99,7 +99,7 @@ export async function handleConnection(ws: WebSocket, req: Request) {
 				}))
 			);
 			if (session) {
-				await sessionService.messageSession(session.id, userId, { userLeave: transformUser(session.members.find(x => x.id === userId)) });
+				await sessionService.messageSession(session.id, userId, { userLeave: await transformUser(session.members.find(x => x.id === userId)) });
 			}
 			await socketService.removeConnectionBySocket(ws);
 		}

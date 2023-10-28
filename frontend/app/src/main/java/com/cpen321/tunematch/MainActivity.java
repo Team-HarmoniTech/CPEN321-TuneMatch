@@ -21,7 +21,6 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String CLIENT_ID = "0dcb406f508a4845b32a1342a91a71af";
     private static final String REDIRECT_URI = "https://localhost:3000";
-    private SpotifyAppRemote mSpotifyAppRemote;
     private BottomNavigationView bottomNavigationView;
     private FragmentManager fm;
     private FragmentTransaction ft;
@@ -30,11 +29,17 @@ public class MainActivity extends AppCompatActivity {
     private SearchFragment searchFrag;
     private ProfileFragment profileFrag;
     private ApiClient apiClient;
+    private WebSocketClient webSocketClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        webSocketClient = new WebSocketClient();
+        webSocketClient.start();
+
+
+        apiClient = new ApiClient("queryTestId2");
 
         // Retrieve the Spotify User ID from the Intent
         Intent intent = getIntent();
@@ -98,6 +103,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        webSocketClient.stop();
+    }
+
     public ApiClient getApiClient() {return apiClient;}
+
 }
 

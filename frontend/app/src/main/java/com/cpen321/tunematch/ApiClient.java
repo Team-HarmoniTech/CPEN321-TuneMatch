@@ -15,6 +15,7 @@ public class ApiClient {
         this.baseUrl = baseUrl;
         this.client = new OkHttpClient();
         this.customHeader = customHeader;
+
     }
 
     public String doGetRequest(String endpoint, Boolean customHeaders) throws IOException {
