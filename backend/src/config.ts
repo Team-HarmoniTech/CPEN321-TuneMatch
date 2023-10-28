@@ -1,3 +1,3 @@
 require('dotenv').config();
 
-export const PORT = process.env.PORT || 80;
+export const PORT = process.env.PORT || 8080;
