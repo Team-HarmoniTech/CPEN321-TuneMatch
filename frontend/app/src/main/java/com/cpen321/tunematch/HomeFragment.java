@@ -26,7 +26,7 @@ public class HomeFragment extends Fragment {
         ListView friendsActivityList = view.findViewById(R.id.friendsList);
 
         ArrayList<String> friendsListItems = new ArrayList<>();
-        // TODO: Need to query server to get the list of friends and what they are currently listening
+        // TODO: Need to query server or redux store to get the list of friends and what they are currently listening
         for (int i = 0; i < 20; i++) {
             friendsListItems.add(String.format("Friend %d;Song", i));
         }
