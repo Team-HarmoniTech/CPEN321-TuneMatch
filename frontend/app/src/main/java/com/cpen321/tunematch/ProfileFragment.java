@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,6 +18,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
+
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,8 +34,6 @@ public class ProfileFragment extends Fragment {
 
     FragmentManager fm;
     FragmentTransaction ft;
-    String name;
-    String id;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -41,40 +42,14 @@ public class ProfileFragment extends Fragment {
         model = new ViewModelProvider(requireActivity()).get(ReduxStore.class);
         apiClient = ((MainActivity) getActivity()).getApiClient();;
         fm = getActivity().getSupportFragmentManager();
+
+        setupMyProfile();
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.frag_profile, container, false);
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String response = apiClient.doGetRequest("/me", true);
-                    JSONObject resJson = new JSONObject(response);
-
-                    name = resJson.getString("username");
-                    id = resJson.getString("id");
-                    Log.d("ProfileFragment", "name:"+name+" id:"+id);
-
-                    Handler mainHandler = new Handler(Looper.getMainLooper());
-                    mainHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            // Update your UI components here
-                            TextView nameView = view.findViewById(R.id.profileNameText);
-                            nameView.setText(name);
-                            TextView idView = view.findViewById(R.id.searchIdText);
-                            idView.setText(id);
-                        }
-                    });
-                } catch (IOException | JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
 
         Button friendsListBtn = view.findViewById(R.id.friendsListBtn);
         friendsListBtn.setOnClickListener(new View.OnClickListener(){
@@ -100,7 +75,6 @@ public class ProfileFragment extends Fragment {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        Log.d("ProfileFragment", "line80:in run() thread");
                         try {
                             String response = apiClient.doGetRequest("/me?fullProfile=true", true);
                             ArrayList<String> topArtistsList = parseList(response, "topArtists");
@@ -167,5 +141,44 @@ public class ProfileFragment extends Fragment {
             e.printStackTrace();
         }
         return parsedList;
+    }
+
+    private void setupMyProfile() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String response = apiClient.doGetRequest("/me", true);
+                    JSONObject resJson = new JSONObject(response);
+
+                    String name = resJson.getString("username");
+                    String id = resJson.getString("id");
+                    String profileUrl = resJson.getString("profilePic");
+                    Log.d("ProfileFragment", "name:"+name+" id:"+id);
+
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Update your UI components here
+                            TextView nameView = view.findViewById(R.id.profileNameText);
+                            nameView.setText(name);
+
+                            TextView idView = view.findViewById(R.id.searchIdText);
+                            idView.setText(id);
+
+                            ImageView profileView = view.findViewById(R.id.pfpImageView);
+                            Picasso.get()
+                                    .load(profileUrl)
+                                    .placeholder(R.drawable.default_profile_image)      // Set the default image
+                                    .error(R.drawable.default_profile_image)            // Use the default image in case of an error
+                                    .into(profileView);
+                        }
+                    });
+                } catch (IOException | JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 }
