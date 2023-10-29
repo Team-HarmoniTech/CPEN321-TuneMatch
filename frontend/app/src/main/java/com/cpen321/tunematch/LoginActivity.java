@@ -58,7 +58,7 @@ public class LoginActivity extends AppCompatActivity {
             AuthorizationRequest.Builder builder =
                     new AuthorizationRequest.Builder(CLIENT_ID, AuthorizationResponse.Type.TOKEN, REDIRECT_URI);
 
-            builder.setScopes(new String[]{"user-read-private", "user-library-read", "user-top-read", "user-read-email", "playlist-read-private"});
+            builder.setScopes(new String[]{"user-read-private", "user-library-read", "user-top-read", "user-read-email", "playlist-read-private", "streaming"});
             AuthorizationRequest request = builder.build();
             AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request);
         }
@@ -80,9 +80,9 @@ public class LoginActivity extends AppCompatActivity {
                 dialog.show();
             } else {
                 AuthorizationRequest.Builder builder =
-                        new AuthorizationRequest.Builder("0dcb406f508a4845b32a1342a91a71af", AuthorizationResponse.Type.TOKEN, REDIRECT_URI);
+                        new AuthorizationRequest.Builder(CLIENT_ID, AuthorizationResponse.Type.TOKEN, REDIRECT_URI);
 
-                builder.setScopes(new String[]{"streaming"});
+                builder.setScopes(new String[]{"user-read-private", "user-library-read", "user-top-read", "user-read-email", "playlist-read-private", "streaming"});
                 AuthorizationRequest request = builder.build();
                 AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request);
             }
