@@ -53,34 +53,28 @@ public class ProfileFragment extends Fragment {
             public void run() {
                 try {
                     String response = apiClient.doGetRequest("/me", true);
-                    try {
-                        JSONObject resJson = new JSONObject(response);
+                    JSONObject resJson = new JSONObject(response);
 
-                        name = resJson.getString("username");
-                        id = resJson.getString("id");
-                        Log.d("ProfileFragment", "name:"+name+" id:"+id);
+                    name = resJson.getString("username");
+                    id = resJson.getString("id");
+                    Log.d("ProfileFragment", "name:"+name+" id:"+id);
 
-                        Handler mainHandler = new Handler(Looper.getMainLooper());
-                        mainHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                // Update your UI components here
-                                TextView nameView = view.findViewById(R.id.profileNameText);
-                                nameView.setText(name);
-                                TextView idView = view.findViewById(R.id.searchIdText);
-                                idView.setText(id);
-                            }
-                        });
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                } catch (IOException e) {
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Update your UI components here
+                            TextView nameView = view.findViewById(R.id.profileNameText);
+                            nameView.setText(name);
+                            TextView idView = view.findViewById(R.id.searchIdText);
+                            idView.setText(id);
+                        }
+                    });
+                } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 }
             }
         }).start();
-
-
 
         Button friendsListBtn = view.findViewById(R.id.friendsListBtn);
         friendsListBtn.setOnClickListener(new View.OnClickListener(){
