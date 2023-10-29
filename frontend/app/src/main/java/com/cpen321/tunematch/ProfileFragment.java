@@ -56,7 +56,8 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 ArrayList<String> friendsNameList = model.friendsNameList();
-                Log.d("ProfileFragment", "friendsNameList:"+friendsNameList.toString());        // TODO: crash due to empty friendlist
+                Log.d("ProfileFragment", "friendsNameList:"+friendsNameList.toString());
+                // TODO: Redux store not completely working; need to work on this to show profile image along with friend list
                 ListFragment friendsListFragment = ListFragment.newInstance(friendsNameList, "Friends List");
 
                 ft = fm.beginTransaction();
