@@ -1,10 +1,9 @@
-import { Connection, Prisma, Session, User } from "@prisma/client";
+import { Prisma, Session, User } from "@prisma/client";
 import { database, socketService } from "..";
 import { SocketMessage } from "../models/WebsocketModels";
 
 export class UserService {
     private userDB = database.user;
-    private connectionDB = database.connection;
 
     // ChatGPT Usage: Partial
     async getUserFriends(userId: number): Promise<User[]> {
@@ -120,60 +119,11 @@ export class UserService {
             where: { id: userId }
         });
     }
-    
-    // ChatGPT Usage: Partial
-    async getUserConnections(userId: number): Promise<(User & { match: number })[]> {
-        const user = await this.userDB.findUnique({
-            where: { id: userId },
-            include: { 
-                connections1: {
-                    include: {
-                        user_1: true,
-                        user_2: true
-                    }
-                },
-                connections2: {
-                    include: {
-                        user_1: true,
-                        user_2: true
-                    }
-                }
-            }
-        });
-        return [...user.connections1, ...user.connections2].map(connection => {
-            const otherUser = (userId === connection.user_id_1) ? connection.user_2 : connection.user_1;
-            return { ...otherUser, match: connection.match_percent };
-        }).sort((u1, u2) => {
-            return u1.match - u2.match;
-        });
-    }
-
-    // ChatGPT Usage: No
-    async addUserConnection(userId1: number, userId2: number, match: number) {
-        if (userId1 === userId2) return;
-        await this.connectionDB.create({
-            data: {
-                match_percent: match,
-                user_1: { connect: { id: userId1 } },
-                user_2: { connect: { id: userId2 } }
-            }
-        })
-    }
 
     // ChatGPT Usage: No
     async getRandomUser(notIn: number[]): Promise<User> {
         return await this.userDB.findFirst({
             where: { id: { notIn: notIn, }, },
-        });
-    }
-
-    // ChatGPT Usage: No
-    async getConnection(userId1: number, userId2: number): Promise<Connection> {
-        return await this.connectionDB.findFirst({
-            where: {
-              user_id_1: userId1,
-              user_id_2: userId2,
-            },
         });
     }
 

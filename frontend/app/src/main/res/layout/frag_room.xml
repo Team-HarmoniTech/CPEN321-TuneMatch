@@ -4,10 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/song_banner_imageview"
-        android:layout_width="361dp"
-        android:layout_height="241dp"
+        android:layout_width="359dp"
+        android:layout_height="200dp"
         android:contentDescription="TODO"
         android:scaleType="centerCrop"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -119,6 +120,42 @@
         app:layout_constraintStart_toStartOf="@+id/song_banner_imageview"
         app:layout_constraintTop_toBottomOf="@+id/seekBar"
         app:layout_constraintVertical_bias="0.0" />
+
+    <Button
+        android:id="@+id/chatBtn"
+        android:layout_width="85dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="85dp"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/custom_green_btn"
+        android:text="Chat"
+        android:textColor="@color/pointGreen"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/song_banner_imageview" />
+
+    <Button
+        android:id="@+id/queueBtn"
+        android:layout_width="85dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="85dp"
+        android:background="@drawable/custom_green_btn"
+        android:text="queue"
+        android:textColor="@color/pointGreen"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/song_banner_imageview" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginTop="70dp"
+        android:layout_marginBottom="70dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/song_banner_imageview">
+
+    </FrameLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

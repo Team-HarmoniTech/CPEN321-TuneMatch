@@ -28,8 +28,8 @@ export class RequestController {
 	    ws.send(JSON.stringify(new RequestsMessage(
             "refresh", 
             { 
-                requesting: transformUsers(requests.requesting), 
-                requested: transformUsers(requests.requested) 
+                requesting: await transformUsers(requests.requesting), 
+                requested: await transformUsers(requests.requested) 
             }
 	    )));
     }
@@ -46,7 +46,7 @@ export class RequestController {
 
         if (otherUserSocket) {
             /* Add currently playing and session here too incase the add makes the users friends */
-            otherUserSocket.send(JSON.stringify(new RequestsMessage("add", transformUser(user, (user) => {
+            otherUserSocket.send(JSON.stringify(new RequestsMessage("add", await transformUser(user, async (user) => {
                     return { 
                         currentSong: user.current_song, 
                         currentSource: user.current_source
@@ -67,7 +67,7 @@ export class RequestController {
         const otherUserSocket = await socketService.retrieveById(otherUser.id);
 
         if (otherUserSocket) {
-            otherUserSocket.send(JSON.stringify(new RequestsMessage("remove",  transformUser(user))));
+            otherUserSocket.send(JSON.stringify(new RequestsMessage("remove",  await transformUser(user))));
         }
     }
 }

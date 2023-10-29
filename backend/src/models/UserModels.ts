@@ -8,18 +8,18 @@ export type VisibleUser = {
     [key: string]: any;
 }
 
-// ChatGPT Usage: No
-export function transformUsers(users: User[], extras?: (user) => object): VisibleUser[] {
-    return users.map(u => transformUser(u, extras));
+// ChatGPT Usage: Partial
+export async function transformUsers(users: User[], extras?: (user) => Promise<object>): Promise<VisibleUser[]> {
+    return await Promise.all(users.map(async user => await transformUser(user, extras)));
 }
 
 // ChatGPT Usage: Partial
-export function transformUser(user: User, extras?: (user) => object): VisibleUser {
+export async function transformUser(user: User, extras?:  (user) => Promise<object>): Promise<VisibleUser> {
     return {
         id: user.spotify_id,
         username: user.username,
         profilePic: user.pfp_url,
-        ...(extras ? extras(user): {}),
+        ...(extras ? await extras(user): {}),
     }
 }
 
