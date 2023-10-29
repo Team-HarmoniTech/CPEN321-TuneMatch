@@ -35,6 +35,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String REDIRECT_URI = "cpen321tunematch://callback";
     private static final String TAG = "LoginActivity";
     private static final String CLIENT_ID = "0dcb406f508a4845b32a1342a91a71af";
+    private static final int MAX_PROFILE_URL = 500;
 
     private String spotifyUserId;
     @Override
@@ -177,6 +178,10 @@ public class LoginActivity extends AppCompatActivity {
                             for (int i = 0; i < spotifyImage.length(); i++) {
                                 JSONObject imageObject = spotifyImage.getJSONObject(i);
                                 spotifyImageUrl = imageObject.getString("url");
+                            }
+
+                            if (spotifyImageUrl.length() > MAX_PROFILE_URL) {
+                                spotifyImageUrl = "profile.com/url";
                             }
 
                             // get top artists

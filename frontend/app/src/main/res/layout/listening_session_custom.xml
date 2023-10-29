@@ -6,7 +6,7 @@
     android:layout_height="wrap_content">
 
     <TextView
-        android:id="@+id/sessionNameText"
+        android:id="@+id/roomNameText"
         android:layout_width="180dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="30dp"
