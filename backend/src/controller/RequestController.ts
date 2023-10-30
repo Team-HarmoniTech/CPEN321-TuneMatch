@@ -73,7 +73,7 @@ export class RequestController {
 
         const user = await userService.removeFriend(currentUserId, otherUser.id);
         const otherUserSocket = await socketService.retrieveById(otherUser.id);
-
+    
         if (otherUserSocket) {
             otherUserSocket.send(JSON.stringify(new RequestsMessage("remove",  await transformUser(user))));
         }
