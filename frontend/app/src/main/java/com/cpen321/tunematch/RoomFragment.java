@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 
 import android.os.Bundle;
@@ -27,6 +28,7 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -61,6 +63,8 @@ public class RoomFragment extends Fragment {
     private TextView songArtist;
     private TextView currentDuration;
     private TextView totalDuration;
+    private ChatFragment chatFrag;
+    private QueueFragment queueFrag;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -69,15 +73,14 @@ public class RoomFragment extends Fragment {
         Button chatBtn = view.findViewById(R.id.chatBtn);
         Button queueBtn = view.findViewById(R.id.queueBtn);
 
+        chatFrag = new ChatFragment();
+        queueFrag = new QueueFragment();
+
         chatBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 // Replace the current fragment with the ChatFragment
-                getFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.subFrame, new ChatFragment())
-                        .addToBackStack(null)
-                        .commit();
+                switchFragment(R.id.subFrame, chatFrag);
             }
         });
 
@@ -85,20 +88,33 @@ public class RoomFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 // Replace the current fragment with the ChatFragment
-                getFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.subFrame, new QueueFragment())
-                        .addToBackStack(null)
-                        .commit();
+                switchFragment(R.id.subFrame, queueFrag);
             }
         });
 
         // initialize to chat
-        getFragmentManager()
-                .beginTransaction()
-                .replace(R.id.subFrame, new ChatFragment())
-                .addToBackStack(null)
-                .commit();
+        switchFragment(R.id.subFrame, chatFrag);
+
+        // disable songSearchListView initially
+        ListView songSearchList = view.findViewById(R.id.songListView);
+        songSearchList.setEnabled(false);
+
+        SearchView songSearchBar = view.findViewById(R.id.songSearchBar);
+        songSearchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // This method is called when the user submits the query (e.g., presses "Enter" on the keyboard)
+                searchSong(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                Log.d("songSearchBar", "in onQueryTextChange method");
+                songSearchList.setEnabled(true);
+                return false;
+            }
+        });
 
         return view;
     }
@@ -298,7 +314,17 @@ public class RoomFragment extends Fragment {
         return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
     }
 
+    private void switchFragment(int frameId, Fragment frag) {
+        getFragmentManager()
+                .beginTransaction()
+                .replace(frameId, frag)
+                .addToBackStack(null)
+                .commit();
+    }
 
+    private void searchSong(String query) {
+
+    }
 
 
 
