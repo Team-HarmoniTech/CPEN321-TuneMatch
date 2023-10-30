@@ -1,6 +1,9 @@
-
-// Written by ChatGPT and add changes to fit my purpose
+// Partially written by ChatGPT
 package com.cpen321.tunematch;
+
+
+import static android.text.method.TextKeyListener.clear;
+import static java.util.Collections.addAll;
 
 import android.app.Activity;
 import android.content.Context;
@@ -25,7 +28,6 @@ public class CustomListAdapter extends BaseAdapter {
     private List<String> itemList;
 
     public CustomListAdapter(Context context, Activity parentView, String listType, List<String> itemList) {
-
         this.context = context;
         this.parentView = parentView;
         this.listType = listType;
@@ -55,15 +57,13 @@ public class CustomListAdapter extends BaseAdapter {
                 convertView = inflater.inflate(R.layout.friend_activity_custom, parent, false);
             } else if (listType.equals("SessionsList")) {
                 convertView = inflater.inflate(R.layout.listening_session_custom, parent, false);
-
             } else if (listType.equals("EditFriendsList")) {
                 convertView = inflater.inflate(R.layout.friend_remove_custom, parent, false);
-
             }
         }
 
         if (listType.equals("FriendsList")) {                                               // in the HomeFragment
-            String[] item = itemList.get(position).split(";");
+            String[] item = itemList.get(position).split(";");                        // items = "name;song"
 
             // Set friend name
             TextView friendNameText = convertView.findViewById(R.id.friendNameText);
@@ -73,7 +73,7 @@ public class CustomListAdapter extends BaseAdapter {
             TextView songText = convertView.findViewById(R.id.songTitleText);
             songText.setText(item[1]);
         } else if (listType.equals("SessionsList")) {                                       // in the HomeFragment
-            // Set room name
+            // Set room name                                                                // items = "owner"
             TextView roomNameText = convertView.findViewById(R.id.roomNameText);
             String ownerText = itemList.get(position);
             roomNameText.setText(String.format("%s's room", ownerText));
@@ -92,7 +92,7 @@ public class CustomListAdapter extends BaseAdapter {
                 }
             });
         } else if (listType.equals("EditFriendsList")) {                                    // in the ProfileFragment
-            // Set friend name
+            // Set friend name                                                              // items = "friendName"
             TextView friendNameText = convertView.findViewById(R.id.friendNameText);
             String nameText = itemList.get(position);
             friendNameText.setText(nameText);
@@ -107,6 +107,10 @@ public class CustomListAdapter extends BaseAdapter {
             });
         }
         return convertView;
+    }
+    public void setData(List<String> data) {
+        this.itemList = data;
+        notifyDataSetChanged();
     }
 }
 

@@ -14,8 +14,8 @@ export class Song {
 
 export class Queue {
     private running: boolean;
-    private songs: Song[];
-    private currentlyPlaying: Song;
+    public songs: Song[];
+    public currentlyPlaying: Song;
     private runQueue: NodeJS.Timeout;
 
     constructor() {
@@ -26,7 +26,7 @@ export class Queue {
     }
 
     start() {
-        if (this.songs.length !== 0) {
+        if (this.songs.length !== 0 && !this.running) {
             this.running = true;
             this.playNext();
         }
@@ -45,11 +45,12 @@ export class Queue {
     }
 
     stop() {
-        this.running = false;
-        if (this.currentlyPlaying !== null) {
+        if (this.running) {
+            this.running = false;
             clearTimeout(this.runQueue);
             const elapsedMs = new Date().getTime() - this.currentlyPlaying.timeStarted.getTime();
             this.currentlyPlaying.leftMs -= elapsedMs;
+            this.currentlyPlaying.timeStarted = null;
             /* Add back to the queue if not finished */
             if (this.currentlyPlaying.leftMs > 0) {
                 this.songs.unshift(this.currentlyPlaying);
@@ -70,8 +71,9 @@ export class Queue {
 
     addAfter(song: Song, index?: number) {
         const splicePos = index ? index : Infinity;
+        song.leftMs = song.durationMs;
         this.songs.splice(splicePos, 0, song);
-        /* Start Automatically but only if the added song is at the start of the queue */
+        /* Start Automatically but only if the song is added to an empty queue */
         if (!this.currentlyPlaying && this.songs.length === 1) {
             this.start();
         }
@@ -81,7 +83,6 @@ export class Queue {
         if (this.currentlyPlaying != null) {
             clearTimeout(this.runQueue);
             this.songs.shift();
-            console.log(this.songs.length);
             this.playNext();
         }
     }

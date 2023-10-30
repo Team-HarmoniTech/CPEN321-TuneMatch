@@ -3,12 +3,12 @@ import { UserController } from "../controller/UserController";
 
 export const UserRoutes = [{
     method: "get",
-    route: "/users/search",
+    route: "/users/search/:search_term",
     controller: UserController,
     action: "searchUsers",
     validation: [
         header('user-id').isAlphanumeric(),
-        body('search_term').isString(),
+        param('search_term').isString(),
         query('max').optional().isInt()
     ]
 }, {
@@ -38,6 +38,15 @@ export const UserRoutes = [{
         header('user-id').isAlphanumeric()
     ]
 }, {
+    method: "get",
+    route: "/me/match/:spotify_id",
+    controller: UserController,
+    action: "getMatch",
+    validation: [
+        header('user-id').isAlphanumeric(),
+        param('spotify_id').isAlphanumeric()
+    ]
+}, {
     method: "post",
     route: "/users/create",
     controller: UserController,
@@ -47,7 +56,7 @@ export const UserRoutes = [{
         body('userData.username').isString(),
         body('userData.top_artists').isArray(),
         body('userData.top_genres').isArray(),
-        body('userData.pfp_url').optional().isURL()
+        body('userData.pfp_url').optional().isURL().isLength({ max: 500 })
     ]
 }, {
     method: "put",

@@ -99,6 +99,7 @@ public class RoomFragment extends Fragment {
                 .replace(R.id.subFrame, new ChatFragment())
                 .addToBackStack(null)
                 .commit();
+
         return view;
     }
 

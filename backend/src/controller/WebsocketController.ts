@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { Request } from "express";
 import { WebSocket } from "ws";
 import { database, sessionService, socketService, userService } from "..";
+import { SessionMessage } from "../models/SessionModels";
 import { FriendsMessage, RequestsMessage, transformUser, transformUsers } from "../models/UserModels";
 import { SocketMessage } from "../models/WebsocketModels";
 import { RequestController } from "./RequestController";
@@ -59,6 +60,9 @@ export async function handleConnection(ws: WebSocket, req: Request) {
 
 	// ChatGPT Usage: No
 	ws.on('message', function message(data) {
+		if (data.toString() === "") {
+			return;
+		}
 		try {
 			const req: SocketMessage = JSON.parse(data.toString());
 			if (!req.method) {
@@ -87,20 +91,27 @@ export async function handleConnection(ws: WebSocket, req: Request) {
 	ws.on('close', async function close(code, reason) {
 		console.error(`Socket Closed: ${reason.toString()}`);
 		const userId = await socketService.retrieveBySocket(ws);
-		if (userId) {
-			const session = await sessionService.leaveSession(userId);
-			await userService.updateUser({ current_song: null, current_source: Prisma.DbNull }, currentUserId);
-			await userService.broadcastToFriends(currentUserId, 
-				new FriendsMessage("update", await transformUser(session.members.find(x => x.id === currentUserId), async (user) => {
-					return { 
-						currentSong: user.current_song, 
-						currentSource: user.current_source
-					};
-				}))
-			);
-			if (session) {
-				await sessionService.messageSession(session.id, userId, { userLeave: await transformUser(session.members.find(x => x.id === userId)) });
+		try {
+			if (userId) {
+				const session = await sessionService.leaveSession(userId);
+				const user = await userService.updateUser({ current_song: null, current_source: Prisma.DbNull }, userId);
+				if (user) {
+					await userService.broadcastToFriends(userId, 
+						new FriendsMessage("update", await transformUser(user, async (user) => {
+							return { 
+								currentSong: user.current_song, 
+								currentSource: user.current_source
+							};
+						})
+					));
+					if (session) {
+						await sessionService.messageSession(session.id, userId, 
+							new SessionMessage("leave", await transformUser(user)));
+					}
+				}
 			}
+		} catch {}
+		if (userId) {
 			await socketService.removeConnectionBySocket(ws);
 		}
 	});

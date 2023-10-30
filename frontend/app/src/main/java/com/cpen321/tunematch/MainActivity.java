@@ -28,13 +28,15 @@ public class MainActivity extends AppCompatActivity {
     private ProfileFragment profileFrag;
     private ApiClient apiClient;
     private WebSocketClient webSocketClient;
+    private ReduxStore model;
 
+    // Fully written by teammates
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        webSocketClient = new WebSocketClient();
-        webSocketClient.start();
+        model = new ReduxStore();
+        webSocketClient = new WebSocketClient(model);
 
         // Retrieve the Spotify User ID from the Intent
         Intent intent = getIntent();
@@ -43,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
             apiClient = new ApiClient("https://zphy19my7b.execute-api.us-west-2.amazonaws.com/v1",
                     new Headers.Builder().add("user-id", spotifyUserId).build());
+            webSocketClient.start(new Headers.Builder().add("user-id", spotifyUserId).build());
         }
 
         bottomNavigationView = findViewById(R.id.bottomNavi);
@@ -74,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Switch between fragments
+    // Fully written by teammates
     private void setFragment(int n) {
         fm = getSupportFragmentManager();
         ft = fm.beginTransaction();
@@ -98,13 +102,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Fully written by teammates
     @Override
     protected void onDestroy() {
         super.onDestroy();
         webSocketClient.stop();
     }
 
+    // Fully written by teammates
     public ApiClient getApiClient() {return apiClient;}
+
+    // Fully written by teammates
+    public WebSocketClient getWebSocketClient() {return webSocketClient;}
+
+    // Fully written by teammates
+    public ReduxStore getModel() {return model;}
 
 }
 

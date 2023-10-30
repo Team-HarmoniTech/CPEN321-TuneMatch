@@ -35,8 +35,11 @@ public class LoginActivity extends AppCompatActivity {
     private static final String REDIRECT_URI = "cpen321tunematch://callback";
     private static final String TAG = "LoginActivity";
     private static final String CLIENT_ID = "0dcb406f508a4845b32a1342a91a71af";
+    private static final int MAX_PROFILE_URL = 500;
 
     private String spotifyUserId;
+
+    // Partially written by ChatGPT
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,7 +61,7 @@ public class LoginActivity extends AppCompatActivity {
             AuthorizationRequest.Builder builder =
                     new AuthorizationRequest.Builder(CLIENT_ID, AuthorizationResponse.Type.TOKEN, REDIRECT_URI);
 
-            builder.setScopes(new String[]{"user-read-private", "user-library-read", "user-top-read", "user-read-email", "playlist-read-private"});
+            builder.setScopes(new String[]{"user-read-private", "user-library-read", "user-top-read", "user-read-email", "playlist-read-private", "streaming"});
             AuthorizationRequest request = builder.build();
             AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request);
         }
@@ -80,15 +83,16 @@ public class LoginActivity extends AppCompatActivity {
                 dialog.show();
             } else {
                 AuthorizationRequest.Builder builder =
-                        new AuthorizationRequest.Builder("0dcb406f508a4845b32a1342a91a71af", AuthorizationResponse.Type.TOKEN, REDIRECT_URI);
+                        new AuthorizationRequest.Builder(CLIENT_ID, AuthorizationResponse.Type.TOKEN, REDIRECT_URI);
 
-                builder.setScopes(new String[]{"streaming"});
+                builder.setScopes(new String[]{"user-read-private", "user-library-read", "user-top-read", "user-read-email", "playlist-read-private", "streaming"});
                 AuthorizationRequest request = builder.build();
                 AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request);
             }
         });
     }
 
+    // Partially written in ChatGPT
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
 
@@ -121,6 +125,7 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    // Partially written by ChatGPT
     private void fetchSpotifyUserId(String authToken) {
         Log.d("fetchSpotifyUserId", "Inside function");
         // Set up your custom headers (including the Authorization header with the access token)
@@ -175,6 +180,10 @@ public class LoginActivity extends AppCompatActivity {
                             for (int i = 0; i < spotifyImage.length(); i++) {
                                 JSONObject imageObject = spotifyImage.getJSONObject(i);
                                 spotifyImageUrl = imageObject.getString("url");
+                            }
+
+                            if (spotifyImageUrl.length() > MAX_PROFILE_URL) {
+                                spotifyImageUrl = "profile.com/url";
                             }
 
                             // get top artists
@@ -234,6 +243,7 @@ public class LoginActivity extends AppCompatActivity {
         }).start();
     }
 
+    // Partially written by ChatGPT
     private String listToString(ArrayList<String> list) {
         StringBuilder sb = new StringBuilder();
         sb.append("[");
@@ -247,6 +257,7 @@ public class LoginActivity extends AppCompatActivity {
         return sb.toString();
     }
 
+    // Partially written by ChatGPT
     private void handleError(String warningMessage) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override

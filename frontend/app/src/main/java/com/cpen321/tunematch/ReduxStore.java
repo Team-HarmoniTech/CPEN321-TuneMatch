@@ -6,21 +6,25 @@ import androidx.lifecycle.MutableLiveData;
 import java.util.ArrayList;
 import java.util.List;
 
+import kotlin.jvm.Synchronized;
+
 public class ReduxStore extends ViewModel {
     private final MutableLiveData<List<Friend>> friendsList;
     private final MutableLiveData<List<Session>> sessionList;
     private final MutableLiveData<List<Song>> songQueue;
+    private final MutableLiveData<List<Users>> SearchList;
 
     public ReduxStore() {
         friendsList = new MutableLiveData<>();
         sessionList = new MutableLiveData<>();
         songQueue = new MutableLiveData<>();
+        SearchList = new MutableLiveData<>();
     }
 
     public MutableLiveData<List<Friend>> getFriendsList() {
         return friendsList;
     }
-
+    public MutableLiveData<List<Users>> getSearchList() {return SearchList;}
     public ArrayList<String> friendsNameList() {
         ArrayList<String> nameList = new ArrayList<>();
         for (Friend f : friendsList.getValue()) {
@@ -39,6 +43,7 @@ public class ReduxStore extends ViewModel {
         }
         return id;
     }
+
 
     public void setFriendsList(List<Friend> friends) {
         friendsList.setValue(friends);

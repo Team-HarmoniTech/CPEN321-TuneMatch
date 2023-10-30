@@ -1,6 +1,5 @@
 import { Connection, User } from "@prisma/client";
-import { database } from "..";
-import { userService } from "..";
+import { database, userService } from "..";
 
 export class UserMatchingService {
 	private userDB = database.user;
@@ -84,7 +83,7 @@ export class UserMatchingService {
 			// Score each index of array 2 against the created map
 			arr2.forEach((value, index) => {
 				if (arr1map.has(value)) {
-					score += (maxLength - Math.abs(index - arr1map.get(value))) / Math.max(arr1.length);
+					score += (maxLength - Math.abs(index - arr1map.get(value))) / Math.max(arr1.length / 10, 1);
 				}
 			});
 

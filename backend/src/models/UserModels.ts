@@ -2,7 +2,7 @@ import { User } from "@prisma/client";
 import { SocketMessage } from "./WebsocketModels";
 
 export type VisibleUser = {
-    id: String,
+    userId: String,
     username: String,
     profilePic: String,
     [key: string]: any;
@@ -16,7 +16,7 @@ export async function transformUsers(users: User[], extras?: (user) => Promise<o
 // ChatGPT Usage: Partial
 export async function transformUser(user: User, extras?:  (user) => Promise<object>): Promise<VisibleUser> {
     return {
-        id: user.spotify_id,
+        userId: user.spotify_id,
         username: user.username,
         profilePic: user.pfp_url,
         ...(extras ? await extras(user): {}),
