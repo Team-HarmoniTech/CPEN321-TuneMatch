@@ -28,13 +28,15 @@ public class MainActivity extends AppCompatActivity {
     private ProfileFragment profileFrag;
     private ApiClient apiClient;
     private WebSocketClient webSocketClient;
+    private ReduxStore model;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        webSocketClient = new WebSocketClient();
-        webSocketClient.start();
+        model = new ReduxStore();
+        webSocketClient = new WebSocketClient(model);
+
 
         // Retrieve the Spotify User ID from the Intent
         Intent intent = getIntent();
@@ -43,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
             apiClient = new ApiClient("https://zphy19my7b.execute-api.us-west-2.amazonaws.com/v1",
                     new Headers.Builder().add("user-id", spotifyUserId).build());
+            webSocketClient.start(new Headers.Builder().add("user-id", spotifyUserId).build());
         }
 
         bottomNavigationView = findViewById(R.id.bottomNavi);
@@ -105,6 +108,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public ApiClient getApiClient() {return apiClient;}
+
+    public WebSocketClient getWebSocketClient() {return webSocketClient;}
+    public ReduxStore getModel() {return model;}
 
 }
 

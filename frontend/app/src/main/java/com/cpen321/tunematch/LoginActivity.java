@@ -35,6 +35,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String REDIRECT_URI = "cpen321tunematch://callback";
     private static final String TAG = "LoginActivity";
     private static final String CLIENT_ID = "0dcb406f508a4845b32a1342a91a71af";
+    private static final int MAX_PROFILE_URL = 500;
 
     private String spotifyUserId;
     @Override
@@ -58,7 +59,7 @@ public class LoginActivity extends AppCompatActivity {
             AuthorizationRequest.Builder builder =
                     new AuthorizationRequest.Builder(CLIENT_ID, AuthorizationResponse.Type.TOKEN, REDIRECT_URI);
 
-            builder.setScopes(new String[]{"user-read-private", "user-library-read", "user-top-read", "user-read-email", "playlist-read-private"});
+            builder.setScopes(new String[]{"user-read-private", "user-library-read", "user-top-read", "user-read-email", "playlist-read-private", "streaming"});
             AuthorizationRequest request = builder.build();
             AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request);
         }
@@ -80,9 +81,9 @@ public class LoginActivity extends AppCompatActivity {
                 dialog.show();
             } else {
                 AuthorizationRequest.Builder builder =
-                        new AuthorizationRequest.Builder("0dcb406f508a4845b32a1342a91a71af", AuthorizationResponse.Type.TOKEN, REDIRECT_URI);
+                        new AuthorizationRequest.Builder(CLIENT_ID, AuthorizationResponse.Type.TOKEN, REDIRECT_URI);
 
-                builder.setScopes(new String[]{"streaming"});
+                builder.setScopes(new String[]{"user-read-private", "user-library-read", "user-top-read", "user-read-email", "playlist-read-private", "streaming"});
                 AuthorizationRequest request = builder.build();
                 AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request);
             }
@@ -177,6 +178,10 @@ public class LoginActivity extends AppCompatActivity {
                             for (int i = 0; i < spotifyImage.length(); i++) {
                                 JSONObject imageObject = spotifyImage.getJSONObject(i);
                                 spotifyImageUrl = imageObject.getString("url");
+                            }
+
+                            if (spotifyImageUrl.length() > MAX_PROFILE_URL) {
+                                spotifyImageUrl = "profile.com/url";
                             }
 
                             // get top artists
