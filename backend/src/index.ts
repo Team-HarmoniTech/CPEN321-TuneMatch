@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client"
+import { Prisma, PrismaClient } from "@prisma/client"
 import * as bodyParser from "body-parser"
 import * as express from "express"
 import { Request, Response } from "express"
@@ -61,9 +61,17 @@ const wss = new WebSocketServer({ server: server, path: "/socket" });
 // Register websocket routes with WebsocketController
 wss.on('connection', handleConnection);
 
-// Reset sessions then start express server
+// Reset sessions and current listening then start express server
 // ChatGPT Usage: Partial
-database.session.deleteMany().then(() => {
+Promise.all([
+	database.session.deleteMany(),
+	database.user.updateMany({
+		data: {
+			current_song: null,
+			current_source: Prisma.DbNull
+		}
+	})
+]).then(() => {
 	server.listen(PORT, () => {
 		console.log(`Express server has started on port ${PORT}.`);
 	})

@@ -82,8 +82,12 @@ export class SessionController {
     // ChatGPT Usage: No
     async join(ws: WebSocket, message: SessionMessage, currentUserId: number) {
         const session = await sessionService.joinSession(currentUserId, message?.body?.userId || undefined);
-        ws.send(JSON.stringify(new SessionMessage("join", 
-            await transformUsers(session.members.filter(x => x.id !== currentUserId)))));
+        const queue = await sessionService.getQueue(session.id);
+        ws.send(JSON.stringify(new SessionMessage("refresh", {
+            members: await transformUsers(session.members.filter(x => x.id !== currentUserId)),
+            currentlyPlaying: queue.currentlyPlaying,
+            queue: queue.queue
+        })));
         
         await sessionService.messageSession(session.id, currentUserId, 
             new SessionMessage("join",  await transformUser(session.members.find(x => x.id === currentUserId))));
