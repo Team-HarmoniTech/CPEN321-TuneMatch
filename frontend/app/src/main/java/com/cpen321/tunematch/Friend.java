@@ -1,20 +1,37 @@
 package com.cpen321.tunematch;
 
-public class Friend {
-    private String name;
-    private String id;
-    private boolean isListening;
+import android.util.Log;
 
-    public Friend(String name, String id) {
-        this.name = name;
+public class Friend {
+    private String id;
+    private String username;
+    private String profilePic;
+    private String currentSong;
+    private String currentSource;
+
+    private String currentDuration;
+    public Friend(String name, String id, String profilePic) {
+        this.username = name;
         this.id = id;
-        this.isListening = false;
+        this.profilePic = profilePic;
     }
 
     public String getName() {
-        return name;
+        return username;
     }
     public String getId() {return id;}
+    public String getProfilePic() {return profilePic;}
+    public String getCurrentSong() {return currentSong;}
+    public String getCurrentSource() {return currentSource;}
+    public boolean getIsListening() {
+        Log.d("Friend", "current song: " + currentSong);
+        if (currentSong.equals("null")) {
+            return false;
+        }
+        return true;
+    }
+    public String getCurrentDuration() {return currentDuration;}
 
-    // getters and setters
+    public void setCurrentSong(String currentSong) {this.currentSong = currentSong;}
+    public void setCurrentSource(String currentSource) {this.currentSource = currentSource;}
 }

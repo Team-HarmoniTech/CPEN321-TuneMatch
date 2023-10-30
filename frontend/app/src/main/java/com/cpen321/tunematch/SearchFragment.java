@@ -53,7 +53,7 @@ public class SearchFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         // Initialize ViewModel and ApiClient here.
-        model = new ViewModelProvider(requireActivity()).get(ReduxStore.class);
+        model = ((MainActivity) getActivity()).getModel();
         apiClient = ((MainActivity) getActivity()).getApiClient();;
 
         new Thread(new Runnable() {
@@ -63,9 +63,9 @@ public class SearchFragment extends Fragment {
                 try {
                     response = apiClient.doGetRequest("/me/matches", true);
                     // Parse the response.
-                    List<Friend> newFriendsList = parseResponse(response);
+                    List<Users> newSearchList = parseResponse(response);
                     // Update LiveData.
-                    model.getFriendsList().postValue(newFriendsList);
+                    model.getSearchList().postValue(newSearchList);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -77,9 +77,7 @@ public class SearchFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.frag_search, container, false);
-
         SearchView searchFriend = view.findViewById(R.id.searchFriend);
-
         ListView recommendedList = view.findViewById(R.id.recommendedList);
 
         listAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1);
@@ -146,10 +144,7 @@ public class SearchFragment extends Fragment {
                 addButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // Handle the "Add" button click
-                        // You can add the desired functionality here
                         Log.d("Friend profile dialog addButton","Send friend request");
-                        // TODO: send friend request
                         profileDialog.dismiss();
                     }
                 });
@@ -159,9 +154,7 @@ public class SearchFragment extends Fragment {
         searchFriend.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
             @Override
             public boolean onQueryTextSubmit(String query) {
-                Log.d("SearchFragment", "onQueryTextSubmit: " + query);
                 String encodedQuery;
-//               url encode the query
                 try {
                      encodedQuery = URLEncoder.encode(query, Charsets.UTF_8.toString());
                     Log.d("SearchFragment", "onQueryTextSubmit: " + encodedQuery);
@@ -173,100 +166,92 @@ public class SearchFragment extends Fragment {
                     public void run() {
                         String response;
                         try {
-                            if (query.isEmpty()) {
-                                Log.d("SearchFragment", "its triggered");
+
+                            if(query.isEmpty()){
                                 response = apiClient.doGetRequest("/me/matches", true);
-                            } else {
+                            }
+                            else{
                                 response = apiClient.doGetRequest("/users/search/" + encodedQuery, true);
                             }
+                            List<Users> newSearchList = parseResponse(response);
+                            model.getSearchList().postValue(newSearchList);
 
-                            // Parse the response.
-                            List<Friend> newFriendsList = parseResponse(response);
-
-                            // Update LiveData.
-                            model.getFriendsList().postValue(newFriendsList);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
                 }).start();
 
-                return true; // Return true to indicate that you've handled the event
+                return true;
+
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                Log.d("SearchFragment", "onQueryTextSubmit: " + newText);
-                String encoded_newText = encodeUsername(newText);
+
+                String encoded_newText;
+                try {
+                    encoded_newText = URLEncoder.encode(newText, Charsets.UTF_8.toString());
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException(e);
+                }
+
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         String response;
                         try {
                             if(newText.isEmpty()){
-                                Log.d("SearchFragment", "its triggered");
                                 response = apiClient.doGetRequest("/me/matches", true);
-                                // Parse the response.
                             }
                             else{
                                 response = apiClient.doGetRequest("/users/search/" + encoded_newText, true);
                             }
-
-                            // Parse the response.
-                            List<Friend> newFriendsList = parseResponse(response);
-                            // Update LiveData.
-                            model.getFriendsList().postValue(newFriendsList);
+                            List<Users> newSearchList = parseResponse(response);
+                            model.getSearchList().postValue(newSearchList);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
                 }).start();
+                return true;
 
-                return true; // Return true to indicate that you've handled the event
             }
         });
 
-        model.getFriendsList().observe(getViewLifecycleOwner(), new Observer<List<Friend>>() {
+        model.getSearchList().observe(getViewLifecycleOwner(), new Observer<List<Users>>() {
             @Override
-            public void onChanged(List<Friend> friends) {
-                // Update the UI.
+            public void onChanged(List<Users> SearchedUsers) {
                 listAdapter.clear();
-                for (Friend friend : friends) {
-                    listAdapter.add(friend.getName());
+                for (Users user : SearchedUsers) {
+                    listAdapter.add(user.getName() + " (" + user.getMatchPercent() + "%)");
                 }
                 listAdapter.notifyDataSetChanged();
             }
         });
-
         return view;
     }
-    public List<Friend> parseResponse(String response) {
+    public List<Users> parseResponse(String response) {
         Log.d("SearchFragment", "parseResponse: " + response);
-        List<Friend> friends = new ArrayList<>();
+        List<Users> searchedUser = new ArrayList<>();
         try {
             JSONArray jsonArray = new JSONArray(response);
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 String name = jsonObject.getString("username");
                 String id = jsonObject.getString("id");
-                String match_score = "";
-                if(jsonObject.has("match")){
-                    match_score = jsonObject.getString("match");
-                    friends.add(new Friend(name + " (" + match_score + "%)", id));
-                } else if (jsonObject.has("match_percent")){
-                    match_score = jsonObject.getString("match_percent");
-                    friends.add(new Friend(name + " (" + match_score + "%)", id));
-                }
-                else {
-                    friends.add(new Friend(name, id));
-                }
 
-                // Create a new Friend object and add it to the list.
+                String match_score = jsonObject.getString("match_percent");
+                String profilePic = jsonObject.getString("profilePic");
+                Users user = new Users(name, id, profilePic);
+                user.setMatchPercent(match_score);
+                searchedUser.add(user);
+
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return friends;
+        return searchedUser;
     }
 
     private String encodeUsername(String username) {
