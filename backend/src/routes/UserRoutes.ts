@@ -56,7 +56,7 @@ export const UserRoutes = [{
         body('userData.username').isString(),
         body('userData.top_artists').isArray(),
         body('userData.top_genres').isArray(),
-        body('userData.pfp_url').optional().isURL()
+        body('userData.pfp_url').optional().isURL().isLength({ max: 500 })
     ]
 }, {
     method: "put",

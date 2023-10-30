@@ -39,7 +39,9 @@ public class HomeFragment extends Fragment {
 
         // Add friends activity
         ListView friendsActivityList = view.findViewById(R.id.friendsList);
+
         CustomListAdapter friendsAdapter = new CustomListAdapter(getContext(), getActivity(), "FriendsList", new ArrayList<>());
+
         friendsActivityList.setAdapter(friendsAdapter);
 
         model.getFriendsList().observe(getViewLifecycleOwner(), friends -> {

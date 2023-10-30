@@ -89,15 +89,18 @@ export async function handleConnection(ws: WebSocket, req: Request) {
 		const userId = await socketService.retrieveBySocket(ws);
 		if (userId) {
 			const session = await sessionService.leaveSession(userId);
-			await userService.updateUser({ current_song: null, current_source: Prisma.DbNull }, currentUserId);
-			await userService.broadcastToFriends(currentUserId, 
-				new FriendsMessage("update", await transformUser(session.members.find(x => x.id === currentUserId), async (user) => {
-					return { 
-						currentSong: user.current_song, 
-						currentSource: user.current_source
-					};
-				}))
-			);
+			const user = await userService.getUserById(userId);
+			if (user) {
+				await userService.updateUser({ current_song: null, current_source: Prisma.DbNull }, userId);
+				await userService.broadcastToFriends(userId, 
+					new FriendsMessage("update", await transformUser(user, async (user) => {
+						return { 
+							currentSong: user.current_song, 
+							currentSource: user.current_source
+						};
+					})
+				));
+			}
 			if (session) {
 				await sessionService.messageSession(session.id, userId, { userLeave: await transformUser(session.members.find(x => x.id === userId)) });
 			}

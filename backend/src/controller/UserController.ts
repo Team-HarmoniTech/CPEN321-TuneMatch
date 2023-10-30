@@ -24,7 +24,7 @@ export class UserController {
     async topMatches(req: Request, res: Response, next: NextFunction) {
         const matches = await userMatchingService.getTopMatches(req.currentUserId);
         res.send(await transformUsers(matches, async (user) => {
-            return { match: user.match };
+            return { match_percent: user.match };
         }));
     }
 

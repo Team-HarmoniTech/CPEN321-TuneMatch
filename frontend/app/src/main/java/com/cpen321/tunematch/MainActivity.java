@@ -108,7 +108,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public ApiClient getApiClient() {return apiClient;}
+
     public WebSocketClient getWebSocketClient() {return webSocketClient;}
     public ReduxStore getModel() {return model;}
+
 }
 
