@@ -1,5 +1,5 @@
 import { socketService, userService } from "..";
-import { RequestsMessage, transformUser, transformUsers } from "../models/UserModels";
+import { FriendsMessage, RequestsMessage, transformUser, transformUsers } from "../models/UserModels";
 import { SocketMessage } from "../models/WebsocketModels";
 import WebSocket = require("ws");
 
@@ -53,6 +53,14 @@ export class RequestController {
                     };
                 }
             ))));
+        }
+        if ((await userService.getUserFriends(currentUserId)).some(u => u.id === otherUser.id)) {
+            ws.send(JSON.stringify(new FriendsMessage("update", await transformUser(otherUser, async (user) => {
+                return { 
+                    currentSong: user.current_song, 
+                    currentSource: user.current_source
+                };
+            }))));
         }
     }
 
