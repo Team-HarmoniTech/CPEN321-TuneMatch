@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private WebSocketClient webSocketClient;
     private ReduxStore model;
 
+    // Fully written by teammates
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Switch between fragments
+    // Fully written by teammates
     private void setFragment(int n) {
         fm = getSupportFragmentManager();
         ft = fm.beginTransaction();
@@ -101,15 +103,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Fully written by teammates
     @Override
     protected void onDestroy() {
         super.onDestroy();
         webSocketClient.stop();
     }
 
+    // Fully written by teammates
     public ApiClient getApiClient() {return apiClient;}
 
+    // Fully written by teammates
     public WebSocketClient getWebSocketClient() {return webSocketClient;}
+
+    // Fully written by teammates
     public ReduxStore getModel() {return model;}
 
 }
