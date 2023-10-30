@@ -1,5 +1,4 @@
-
-// Written by ChatGPT and add changes to fit my purpose
+// Partially written by ChatGPT
 package com.cpen321.tunematch;
 
 
