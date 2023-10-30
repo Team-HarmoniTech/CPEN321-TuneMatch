@@ -75,7 +75,7 @@ export class SessionController {
     async queueSeek(ws: WebSocket, message: SessionMessage, currentUserId: number) {
         const currentUser = await userService.getUserById(currentUserId);
         const { seekPosition } = message.body;
-        await sessionService.queuePlay(currentUser.session.id);
+        await sessionService.queueSeek(currentUser.session.id, seekPosition);
         await sessionService.messageSession(currentUser.session.id, currentUserId, message);
     }
 

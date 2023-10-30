@@ -96,10 +96,10 @@ export class SessionService {
     }
 
     // ChatGPT Usage: No
-    async queueReplace(sessionId: number, newQueue: { songUri: string, durationMs: number}[]) {
+    async queueReplace(sessionId: number, newQueue: { uri: string, durationMs: number}[]) {
         const queueData = this.sessionQueues.get(sessionId);
         await queueData.lock.runExclusive(() => {
-            queueData.queue.replace(newQueue.map(s => new Song(s.songUri, s.durationMs)));
+            queueData.queue.replace(newQueue.map(s => new Song(s.uri, s.durationMs)));
         });
     }
 
@@ -159,7 +159,7 @@ export class SessionService {
                 currentlyPlaying: q.currentlyPlaying ? {
                     uri: q.currentlyPlaying.uri,
                     durationMs: q.currentlyPlaying.durationMs,
-                    timeStarted: q.currentlyPlaying.timeStarted
+                    timeStarted: q.currentlyPlaying.timeStarted.toISOString()
                 } : null,
                 queue: [...q.songs].map(val => {return { uri: val.uri, durationMs: val.durationMs }})
             }

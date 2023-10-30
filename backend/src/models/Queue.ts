@@ -26,7 +26,7 @@ export class Queue {
     }
 
     start() {
-        if (this.songs.length !== 0) {
+        if (this.songs.length !== 0 && !this.running) {
             this.running = true;
             this.playNext();
         }
@@ -45,8 +45,8 @@ export class Queue {
     }
 
     stop() {
-        this.running = false;
-        if (this.currentlyPlaying !== null) {
+        if (this.running) {
+            this.running = false;
             clearTimeout(this.runQueue);
             const elapsedMs = new Date().getTime() - this.currentlyPlaying.timeStarted.getTime();
             this.currentlyPlaying.leftMs -= elapsedMs;
