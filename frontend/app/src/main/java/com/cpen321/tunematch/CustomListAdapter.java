@@ -2,6 +2,10 @@
 // Written by ChatGPT and add changes to fit my purpose
 package com.cpen321.tunematch;
 
+
+import static android.text.method.TextKeyListener.clear;
+import static java.util.Collections.addAll;
+
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
@@ -107,6 +111,10 @@ public class CustomListAdapter extends BaseAdapter {
             });
         }
         return convertView;
+    }
+    public void setData(List<String> data) {
+        this.itemList = data;
+        notifyDataSetChanged();
     }
 }
 
