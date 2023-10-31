@@ -30,6 +30,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.spotify.android.appremote.api.ConnectionParams;
 import com.spotify.android.appremote.api.Connector;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
@@ -39,8 +40,10 @@ import com.spotify.protocol.types.ImageUri;
 import com.spotify.protocol.types.PlayerState;
 import com.spotify.protocol.types.Track;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 import java.util.Locale;
 
 import jp.wasabeef.blurry.Blurry;
@@ -61,16 +64,51 @@ public class RoomFragment extends Fragment {
     private TextView songArtist;
     private TextView currentDuration;
     private TextView totalDuration;
+    ReduxStore model;
+    ApiClient apiClient;
+    CurrentSession currentSession;
+    private Button chatBtn;
+    private Button queueBtn;
+
+    private Button exitBtn;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Initialize ViewModel and ApiClient here.
+        model = ((MainActivity) getActivity()).getModel();
+        apiClient = ((MainActivity) getActivity()).getApiClient();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String response;
+                try {
+                    response = apiClient.doGetRequest("/me/matches", true);
+                    // Parse the response.
+//                    List<SearchUser> newSearchList = parseResponse(response);
+                    // Update LiveData.
+//                    model.getSearchList().postValue(newSearchList);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.frag_room, container, false);
-
-        Button chatBtn = view.findViewById(R.id.chatBtn);
-        Button queueBtn = view.findViewById(R.id.queueBtn);
-
-
-
+        chatBtn = view.findViewById(R.id.chatBtn);
+        queueBtn = view.findViewById(R.id.queueBtn);
+        exitBtn = view.findViewById(R.id.exitBtn);
+        Log.d("RoomFragment", "onCreateView: session :: "+model.checkCurrentSessionActive());
+        if(!model.checkCurrentSessionActive()) {
+            chatBtn.setVisibility(View.GONE);
+            exitBtn.setVisibility(View.GONE);
+        }
         return view;
     }
 
@@ -183,6 +221,7 @@ public class RoomFragment extends Fragment {
 
         final long[] trackDuration = {0}; // Add this line at the beginning of your class
 
+
         mSpotifyAppRemote.getPlayerApi()
                 .subscribeToPlayerState()
                 .setEventCallback(playerState -> {
@@ -261,6 +300,15 @@ public class RoomFragment extends Fragment {
             }
         });
 
+        exitBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSpotifyAppRemote.getPlayerApi().pause();
+                model.getCurrentSession().postValue(null);
+                BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottomNavi);
+                bottomNavigationView.setSelectedItemId(R.id.navigation_home);
+            }
+        });
     }
     private String formatDuration(long duration) {
         int seconds = (int) (duration / 1000) % 60;
