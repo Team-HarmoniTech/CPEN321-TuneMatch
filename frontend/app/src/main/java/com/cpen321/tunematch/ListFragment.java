@@ -16,6 +16,7 @@ import java.util.List;
 
 public class ListFragment extends Fragment {
 
+    ReduxStore model;
     private String listTitle;
     private ArrayList<String> listItems;
 
@@ -38,6 +39,8 @@ public class ListFragment extends Fragment {
             listItems = getArguments().getStringArrayList("itemList");
             listTitle = getArguments().getString("listTitle");
         }
+
+        model = ((MainActivity) getActivity()).getModel();
     }
 
     @Override
@@ -53,8 +56,20 @@ public class ListFragment extends Fragment {
 
         // Create an ArrayAdapter to populate the ListView
         if (listTitle.equals("Friends List")) {
-            CustomListAdapter adapter = new CustomListAdapter(getContext(), null, "EditFriendsList", listItems);
-            listView.setAdapter(adapter);
+            CustomListAdapter friendsAdapter = new CustomListAdapter(getContext(), getActivity(), "EditFriendsList", new ArrayList<>());
+            listView.setAdapter(friendsAdapter);
+
+            model.getFriendsList().observe(getViewLifecycleOwner(), friends -> {
+                ArrayList<String> friendsListItems = new ArrayList<>();
+                for (Friend f : friends) {
+                    if(f.getIsListening()==false){
+                        f.setCurrentSong("Not Listening");
+                    }
+                    friendsListItems.add(f.getName()+";"+f.getId()+";"+f.getProfilePic());
+                }
+                friendsAdapter.setData(friendsListItems);
+                friendsAdapter.notifyDataSetChanged();
+            });
         } else {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, listItems);
             listView.setAdapter(adapter);
