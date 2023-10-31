@@ -204,6 +204,7 @@ public class SearchFragment extends Fragment {
                             else{
                                 response = apiClient.doGetRequest("/users/search/" + encoded_newText, true);
                             }
+                          
                             List<SearchUser> newSearchList = parseResponse(response);
                             model.getSearchList().postValue(newSearchList);
                         } catch (IOException e) {
@@ -237,7 +238,7 @@ public class SearchFragment extends Fragment {
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 String name = jsonObject.getString("username");
-                String id = jsonObject.getString("id");
+                String id = jsonObject.getString("userId");
 
                 String match_score = jsonObject.getString("match_percent");
                 String profilePic = jsonObject.getString("profilePic");

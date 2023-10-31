@@ -2,6 +2,8 @@ package com.cpen321.tunematch;
 
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -13,20 +15,25 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 
 import android.os.Bundle;
 
 import android.util.Log;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -39,14 +46,20 @@ import com.spotify.protocol.client.Subscription;
 import com.spotify.protocol.types.ImageUri;
 import com.spotify.protocol.types.PlayerState;
 import com.spotify.protocol.types.Track;
+import com.squareup.picasso.Picasso;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Locale;
 
 import jp.wasabeef.blurry.Blurry;
+import okhttp3.Headers;
 
 
 public class RoomFragment extends Fragment {
@@ -64,6 +77,14 @@ public class RoomFragment extends Fragment {
     private TextView songArtist;
     private TextView currentDuration;
     private TextView totalDuration;
+    private ChatFragment chatFrag;
+    private QueueFragment queueFrag;
+    private ArrayAdapter<String> searchAdapter;
+    private ListView suggestionListView;
+
+    private String authToken;
+    private ApiClient spotifyApiClient;
+
     ReduxStore model;
     ApiClient apiClient;
     CurrentSession currentSession;
@@ -75,7 +96,6 @@ public class RoomFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         // Initialize ViewModel and ApiClient here.
         model = ((MainActivity) getActivity()).getModel();
         apiClient = ((MainActivity) getActivity()).getApiClient();
@@ -97,6 +117,7 @@ public class RoomFragment extends Fragment {
 
     }
 
+  // ChatGPT Usage: partial
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -109,6 +130,70 @@ public class RoomFragment extends Fragment {
             chatBtn.setVisibility(View.GONE);
             exitBtn.setVisibility(View.GONE);
         }
+  
+        chatFrag = new ChatFragment();
+        queueFrag = new QueueFragment();
+
+        chatBtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                switchFragment(R.id.subFrame, chatFrag);
+            }
+        });
+
+        queueBtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                switchFragment(R.id.subFrame, queueFrag);
+            }
+        });
+
+        // Retrieve the authentication token
+        SharedPreferences preferences = getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
+        authToken = preferences.getString("auth_token", null);
+
+        Headers headers = new Headers.Builder()
+                .add("Authorization", "Bearer "+authToken)
+                .build();
+
+        // Initialize your ApiClient with the base URL and custom headers
+        String spotifyBaseUrl = "https://api.spotify.com/v1/";
+        spotifyApiClient = new ApiClient(spotifyBaseUrl, headers);
+
+        // initialize to chat
+        switchFragment(R.id.subFrame, chatFrag);
+
+        SearchView songSearchBar = view.findViewById(R.id.songSearchBar);
+
+        // Create an adapter for suggestions (for example, ArrayAdapter)
+        searchAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<>());
+        suggestionListView = view.findViewById(R.id.suggestionListView);
+        suggestionListView.setAdapter(searchAdapter);
+        suggestionListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // TODO: add to queue
+            }
+        });
+
+        songSearchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (newText.equals("")) {
+                    suggestionListView.setVisibility(View.GONE);
+                    Log.d("RoomFragment", "onQueryTextChange: change suggestionListView visibility to GONE");
+                } else {
+                    filterSuggestions(newText);
+                }
+                return false;
+            }
+        });
+  
         return view;
     }
 
@@ -257,11 +342,6 @@ public class RoomFragment extends Fragment {
             }
         });
 
-
-
-
-
-
         playpauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -310,6 +390,8 @@ public class RoomFragment extends Fragment {
             }
         });
     }
+
+    // ChatGPT Usage: No
     private String formatDuration(long duration) {
         int seconds = (int) (duration / 1000) % 60;
         int minutes = (int) ((duration / (1000 * 60)) % 60);
@@ -317,8 +399,62 @@ public class RoomFragment extends Fragment {
         return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
     }
 
+    // ChatGPT Usage: No
+    private void switchFragment(int frameId, Fragment frag) {
+        getFragmentManager()
+                .beginTransaction()
+                .replace(frameId, frag)
+                .addToBackStack(null)
+                .commit();
+    }
 
 
+    // ChatGPT Usage: Partial
+    private void filterSuggestions(String newText) {
+        // Filter the suggestions based on the newText and update the adapter
+        ArrayList<String> filteredSuggestions = new ArrayList<>();
 
+        String endpoint = "search/?q=track:"+newText+"&type=track";
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String songListJson = spotifyApiClient.doGetRequest(endpoint, true);
+                    JSONObject rawResponse = new JSONObject(songListJson);
+                    JSONArray songItems = rawResponse.getJSONObject("tracks").getJSONArray("items");
+
+                    for (int i = 0; i < songItems.length(); i++) {
+                        JSONObject album = songItems.getJSONObject(i);
+                        filteredSuggestions.add(album.getString("name"));
+                        Log.d("RoomFragment", "name of song: "+album.getString("name"));
+                    }
+
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            // After obtaining the filtered suggestions, update the adapter
+                            searchAdapter.clear();
+                            searchAdapter.addAll(filteredSuggestions);
+                            searchAdapter.notifyDataSetChanged();
+
+                            // Show/hide the suggestion list based on whether suggestions are available
+                            if (filteredSuggestions.isEmpty()) {
+                                suggestionListView.setVisibility(View.GONE);
+                                Log.d("RoomFragment", "change suggestion visibility to GONE");
+                            } else {
+                                suggestionListView.setVisibility(View.VISIBLE);
+                                suggestionListView.bringToFront();
+                                Log.d("RoomFragment", "change suggestion visibility to VISIBLE");
+                            }
+                        }
+                    });
+
+                } catch (IOException | JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
 
 }
