@@ -2,6 +2,7 @@ package com.cpen321.tunematch;
 
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
+<<<<<< room_page
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ServiceConnection;
@@ -194,7 +195,6 @@ public class RoomFragment extends Fragment {
         suggestionListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // TODO: add to queue
                 String selectedText = (String) parent.getItemAtPosition(position);
                 String selectedSong = selectedText.split(" - ")[0];
                 String selectedArtist = selectedText.split(" - ")[1];
@@ -481,8 +481,7 @@ public class RoomFragment extends Fragment {
                 .addToBackStack(null)
                 .commit();
     }
-
-
+  
     // ChatGPT Usage: Partial
     private void filterSuggestions(String newText) {
         // Filter the suggestions based on the newText and update the adapter
@@ -541,7 +540,6 @@ public class RoomFragment extends Fragment {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
-
         return encoded;
     }
 }
