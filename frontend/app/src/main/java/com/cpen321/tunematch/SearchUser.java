@@ -2,14 +2,14 @@ package com.cpen321.tunematch;
 
 import java.util.List;
 
-public class Users {
+public class SearchUser {
     private String name;
     private String id;
     private String profilePic;
     private String matchPercent;
     private List<String> topArtist;
     private List<String> topGenres;
-    public Users(String name, String id, String profilePic) {
+    public SearchUser(String name, String id, String profilePic) {
         this.name = name;
         this.id = id;
         this.profilePic = profilePic;

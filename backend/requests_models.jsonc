@@ -23,7 +23,7 @@
     "method": "REQUESTS",
     "action": "add",
     "body": {
-        "id": "testuser1", // your user info 
+        "userId": "testuser1", // your user info 
         "username": "testusername",
         "profilePic": "profile.com/url",
         "currentSong": null,
@@ -44,7 +44,7 @@
     "method": "REQUESTS",
     "action": "remove",
     "body": {
-        "id": "testuser1", //user info 
+        "userId": "testuser1", //user info 
         "username": "testusername",
         "profilePic": "profile.com/url"
     }

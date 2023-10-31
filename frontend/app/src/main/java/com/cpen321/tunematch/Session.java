@@ -3,13 +3,19 @@ package com.cpen321.tunematch;
 import java.util.List;
 
 public class Session {
+    private String sessionId;
     private String roomName;
-    private List<Message> messages;
-
-    public Session(String roomName, List<Message> messages) {
+    public Session(String sessionId, String roomName) {
         this.roomName = roomName;
-        this.messages = messages;
+        this.sessionId = sessionId;
     }
 
-    // getters and setters
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public String getRoomName() {
+        return roomName;
+    }
+
 }

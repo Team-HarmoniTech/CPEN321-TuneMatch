@@ -37,6 +37,7 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.spotify.android.appremote.api.ConnectionParams;
 import com.spotify.android.appremote.api.Connector;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
@@ -84,15 +85,52 @@ public class RoomFragment extends Fragment {
     private String authToken;
     private ApiClient spotifyApiClient;
 
-    // ChatGPT Usage: partial
+    ReduxStore model;
+    ApiClient apiClient;
+    CurrentSession currentSession;
+    private Button chatBtn;
+    private Button queueBtn;
+
+    private Button exitBtn;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Initialize ViewModel and ApiClient here.
+        model = ((MainActivity) getActivity()).getModel();
+        apiClient = ((MainActivity) getActivity()).getApiClient();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String response;
+                try {
+                    response = apiClient.doGetRequest("/me/matches", true);
+                    // Parse the response.
+//                    List<SearchUser> newSearchList = parseResponse(response);
+                    // Update LiveData.
+//                    model.getSearchList().postValue(newSearchList);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+    }
+
+  // ChatGPT Usage: partial
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.frag_room, container, false);
-
-        Button chatBtn = view.findViewById(R.id.chatBtn);
-        Button queueBtn = view.findViewById(R.id.queueBtn);
-
+        chatBtn = view.findViewById(R.id.chatBtn);
+        queueBtn = view.findViewById(R.id.queueBtn);
+        exitBtn = view.findViewById(R.id.exitBtn);
+        Log.d("RoomFragment", "onCreateView: session :: "+model.checkCurrentSessionActive());
+        if(!model.checkCurrentSessionActive()) {
+            chatBtn.setVisibility(View.GONE);
+            exitBtn.setVisibility(View.GONE);
+        }
+  
         chatFrag = new ChatFragment();
         queueFrag = new QueueFragment();
 
@@ -155,7 +193,7 @@ public class RoomFragment extends Fragment {
                 return false;
             }
         });
-
+  
         return view;
     }
 
@@ -268,6 +306,7 @@ public class RoomFragment extends Fragment {
 
         final long[] trackDuration = {0}; // Add this line at the beginning of your class
 
+
         mSpotifyAppRemote.getPlayerApi()
                 .subscribeToPlayerState()
                 .setEventCallback(playerState -> {
@@ -341,6 +380,15 @@ public class RoomFragment extends Fragment {
             }
         });
 
+        exitBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSpotifyAppRemote.getPlayerApi().pause();
+                model.getCurrentSession().postValue(null);
+                BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottomNavi);
+                bottomNavigationView.setSelectedItemId(R.id.navigation_home);
+            }
+        });
     }
 
     // ChatGPT Usage: No
