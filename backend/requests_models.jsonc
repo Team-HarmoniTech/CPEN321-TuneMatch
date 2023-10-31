@@ -1,0 +1,51 @@
+// get all request
+// SEND this or On join websocket
+{
+    "method": "REQUESTS",
+    "action": "refresh",
+    "body": {
+        "requesting": [], //array of requesting users
+        "requested": [] //array of requested users
+    }
+}
+
+// add a friend
+{
+    "method": "REQUESTS",
+    "action": "add",
+    "body": {
+        "userId"
+    }
+}
+// what they recieve, 
+//NOTE: you recieve and FRIENDS "update" if this brings you to full friend status
+{
+    "method": "REQUESTS",
+    "action": "add",
+    "body": {
+        "userId": "testuser1", // your user info 
+        "username": "testusername",
+        "profilePic": "profile.com/url",
+        "currentSong": null,
+        "currentSource": null
+    }
+}
+
+// remove a friend or request
+{
+    "method": "REQUESTS",
+    "action": "remove",
+    "body": {
+        "userId": "spotify ID"
+    }
+}
+// what they recieve
+{
+    "method": "REQUESTS",
+    "action": "remove",
+    "body": {
+        "userId": "testuser1", //user info 
+        "username": "testusername",
+        "profilePic": "profile.com/url"
+    }
+}

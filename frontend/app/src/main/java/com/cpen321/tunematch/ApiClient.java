@@ -1,4 +1,3 @@
-// Class written by ChatGPT
 package com.cpen321.tunematch;
 
 import android.util.Log;
@@ -11,12 +10,14 @@ public class ApiClient {
     private String baseUrl;
     private Headers customHeader;
 
+    // Partially written by ChatGPT
     public ApiClient(String baseUrl, Headers customHeader) {
         this.baseUrl = baseUrl;
         this.client = new OkHttpClient();
         this.customHeader = customHeader;
     }
 
+    // Fully written by ChatGPT
     public String doGetRequest(String endpoint, Boolean customHeaders) throws IOException {
 
         String fullUrl = baseUrl + endpoint;
@@ -39,6 +40,7 @@ public class ApiClient {
         }
     }
 
+    // Fully written by ChatGPT
     public String doPostRequest(String endpoint, String jsonRequestBody, Boolean customHeaders) throws IOException {
         String fullUrl = baseUrl + endpoint;
 
@@ -62,6 +64,7 @@ public class ApiClient {
         }
     }
 
+    // Fully written by ChatGPT
     public String doPutRequest(String endpoint, String jsonRequestBody, Boolean customHeaders) throws IOException {
         String fullUrl = baseUrl + endpoint;
 
@@ -85,6 +88,7 @@ public class ApiClient {
         }
     }
 
+    // Fully written by ChatGPT
     public String doDeleteRequest(String endpoint, Boolean customHeaders) throws IOException {
         String fullUrl = baseUrl + endpoint;
 
