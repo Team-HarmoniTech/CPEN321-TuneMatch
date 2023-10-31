@@ -55,10 +55,7 @@ public class ProfileFragment extends Fragment {
         friendsListBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                ArrayList<String> friendsNameList = model.friendsNameList();
-                Log.d("ProfileFragment", "friendsNameList:"+friendsNameList.toString());
-                // TODO: Redux store not completely working; need to work on this to show profile image along with friend list
-                ListFragment friendsListFragment = ListFragment.newInstance(friendsNameList, "Friends List");
+                ListFragment friendsListFragment = ListFragment.newInstance(new ArrayList<>(), "Friends List");
 
                 ft = fm.beginTransaction();
 

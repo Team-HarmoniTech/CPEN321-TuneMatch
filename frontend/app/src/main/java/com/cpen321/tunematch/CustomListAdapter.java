@@ -6,26 +6,50 @@ import static android.text.method.TextKeyListener.clear;
 import static java.util.Collections.addAll;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.squareup.picasso.Picasso;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.List;
 
 public class CustomListAdapter extends BaseAdapter {
     private Context context;
     private Activity parentView;
     private String listType;
-
     private List<String> itemList;
+    private WebSocketService webSocketService;
+    private boolean isServiceBound = false;
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            WebSocketService.LocalBinder binder = (WebSocketService.LocalBinder) service;
+            webSocketService = binder.getService();
+            isServiceBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            isServiceBound = false;
+        }
+    };
 
     public CustomListAdapter(Context context, Activity parentView, String listType, List<String> itemList) {
         this.context = context;
@@ -92,17 +116,43 @@ public class CustomListAdapter extends BaseAdapter {
                 }
             });
         } else if (listType.equals("EditFriendsList")) {                                    // in the ProfileFragment
-            // Set friend name                                                              // items = "friendName"
+            // Parse input                                                                  // items = "friendName;id;profilePicUrl"
+            String[] item = itemList.get(position).split(";");
+            String nameText = item[0];
+            String id = item[1];
+            String profilePicUrl = item[2];
+
+            // Set name
             TextView friendNameText = convertView.findViewById(R.id.friendNameText);
-            String nameText = itemList.get(position);
             friendNameText.setText(nameText);
+
+            // Set profile pic
+            ImageView profilePic = convertView.findViewById(R.id.profileImageView);
+            Picasso.get()
+                    .load(profilePicUrl)
+                    .placeholder(R.drawable.default_profile_image)      // Set the default image
+                    .error(R.drawable.default_profile_image)            // Use the default image in case of an error
+                    .into(profilePic);
 
             Button rmBtn = convertView.findViewById(R.id.removeBtn);
             rmBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // TODO: 1.Get friend ID by querying ReduxStore, 2.Query server to remove friend, 3.update redux store if 200OK
-                    Log.d("Edit Friends List", "Remove clicked");
+                    JSONObject messageToSend = new JSONObject();
+                    JSONObject body = new JSONObject();
+                    try {
+                        messageToSend.put("method", "REQUESTS");
+                        messageToSend.put("action", "remove");
+
+                        body.put("userId", "id");
+                        messageToSend.put("body", body);
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    if (isServiceBound && webSocketService != null) {
+                        webSocketService.sendMessage(messageToSend.toString());
+                    }
                 }
             });
         }
