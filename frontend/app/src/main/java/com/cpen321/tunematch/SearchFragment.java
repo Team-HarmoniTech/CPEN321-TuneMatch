@@ -92,8 +92,6 @@ public class SearchFragment extends Fragment {
                 TextView nameText = dialogView.findViewById(R.id.nameText);
                 Button addButton = dialogView.findViewById(R.id.addButton);
 
-                ImageView profilePic = dialogView.findViewById(R.id.profileImage);
-
                 // Set information
                 String selectedUserWithScore = (String) parent.getItemAtPosition(position);
                 nameText.setText(selectedUserWithScore);

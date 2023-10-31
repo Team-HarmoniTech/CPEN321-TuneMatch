@@ -2,7 +2,9 @@ package com.cpen321.tunematch;
 
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -15,6 +17,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,11 +57,15 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Map;
 
 import jp.wasabeef.blurry.Blurry;
+import kotlin.text.Charsets;
 import okhttp3.Headers;
 
 
@@ -81,7 +88,6 @@ public class RoomFragment extends Fragment {
     private QueueFragment queueFrag;
     private ArrayAdapter<String> searchAdapter;
     private ListView suggestionListView;
-
     private String authToken;
     private ApiClient spotifyApiClient;
 
@@ -90,8 +96,24 @@ public class RoomFragment extends Fragment {
     CurrentSession currentSession;
     private Button chatBtn;
     private Button queueBtn;
-
     private Button exitBtn;
+    private WebSocketService webSocketService;
+    private boolean isServiceBound = false;
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            WebSocketService.LocalBinder binder = (WebSocketService.LocalBinder) service;
+            webSocketService = binder.getService();
+            isServiceBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            isServiceBound = false;
+        }
+    };
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -117,7 +139,7 @@ public class RoomFragment extends Fragment {
 
     }
 
-  // ChatGPT Usage: partial
+    // ChatGPT Usage: partial
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -173,6 +195,58 @@ public class RoomFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // TODO: add to queue
+                String selectedText = (String) parent.getItemAtPosition(position);
+                String selectedSong = selectedText.split(" - ")[0];
+                String selectedArtist = selectedText.split(" - ")[1];
+
+                String endpoint = "search/?q=track:"+encodeSongTitle(selectedSong)+"&type=track";
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            String songListJson = spotifyApiClient.doGetRequest(endpoint, true);
+                            JSONObject rawResponse = new JSONObject(songListJson);
+                            JSONArray songItems = rawResponse.getJSONObject("tracks").getJSONArray("items");
+
+                            for (int i = 0; i < songItems.length(); i++) {
+                                JSONObject song = songItems.getJSONObject(i);
+                                String artist = song.getJSONArray("artists").getJSONObject(0).getString("name");
+                                if (song.getString("name").equals(selectedSong) && artist.equals(selectedArtist)) {
+                                    JSONObject body = new JSONObject();
+                                    body.put("uri", song.getString("uri"));
+                                    body.put("durationMs", song.getString("duration_ms"));
+
+                                    JSONObject messageToSend = new JSONObject();
+                                    try {
+                                        messageToSend.put("method", "SESSION");
+                                        messageToSend.put("action", "queueAdd");
+                                        messageToSend.put("body", body);
+                                    } catch (JSONException e) {
+                                        throw new RuntimeException(e);
+                                    }
+
+                                    Log.d("RoomFragment", "isServiceBound:"+isServiceBound);
+                                    if (isServiceBound && webSocketService != null) {
+                                        Log.d("RoomFragment", "Add to queue: " + messageToSend);
+                                        webSocketService.sendMessage(messageToSend.toString());
+                                    }
+                                    break;
+                                }
+                            }
+
+                            Handler mainHandler = new Handler(Looper.getMainLooper());
+                            mainHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                }
+                            });
+
+                        } catch (IOException | JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
             }
         });
 
@@ -414,7 +488,7 @@ public class RoomFragment extends Fragment {
         // Filter the suggestions based on the newText and update the adapter
         ArrayList<String> filteredSuggestions = new ArrayList<>();
 
-        String endpoint = "search/?q=track:"+newText+"&type=track";
+        String endpoint = "search/?q=track:"+encodeSongTitle(newText)+"&type=track";
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -424,9 +498,10 @@ public class RoomFragment extends Fragment {
                     JSONArray songItems = rawResponse.getJSONObject("tracks").getJSONArray("items");
 
                     for (int i = 0; i < songItems.length(); i++) {
-                        JSONObject album = songItems.getJSONObject(i);
-                        filteredSuggestions.add(album.getString("name"));
-                        Log.d("RoomFragment", "name of song: "+album.getString("name"));
+                        JSONObject song = songItems.getJSONObject(i);
+                        JSONArray artists = song.getJSONArray("artists");
+                        filteredSuggestions.add(song.getString("name")+" - "+artists.getJSONObject(0).getString("name"));
+                        Log.d("RoomFragment", "name of song: "+song.getString("name"));
                     }
 
                     Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -457,4 +532,16 @@ public class RoomFragment extends Fragment {
         }).start();
     }
 
+    // Partially written by ChatGPT
+    private String encodeSongTitle(String title) {
+        String encoded;
+        try {
+            encoded = URLEncoder.encode(title, Charsets.UTF_8.toString());
+            Log.d("RoomFragment", "encodedTitle: " + encoded);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+
+        return encoded;
+    }
 }

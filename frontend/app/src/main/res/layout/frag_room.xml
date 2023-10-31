@@ -87,6 +87,7 @@
         android:layout_width="145dp"
         android:layout_height="48dp"
         android:text="Song Name"
+        android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/seekBar"
         app:layout_constraintEnd_toEndOf="@+id/song_banner_imageview"
         app:layout_constraintHorizontal_bias="0.106"
