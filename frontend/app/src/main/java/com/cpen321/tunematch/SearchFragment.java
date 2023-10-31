@@ -1,8 +1,11 @@
 package com.cpen321.tunematch;
 
 import android.app.AlertDialog;
+import android.content.ComponentName;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -42,6 +45,22 @@ public class SearchFragment extends Fragment {
     private AlertDialog profileDialog;
     ReduxStore model;
     ApiClient apiClient;
+    private WebSocketService webSocketService;
+    private boolean isServiceBound = false;
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            WebSocketService.LocalBinder binder = (WebSocketService.LocalBinder) service;
+            webSocketService = binder.getService();
+            isServiceBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            isServiceBound = false;
+        }
+    };
 
     // Written fully by teammates
     @Override
@@ -97,6 +116,8 @@ public class SearchFragment extends Fragment {
                 nameText.setText(selectedUserWithScore);
                 String username = selectedUserWithScore.split(" \\(")[0];
                 String encodedName = encodeUsername(username);
+
+                String[] friendId = new String[1];
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -107,6 +128,7 @@ public class SearchFragment extends Fragment {
                             Log.d("SearchFragment", "selected user info: " + userInfo.toString());
 
                             String profileUrl = userInfo.getString("profilePic");
+                            friendId[0] = userInfo.getString("userId");
                             if (!profileUrl.equals("profile.com/url")) {
                                 Handler mainHandler = new Handler(Looper.getMainLooper());
                                 mainHandler.post(new Runnable() {
@@ -123,7 +145,6 @@ public class SearchFragment extends Fragment {
                                 });
                             }
 
-
                         } catch (IOException | JSONException e) {
                             e.printStackTrace();
                         }
@@ -139,8 +160,28 @@ public class SearchFragment extends Fragment {
                 addButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Log.d("Friend profile dialog addButton","Send friend request");
-                        profileDialog.dismiss();
+                        if (friendId[0] != null) {
+                            Log.d("Profile dialog addButton", "Send friend request");
+                            JSONObject messageToSend = new JSONObject();
+                            JSONObject body = new JSONObject();
+                            try {
+                                messageToSend.put("method", "REQUESTS");
+                                messageToSend.put("action", "add");
+
+                                body.put("userId", friendId[0]);
+                                messageToSend.put("body", body);
+                            } catch (JSONException e) {
+                                throw new RuntimeException(e);
+                            }
+
+                            if (isServiceBound && webSocketService != null) {
+                                Log.d("SearchFragment", "add friend:" + messageToSend);
+                                webSocketService.sendMessage(messageToSend.toString());
+                            }
+                            profileDialog.dismiss();
+                        } else {
+                            Log.d("SearchFragment","FriendId was not retrieved yet. Try again.");
+                        }
                     }
                 });
             }

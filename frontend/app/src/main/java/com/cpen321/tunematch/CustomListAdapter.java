@@ -139,10 +139,13 @@ public class CustomListAdapter extends BaseAdapter {
                 @Override
                 public void onClick(View v) {
                     JSONObject messageToSend = new JSONObject();
+                    JSONObject body = new JSONObject();
                     try {
                         messageToSend.put("method", "REQUESTS");
                         messageToSend.put("action", "remove");
-                        messageToSend.put("body", new JSONObject("userId:"+id));
+
+                        body.put("userId", "id");
+                        messageToSend.put("body", body);
                     } catch (JSONException e) {
                         throw new RuntimeException(e);
                     }
