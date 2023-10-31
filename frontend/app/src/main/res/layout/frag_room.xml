@@ -5,6 +5,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <Button
+        android:id="@+id/exitBtn"
+        android:layout_width="85dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="300dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/custom_red_btn"
+        android:text="Exit"
+        android:textColor="@color/red"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/song_banner_imageview" />
+
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/song_banner_imageview"
         android:layout_width="359dp"
@@ -125,8 +137,8 @@
         android:id="@+id/chatBtn"
         android:layout_width="85dp"
         android:layout_height="40dp"
-        android:layout_marginStart="85dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginStart="124dp"
+        android:layout_marginTop="12dp"
         android:background="@drawable/custom_green_btn"
         android:text="Chat"
         android:textColor="@color/pointGreen"
@@ -137,8 +149,8 @@
         android:id="@+id/queueBtn"
         android:layout_width="85dp"
         android:layout_height="40dp"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="85dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="296dp"
         android:background="@drawable/custom_green_btn"
         android:text="queue"
         android:textColor="@color/pointGreen"

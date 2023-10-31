@@ -20,8 +20,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.squareup.picasso.Picasso;
 
@@ -32,13 +30,10 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import kotlin.text.Charsets;
-import okhttp3.Headers;
-import okhttp3.internal.http2.Header;
 
 public class SearchFragment extends Fragment {
 
@@ -64,7 +59,7 @@ public class SearchFragment extends Fragment {
                 try {
                     response = apiClient.doGetRequest("/me/matches", true);
                     // Parse the response.
-                    List<Users> newSearchList = parseResponse(response);
+                    List<SearchUser> newSearchList = parseResponse(response);
                     // Update LiveData.
                     model.getSearchList().postValue(newSearchList);
                 } catch (IOException e) {
@@ -175,7 +170,7 @@ public class SearchFragment extends Fragment {
                             else{
                                 response = apiClient.doGetRequest("/users/search/" + encodedQuery, true);
                             }
-                            List<Users> newSearchList = parseResponse(response);
+                            List<SearchUser> newSearchList = parseResponse(response);
                             model.getSearchList().postValue(newSearchList);
 
                         } catch (IOException e) {
@@ -209,7 +204,7 @@ public class SearchFragment extends Fragment {
                             else{
                                 response = apiClient.doGetRequest("/users/search/" + encoded_newText, true);
                             }
-                            List<Users> newSearchList = parseResponse(response);
+                            List<SearchUser> newSearchList = parseResponse(response);
                             model.getSearchList().postValue(newSearchList);
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -221,11 +216,11 @@ public class SearchFragment extends Fragment {
             }
         });
 
-        model.getSearchList().observe(getViewLifecycleOwner(), new Observer<List<Users>>() {
+        model.getSearchList().observe(getViewLifecycleOwner(), new Observer<List<SearchUser>>() {
             @Override
-            public void onChanged(List<Users> SearchedUsers) {
+            public void onChanged(List<SearchUser> SearchedUsers) {
                 listAdapter.clear();
-                for (Users user : SearchedUsers) {
+                for (SearchUser user : SearchedUsers) {
                     listAdapter.add(user.getName() + " (" + user.getMatchPercent() + "%)");
                 }
                 listAdapter.notifyDataSetChanged();
@@ -234,10 +229,9 @@ public class SearchFragment extends Fragment {
         return view;
     }
 
-    // Written fully by teammates
-    public List<Users> parseResponse(String response) {
+    public List<SearchUser> parseResponse(String response) {
         Log.d("SearchFragment", "parseResponse: " + response);
-        List<Users> searchedUser = new ArrayList<>();
+        List<SearchUser> searchedUser = new ArrayList<>();
         try {
             JSONArray jsonArray = new JSONArray(response);
             for (int i = 0; i < jsonArray.length(); i++) {
@@ -247,7 +241,7 @@ public class SearchFragment extends Fragment {
 
                 String match_score = jsonObject.getString("match_percent");
                 String profilePic = jsonObject.getString("profilePic");
-                Users user = new Users(name, id, profilePic);
+                SearchUser user = new SearchUser(name, id, profilePic);
                 user.setMatchPercent(match_score);
                 searchedUser.add(user);
 

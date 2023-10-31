@@ -57,23 +57,35 @@ public class WebSocketClient {
                         if (action.equals("refresh")) {
                             JSONArray body = json.getJSONArray("body");
                             List<Friend> friends = new ArrayList<>();
+                            List<Session> sessions = new ArrayList<>();
                             for (int i = 0; i < body.length(); i++) {
                                 Log.d("WebSocketClient", "friend number : " + body.getJSONObject(i));
                                 JSONObject friendJson = body.getJSONObject(i);
-                                String id = friendJson.getString("id");
+                                String id = friendJson.getString("userId");
                                 String username = friendJson.getString("username");
                                 String profilePic = friendJson.getString("profilePic");
                                 String currentSong = friendJson.optString("currentSong");  // Using optString to avoid null values
-                                String currentSource = friendJson.optString("currentSource");  // Using optString to avoid null values
+                                JSONObject currentSource = friendJson.optJSONObject("currentSource");  // Using optJSONObject to avoid null values  // Using optString to avoid null values
                                 Friend friend = new Friend(username, id, profilePic);
                                 friend.setCurrentSong(currentSong);
                                 friend.setCurrentSource(currentSource);
                                 friends.add(friend);
+                                if (currentSource != null) {
+                                    String sourceType = currentSource.optString("type");
+                                    if (sourceType.equals("session")) {
+                                        sessions.add(new Session(friend.getId(), friend.getName()+"'s Room"));
+                                    }
+                                }
                             }
                             // Update the Redux store.
                             model.getFriendsList().postValue(friends);
+                            model.getSessionList().postValue(sessions);
+                        }
+                        if (action.equals("update")){
+
                         }
                     }
+
                 } catch (JSONException e) {
                     Log.e("WebSocketClient", "Failed to parse JSON", e);
                 }
