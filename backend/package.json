@@ -15,7 +15,6 @@
     "jest": "^29.7.0",
     "jest-mock-extended": "^3.0.5",
     "morgan": "^1.10.0",
-    "node-wait-for-it": "^0.2.0",
     "nodemon": "^3.0.1",
     "prisma": "^5.3.1",
     "ts-jest": "^29.1.1",
