@@ -1,6 +1,6 @@
-import { socketService, userService } from "..";
 import { FriendsMessage, RequestsMessage, transformUser, transformUsers } from "../models/UserModels";
 import { SocketMessage } from "../models/WebsocketModels";
+import { socketService, userService } from "../services";
 import WebSocket = require("ws");
 
 export class RequestController {

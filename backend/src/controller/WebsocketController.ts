@@ -1,10 +1,10 @@
 import { Prisma } from "@prisma/client";
 import { Request } from "express";
 import { WebSocket } from "ws";
-import { database, sessionService, socketService, userService } from "..";
 import { SessionMessage } from "../models/SessionModels";
 import { FriendsMessage, RequestsMessage, transformUser, transformUsers } from "../models/UserModels";
 import { SocketMessage } from "../models/WebsocketModels";
+import { database, sessionService, socketService, userService } from "../services";
 import { RequestController } from "./RequestController";
 import { SessionController } from "./SessionController";
 import { UserController } from "./UserController";

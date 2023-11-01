@@ -14,7 +14,7 @@
     "method": "REQUESTS",
     "action": "add",
     "body": {
-        "userId"
+        "userId": "theo"
     }
 }
 // what they recieve, 
@@ -23,7 +23,7 @@
     "method": "REQUESTS",
     "action": "add",
     "body": {
-        "userId": "testuser1", // your user info 
+        "userId": "testuser1", // your user info
         "username": "testusername",
         "profilePic": "profile.com/url",
         "currentSong": null,
