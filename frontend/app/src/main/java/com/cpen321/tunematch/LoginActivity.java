@@ -1,7 +1,9 @@
 package com.cpen321.tunematch;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -90,8 +92,6 @@ public class LoginActivity extends AppCompatActivity {
                 AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request);
             }
         });
-
-
     }
 
     // Partially written in ChatGPT
@@ -109,6 +109,12 @@ public class LoginActivity extends AppCompatActivity {
                     Log.d(TAG, "onActivityResult: " + response.getAccessToken());
                     // Send to main activity
                     String auth_token = response.getAccessToken();
+
+                    // Save the token
+                    SharedPreferences preferences = getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putString("auth_token", auth_token);
+                    editor.apply();
 
                     fetchSpotifyUserId(auth_token);
 

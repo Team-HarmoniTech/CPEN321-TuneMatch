@@ -22,6 +22,7 @@ import java.util.List;
 
 public class ListFragment extends Fragment {
 
+    ReduxStore model;
     private String listTitle;
     private ArrayList<String> listItems;
 
@@ -61,6 +62,8 @@ public class ListFragment extends Fragment {
             listItems = getArguments().getStringArrayList("itemList");
             listTitle = getArguments().getString("listTitle");
         }
+
+        model = ((MainActivity) getActivity()).getModel();
     }
 
     @Override
@@ -76,6 +79,7 @@ public class ListFragment extends Fragment {
 
         // Create an ArrayAdapter to populate the ListView
         if (listTitle.equals("Friends List")) {
+
             CustomListAdapter adapter = new CustomListAdapter(getContext(), null, "EditFriendsList", listItems, webSocketService, isServiceBound);
             listView.setAdapter(adapter);
         } else {
