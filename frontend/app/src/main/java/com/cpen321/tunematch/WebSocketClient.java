@@ -1,5 +1,7 @@
 package com.cpen321.tunematch;
 
+
+import android.os.Handler;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
@@ -26,9 +28,12 @@ public class WebSocketClient {
     private OkHttpClient client;
     private WebSocket webSocket;
     ReduxStore model;
+    private Handler handler;
+    private static final int PING_INTERVAL = 20000;  // 30 seconds
     public WebSocketClient(ReduxStore model) {
         client = new OkHttpClient();
         this.model = model;
+        handler = new Handler();
     }
     public void start(Headers customHeader) {
         String url = "wss://tunematch-api.bhairawaryan.com/socket";
@@ -40,7 +45,8 @@ public class WebSocketClient {
             @Override
             public void onOpen(WebSocket webSocket, Response response) {
                 // Handle when the WebSocket connection is opened.
-                Log.d("WebSocketClient", "Websocket Client connected");
+                super.onOpen(webSocket, response);
+                startPing();
             }
 
             @Override
@@ -119,32 +125,55 @@ public class WebSocketClient {
                     if (currentSource != null) {
                         String sourceType = currentSource.optString("type");
                         if (sourceType.equals("session")) {
-                            sessions.add(new Session(friend.getId(), friend.getName()+"'s Room"));
+                            sessions.add(new Session(friend.getId(), friend.getName() + "'s Room"));
                         }
                     }
                 }
                 // Update the Redux store.
                 model.getFriendsList().postValue(friends);
                 model.getSessionList().postValue(sessions);
-            }
-            else if (action.equals("update")) {
-                JSONObject body = json.getJSONObject("body");
-                String song = body.optString("song", null);
-                if (song != null) {
-                    // This is an update from the current user
-                    // TODO: Update the Redux store with the new currently playing song
-                } else {
-                    // This is an update from another user
-                    String userId = body.getString("userId");
-                    String username = body.getString("username");
-                    String profilePic = body.getString("profilePic");
-                    String currentSong = body.optString("currentSong", null);
-                    JSONObject currentSource = body.optJSONObject("currentSource");
-                    // TODO: Update the Redux store with the updated friend's activity
+            } else if (action.equals("update")) {
+//                check if from exists in the message
+                String from = json.optString("from");
+                if (from != null) {
+                    List<Friend> existingFriendList = model.getFriendsList().getValue();
+                    List<Session> existingSessionList = model.getSessionList().getValue();
+                    for (Friend f : existingFriendList) {
+                        if (f.getId().equals(from)) {
+                            JSONObject body = json.getJSONObject("body");
+                            String currentSong = body.optString("currentSong", null);
+                            JSONObject currentSource = body.optJSONObject("currentSource");
+                            f.setCurrentSong(currentSong);
+                            f.setCurrentSource(currentSource);
+                            if (currentSource != null) {
+                                String sourceType = currentSource.optString("type");
+                                if (sourceType.equals("session")) {
+                                    boolean sessionExists = false;
+                                    for (Session s : existingSessionList) {
+                                        if (s.getSessionId().equals(from)) {
+                                            sessionExists = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!sessionExists) {
+                                        existingSessionList.add(new Session(f.getId(), f.getName() + "'s Room"));
+                                    }
+                                }
+                            } else {
+                                for (Session s : existingSessionList) {
+                                    if (s.getSessionId().equals(from)) {
+                                        existingSessionList.remove(s);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    model.getFriendsList().postValue(existingFriendList);
+                    model.getSessionList().postValue(existingSessionList);
                 }
             }
-
-            // Handling any other unexpected actions
+        // Handling any other unexpected actions
             else {
                 Log.w("WebSocketClient", "Unknown friend action: " + action);
             }
@@ -165,6 +194,7 @@ public class WebSocketClient {
                 String username = body.optString("username", null);
                 String profilePic = body.optString("profilePic", null);
                 // TODO: Update the Redux store with the new member's details
+
             }
 
             // Handling the leave action
@@ -281,5 +311,15 @@ public class WebSocketClient {
             Log.e("WebSocketClient", "Error processing request message", e);
         }
     }
-
+    private void startPing() {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (webSocket != null) {
+                    webSocket.send(okio.ByteString.EMPTY);  // Send an empty Ping frame
+                }
+                handler.postDelayed(this, PING_INTERVAL);
+            }
+        }, PING_INTERVAL);
+    }
 }
