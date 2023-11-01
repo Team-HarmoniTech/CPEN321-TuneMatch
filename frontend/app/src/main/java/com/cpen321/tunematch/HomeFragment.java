@@ -56,7 +56,7 @@ public class HomeFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        model = ((MainActivity) getActivity()).getModel();
+        model = ReduxStore.getInstance();
         webSocketClient = ((MainActivity) getActivity()).getWebSocketClient();
         mainActivity = (MainActivity) getActivity();
         bottomNavigationView = mainActivity.findViewById(R.id.bottomNavi);
@@ -70,7 +70,7 @@ public class HomeFragment extends Fragment {
         // Add friends activity
         ListView friendsActivityList = view.findViewById(R.id.friendsList);
 
-        CustomListAdapter friendsAdapter = new CustomListAdapter(getContext(), getActivity(), "FriendsList", new ArrayList<>());
+        CustomListAdapter friendsAdapter = new CustomListAdapter(getContext(), getActivity(), "FriendsList", new ArrayList<>(), getWebSocketService(), isServiceBound());
 
         friendsActivityList.setAdapter(friendsAdapter);
 
@@ -93,9 +93,9 @@ public class HomeFragment extends Fragment {
         model.getSessionList().observe(getViewLifecycleOwner(), sessions -> {
             sessionListItems.clear();
             for (Session s : sessions) {
-                sessionListItems.add(s.getRoomName());
+                sessionListItems.add(s.getSessionId());
             }
-            CustomListAdapter sessionAdapter = new CustomListAdapter(getContext(), getActivity(), "SessionsList", sessionListItems);
+            CustomListAdapter sessionAdapter = new CustomListAdapter(getContext(), getActivity(), "SessionsList", sessionListItems, getWebSocketService(), isServiceBound());
             sessionList.setAdapter(sessionAdapter);
         });
 
@@ -138,6 +138,14 @@ public class HomeFragment extends Fragment {
             getActivity().unbindService(serviceConnection);
             isServiceBound = false;
         }
+    }
+
+    public WebSocketService getWebSocketService() {
+        return webSocketService;
+    }
+
+    public boolean isServiceBound() {
+        return isServiceBound;
     }
 
 }

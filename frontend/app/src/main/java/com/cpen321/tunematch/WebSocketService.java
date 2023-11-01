@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 
+import okhttp3.Headers;
+
 public class WebSocketService extends Service {
     private final IBinder binder = new LocalBinder();
     private WebSocketClient webSocketClient;
@@ -26,7 +28,8 @@ public class WebSocketService extends Service {
         // Assuming you get your ReduxStore instance from MainActivity or another source:
         ReduxStore model = ReduxStore.getInstance();
         webSocketClient = new WebSocketClient(model);
-        webSocketClient.start(null); // You can provide custom headers if needed
+        Headers customheaders = new Headers.Builder().add("user-id", intent.getStringExtra("spotifyUserId")).build();
+        webSocketClient.start(customheaders); // You can provide custom headers if needed
         return START_STICKY;
     }
 
