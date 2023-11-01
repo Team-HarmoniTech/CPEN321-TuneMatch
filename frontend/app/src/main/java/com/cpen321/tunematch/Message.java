@@ -5,6 +5,7 @@ public class Message {
     private String messageText;
     private long timestamp;
 
+    // ChatGPT Usage: No
     public Message(String userId, String messageText, long timestamp) {
         this.userId = userId;
         this.messageText = messageText;

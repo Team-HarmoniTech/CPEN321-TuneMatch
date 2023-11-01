@@ -41,7 +41,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private String spotifyUserId;
 
-    // Partially written by ChatGPT
+    // ChatGPT Usage: Partial
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,7 +94,7 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    // Partially written in ChatGPT
+    // ChatGPT Usage: Partial
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
 
@@ -133,7 +133,7 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    // Partially written by ChatGPT
+    // ChatGPT Usage: Partial
     private void fetchSpotifyUserId(String authToken) {
         Log.d("fetchSpotifyUserId", "Inside function");
         // Set up your custom headers (including the Authorization header with the access token)
@@ -218,15 +218,18 @@ public class LoginActivity extends AppCompatActivity {
                             String topArtists = listToString(topArtistList);
                             String topGenres = listToString(new ArrayList<>(genreSet));
 
-                            String createUserBody = "{\"userData\":{" +
-                                    "\"spotify_id\":\"" + spotifyUserId + "\"," +
-                                    "\"username\":\"" + spotifyUserName + "\"," +
-                                    "\"top_artists\":" + topArtists + "," +
-                                    "\"top_genres\":" + topGenres + "," +
-                                    "\"pfp_url\":\"" + spotifyImageUrl + "\"}}";
-                            Log.d(TAG, createUserBody);
+                            JSONObject createUserBody = new JSONObject();
+                            JSONObject userInfo = new JSONObject();
+                            userInfo.put("spotify_id", spotifyUserId);
+                            userInfo.put("username", spotifyUserName);
+                            userInfo.put("top_artists", topArtists);
+                            userInfo.put("top_genres", topGenres);
+                            userInfo.put("pfp_url", spotifyImageUrl);
+                            createUserBody.put("userData", userInfo);
 
-                            apiClient.doPostRequest("/users/create", createUserBody, false);
+                            Log.d(TAG, createUserBody.toString());
+
+                            apiClient.doPostRequest("/users/create", createUserBody.toString(), false);
 
                             // Start MainActivity with the Spotify User ID
                             new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -254,7 +257,7 @@ public class LoginActivity extends AppCompatActivity {
         }).start();
     }
 
-    // Partially written by ChatGPT
+    // ChatGPT Usage: Partial
     private String listToString(ArrayList<String> list) {
         StringBuilder sb = new StringBuilder();
         sb.append("[");
@@ -268,7 +271,7 @@ public class LoginActivity extends AppCompatActivity {
         return sb.toString();
     }
 
-    // Partially written by ChatGPT
+    // ChatGPT Usage: Partial
     private void handleError(String warningMessage) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override

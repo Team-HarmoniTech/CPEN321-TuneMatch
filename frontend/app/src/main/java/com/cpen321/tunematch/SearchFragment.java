@@ -48,6 +48,7 @@ public class SearchFragment extends Fragment {
     private WebSocketService webSocketService;
     private boolean isServiceBound = false;
 
+    // ChatGPT Usage: No
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
@@ -62,7 +63,7 @@ public class SearchFragment extends Fragment {
         }
     };
 
-    // Written fully by teammates
+    // ChatGPT Usage: No
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,7 +89,7 @@ public class SearchFragment extends Fragment {
         }).start();
     }
 
-    // Written fully by teammates
+    // ChatGPT Usage: No
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -269,6 +270,7 @@ public class SearchFragment extends Fragment {
         return view;
     }
 
+    // ChatGPT Usage: Partial
     public List<SearchUser> parseResponse(String response) {
         Log.d("SearchFragment", "parseResponse: " + response);
         List<SearchUser> searchedUser = new ArrayList<>();
@@ -292,7 +294,7 @@ public class SearchFragment extends Fragment {
         return searchedUser;
     }
 
-    // Partially written by ChatGPT
+    // ChatGPT Usage: Partial
     private String encodeUsername(String username) {
         String encodedName;
         try {

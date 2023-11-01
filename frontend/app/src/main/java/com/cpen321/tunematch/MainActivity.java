@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private WebSocketClient webSocketClient;
     private ReduxStore model;
 
-    // Fully written by teammates
+    // ChatGPT Usage: No
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,8 +77,7 @@ public class MainActivity extends AppCompatActivity {
         setFragment(0);             // Initialize default fragment to home
     }
 
-    // Switch between fragments
-    // Fully written by teammates
+    // ChatGPT Usage: No
     private void setFragment(int n) {
         fm = getSupportFragmentManager();
         ft = fm.beginTransaction();
@@ -103,20 +102,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Fully written by teammates
+    // ChatGPT Usage: No
     @Override
     protected void onDestroy() {
         super.onDestroy();
         webSocketClient.stop();
     }
 
-    // Fully written by teammates
+    // ChatGPT Usage: No
     public ApiClient getApiClient() {return apiClient;}
 
-    // Fully written by teammates
+    // ChatGPT Usage: No
     public WebSocketClient getWebSocketClient() {return webSocketClient;}
 
-    // Fully written by teammates
+    // ChatGPT Usage: No
     public ReduxStore getModel() {return model;}
 
 }
