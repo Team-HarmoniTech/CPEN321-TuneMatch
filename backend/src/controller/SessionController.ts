@@ -105,17 +105,17 @@ export class SessionController {
     async leave(ws: WebSocket, message: SessionMessage, currentUserId: number) {
         const session = await sessionService.leaveSession(currentUserId);
         const user = await userService.getUserById(currentUserId);
+        await userService.broadcastToFriends(currentUserId, 
+            new FriendsMessage("update", await transformUser(user, async (user) => {
+                return { 
+                    currentSong: user.current_song, 
+                    currentSource: user.current_source
+                };
+            }))
+        );
         if (session) {
             await sessionService.messageSession(session.id, currentUserId, 
                 new SessionMessage("leave", await transformUser(user)));
-            await userService.broadcastToFriends(currentUserId, 
-                new FriendsMessage("update", await transformUser(user, async (user) => {
-                    return { 
-                        currentSong: user.current_song, 
-                        currentSource: user.current_source
-                    };
-                }))
-            );
         }
     }
 }
