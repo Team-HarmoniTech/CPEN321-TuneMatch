@@ -1,6 +1,6 @@
 import { Prisma, Session, User } from "@prisma/client";
-import { database, socketService } from "..";
 import { SocketMessage } from "../models/WebsocketModels";
+import { database, socketService } from "../services";
 
 export class UserService {
     private userDB = database.user;
@@ -144,9 +144,9 @@ export class UserService {
         let user: any = await this.getUserById(userId);
         let updateData: any = {};
         /* If they are in a session don't update the source */
-        if (!user.session && source !== undefined) {
-            updateData["current_source"] = source === null ? Prisma.DbNull : source;
-        }
+        // if (!user.session && source !== undefined) {
+        //     updateData["current_source"] = source === null ? Prisma.DbNull : source;
+        // }
         if (song !== undefined) {
             updateData["current_song"] = song;
         }

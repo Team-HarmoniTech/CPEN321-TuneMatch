@@ -1,15 +1,7 @@
-// Partially written by ChatGPT
 package com.cpen321.tunematch;
 
-
-import static android.text.method.TextKeyListener.clear;
-import static java.util.Collections.addAll;
-
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.ServiceConnection;
-import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,12 +10,8 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.squareup.picasso.Picasso;
-
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,6 +27,8 @@ public class CustomListAdapter extends BaseAdapter {
     private List<String> itemList;
     private WebSocketService webSocketService;
     private boolean isServiceBound;
+
+    // ChatGPT Usage: Partial
     public CustomListAdapter(Context context, Activity parentView, String listType, List<String> itemList, WebSocketService webSocketService, boolean isServiceBound) {
         this.context = context;
         this.parentView = parentView;
@@ -48,21 +38,25 @@ public class CustomListAdapter extends BaseAdapter {
         this.isServiceBound = isServiceBound;
     }
 
+    // ChatGPT Usage: Yes
     @Override
     public int getCount() {
         return itemList.size();
     }
 
+    // ChatGPT Usage: Yes
     @Override
     public Object getItem(int position) {
         return itemList.get(position);
     }
 
+    // ChatGPT Usage: Yes
     @Override
     public long getItemId(int position) {
         return position;
     }
 
+    // ChatGPT Usage: No
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
@@ -160,6 +154,8 @@ public class CustomListAdapter extends BaseAdapter {
         }
         return convertView;
     }
+
+    // ChatGPT Usage: No
     public void setData(List<String> data) {
         this.itemList = data;
         notifyDataSetChanged();

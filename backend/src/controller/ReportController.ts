@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { reportService } from "..";
+import { reportService } from "../services";
 
 export class ReportController {
     // ChatGPT usage: No

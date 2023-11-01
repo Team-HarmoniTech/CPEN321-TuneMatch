@@ -1,7 +1,7 @@
 import { Mutex } from "async-mutex";
-import { database, socketService, userService } from "..";
 import { Queue, Song } from "../models/Queue";
 import { SessionQueue, SessionWithMembers } from "../models/SessionModels";
+import { database, socketService, userService } from "../services";
 
 export class SessionService {
     private sessionQueues = new Map<number, SessionQueue>();

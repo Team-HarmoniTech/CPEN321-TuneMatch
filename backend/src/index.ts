@@ -1,5 +1,4 @@
-import { Prisma, PrismaClient } from "@prisma/client"
-import * as bodyParser from "body-parser"
+import { Prisma } from "@prisma/client"
 import * as express from "express"
 import { Request, Response } from "express"
 import { validationResult } from "express-validator"
@@ -11,25 +10,14 @@ import { handleConnection } from "./controller/WebsocketController"
 import { findCurrentUser } from "./middleware/CurrentUser"
 import { handleError } from "./middleware/ErrorHandler"
 import { Routes } from "./routes"
-import { ReportService } from "./services/ReportService"
-import { SessionService } from "./services/SessionService"
-import { UserMatchingService } from "./services/UserMatchingService"
-import { UserService } from "./services/UserService"
-import { WebSocketService } from "./services/WebsocketService"
-
-// Global services *ORDER MATTERS* its like crappy dependency injection 🤙
-export const database = new PrismaClient();
-export const socketService = new WebSocketService();
-export const userService = new UserService();
-export const sessionService = new SessionService();
-export const reportService = new ReportService();
-export const userMatchingService = new UserMatchingService();
+import { database } from "./services"
 
 const app = express();
 
 // Middleware
 app.use(morgan('tiny')); // API logger
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(findCurrentUser);
 
 // Register express routes from defined application routes in routes.ts
@@ -62,7 +50,7 @@ const wss = new WebSocketServer({ server: server, path: "/socket" });
 wss.on('connection', handleConnection);
 
 // Reset sessions and current listening then start express server
-// ChatGPT Usage: Partial
+// ChatGPT Usage: No
 Promise.all([
 	database.session.deleteMany(),
 	database.user.updateMany({

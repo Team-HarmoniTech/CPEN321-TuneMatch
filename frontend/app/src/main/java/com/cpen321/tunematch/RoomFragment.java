@@ -6,14 +6,6 @@ import android.content.Context;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
-import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -26,9 +18,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
-
-import android.os.Bundle;
-
 import android.util.Log;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -43,25 +32,17 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.spotify.android.appremote.api.ConnectionParams;
 import com.spotify.android.appremote.api.Connector;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
-
-import com.spotify.protocol.client.Subscription;
-import com.spotify.protocol.types.ImageUri;
-import com.spotify.protocol.types.PlayerState;
 import com.spotify.protocol.types.Track;
-import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Locale;
-import java.util.Map;
 
 import jp.wasabeef.blurry.Blurry;
 import kotlin.text.Charsets;
@@ -99,6 +80,7 @@ public class RoomFragment extends Fragment {
     private WebSocketService webSocketService;
     private boolean isServiceBound = false;
 
+    // ChatGPT Usage: Partial
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
@@ -113,7 +95,7 @@ public class RoomFragment extends Fragment {
         }
     };
 
-
+    // ChatGPT Usage: Partial
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -248,6 +230,7 @@ public class RoomFragment extends Fragment {
             }
         });
 
+        // ChatGPT Usage: Partial
         songSearchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -269,6 +252,7 @@ public class RoomFragment extends Fragment {
         return view;
     }
 
+    // ChatGPT Usage: Partial
     @Override
     public void onStart() {
         super.onStart();
@@ -298,12 +282,14 @@ public class RoomFragment extends Fragment {
                 });
     }
 
+    // ChatGPT Usage: No
     @Override
     public void onStop() {
         super.onStop();
         SpotifyAppRemote.disconnect(mSpotifyAppRemote);
     }
 
+    // ChatGPT Usage: Partial
     public void connected() {
         // Play a playlist
         playpauseButton = view.findViewById(R.id.play_button);
@@ -529,7 +515,7 @@ public class RoomFragment extends Fragment {
         }).start();
     }
 
-    // Partially written by ChatGPT
+    // ChatGPT Usage: Partial
     private String encodeSongTitle(String title) {
         String encoded;
         try {

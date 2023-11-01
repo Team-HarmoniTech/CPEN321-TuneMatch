@@ -39,6 +39,7 @@ public class HomeFragment extends Fragment {
     private WebSocketService webSocketService;
     private boolean isServiceBound = false;
 
+    // ChatGPT Usage: Partial
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
@@ -53,6 +54,7 @@ public class HomeFragment extends Fragment {
         }
     };
 
+    // ChatGPT Usage: Partial
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +64,7 @@ public class HomeFragment extends Fragment {
         bottomNavigationView = mainActivity.findViewById(R.id.bottomNavi);
     }
 
+    // ChatGPT Usage: Partial
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -124,6 +127,8 @@ public class HomeFragment extends Fragment {
 
         return view;
     }
+
+    // ChatGPT Usage: No
     @Override
     public void onResume() {
         super.onResume();
@@ -131,6 +136,7 @@ public class HomeFragment extends Fragment {
         getActivity().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
+    // ChatGPT Usage: No
     @Override
     public void onPause() {
         super.onPause();
@@ -140,10 +146,12 @@ public class HomeFragment extends Fragment {
         }
     }
 
+    // ChatGPT Usage: No
     public WebSocketService getWebSocketService() {
         return webSocketService;
     }
 
+    // ChatGPT Usage: No
     public boolean isServiceBound() {
         return isServiceBound;
     }

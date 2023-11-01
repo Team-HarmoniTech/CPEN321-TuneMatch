@@ -35,6 +35,7 @@ public class ProfileFragment extends Fragment {
     FragmentManager fm;
     FragmentTransaction ft;
 
+    // ChatGPT Usage: No
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +47,7 @@ public class ProfileFragment extends Fragment {
         setupMyProfile();
     }
 
+    // ChatGPT Usage: Partial
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -123,6 +125,7 @@ public class ProfileFragment extends Fragment {
         return view;
     }
 
+    // ChatGPT Usage: No
     public ArrayList<String> parseList(String response, String key) {
         Log.d("ProfileFragment", "parseList: "+key);
 
@@ -141,6 +144,7 @@ public class ProfileFragment extends Fragment {
         return parsedList;
     }
 
+    // ChatGPT Usage: Partial
     private void setupMyProfile() {
         new Thread(new Runnable() {
             @Override
