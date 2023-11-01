@@ -1,7 +1,5 @@
 package com.cpen321.tunematch;
 
-import java.util.List;
-
 public class Session {
     private String sessionId;
     private String roomName;

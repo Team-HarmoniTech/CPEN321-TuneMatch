@@ -2,10 +2,9 @@ package com.cpen321.tunematch;
 
 import android.util.Log;
 
-import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ReduxStore extends ViewModel {
