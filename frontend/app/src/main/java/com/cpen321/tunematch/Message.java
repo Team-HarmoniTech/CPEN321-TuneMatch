@@ -1,16 +1,17 @@
 package com.cpen321.tunematch;
 
 public class Message {
-    private String sender;
-    private String content;
+    private String userId;
+    private String messageText;
     private long timestamp;
 
-    public Message(String sender, String content, long timestamp) {
-        this.sender = sender;
-        this.content = content;
+    // ChatGPT Usage: No
+    public Message(String userId, String messageText, long timestamp) {
+        this.userId = userId;
+        this.messageText = messageText;
         this.timestamp = timestamp;
     }
 
-    // getters and setters
+    // ... (Getters and Setters)
 }
 

@@ -1,8 +1,11 @@
 package com.cpen321.tunematch;
 
 import android.app.AlertDialog;
+import android.content.ComponentName;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,8 +23,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.squareup.picasso.Picasso;
 
@@ -32,13 +33,10 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import kotlin.text.Charsets;
-import okhttp3.Headers;
-import okhttp3.internal.http2.Header;
 
 public class SearchFragment extends Fragment {
 
@@ -47,8 +45,25 @@ public class SearchFragment extends Fragment {
     private AlertDialog profileDialog;
     ReduxStore model;
     ApiClient apiClient;
+    private WebSocketService webSocketService;
+    private boolean isServiceBound = false;
 
-    // Written fully by teammates
+    // ChatGPT Usage: No
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            WebSocketService.LocalBinder binder = (WebSocketService.LocalBinder) service;
+            webSocketService = binder.getService();
+            isServiceBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            isServiceBound = false;
+        }
+    };
+
+    // ChatGPT Usage: No
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,7 +79,7 @@ public class SearchFragment extends Fragment {
                 try {
                     response = apiClient.doGetRequest("/me/matches", true);
                     // Parse the response.
-                    List<Users> newSearchList = parseResponse(response);
+                    List<SearchUser> newSearchList = parseResponse(response);
                     // Update LiveData.
                     model.getSearchList().postValue(newSearchList);
                 } catch (IOException e) {
@@ -74,7 +89,7 @@ public class SearchFragment extends Fragment {
         }).start();
     }
 
-    // Written fully by teammates
+    // ChatGPT Usage: No
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -97,13 +112,13 @@ public class SearchFragment extends Fragment {
                 TextView nameText = dialogView.findViewById(R.id.nameText);
                 Button addButton = dialogView.findViewById(R.id.addButton);
 
-                ImageView profilePic = dialogView.findViewById(R.id.profileImage);
-
                 // Set information
                 String selectedUserWithScore = (String) parent.getItemAtPosition(position);
                 nameText.setText(selectedUserWithScore);
                 String username = selectedUserWithScore.split(" \\(")[0];
                 String encodedName = encodeUsername(username);
+
+                String[] friendId = new String[1];
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -114,6 +129,7 @@ public class SearchFragment extends Fragment {
                             Log.d("SearchFragment", "selected user info: " + userInfo.toString());
 
                             String profileUrl = userInfo.getString("profilePic");
+                            friendId[0] = userInfo.getString("userId");
                             if (!profileUrl.equals("profile.com/url")) {
                                 Handler mainHandler = new Handler(Looper.getMainLooper());
                                 mainHandler.post(new Runnable() {
@@ -130,7 +146,6 @@ public class SearchFragment extends Fragment {
                                 });
                             }
 
-
                         } catch (IOException | JSONException e) {
                             e.printStackTrace();
                         }
@@ -146,8 +161,28 @@ public class SearchFragment extends Fragment {
                 addButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Log.d("Friend profile dialog addButton","Send friend request");
-                        profileDialog.dismiss();
+                        if (friendId[0] != null) {
+                            Log.d("Profile dialog addButton", "Send friend request");
+                            JSONObject messageToSend = new JSONObject();
+                            JSONObject body = new JSONObject();
+                            try {
+                                messageToSend.put("method", "REQUESTS");
+                                messageToSend.put("action", "add");
+
+                                body.put("userId", friendId[0]);
+                                messageToSend.put("body", body);
+                            } catch (JSONException e) {
+                                throw new RuntimeException(e);
+                            }
+
+                            if (isServiceBound && webSocketService != null) {
+                                Log.d("SearchFragment", "add friend:" + messageToSend);
+                                webSocketService.sendMessage(messageToSend.toString());
+                            }
+                            profileDialog.dismiss();
+                        } else {
+                            Log.d("SearchFragment","FriendId was not retrieved yet. Try again.");
+                        }
                     }
                 });
             }
@@ -175,7 +210,7 @@ public class SearchFragment extends Fragment {
                             else{
                                 response = apiClient.doGetRequest("/users/search/" + encodedQuery, true);
                             }
-                            List<Users> newSearchList = parseResponse(response);
+                            List<SearchUser> newSearchList = parseResponse(response);
                             model.getSearchList().postValue(newSearchList);
 
                         } catch (IOException e) {
@@ -209,7 +244,8 @@ public class SearchFragment extends Fragment {
                             else{
                                 response = apiClient.doGetRequest("/users/search/" + encoded_newText, true);
                             }
-                            List<Users> newSearchList = parseResponse(response);
+                          
+                            List<SearchUser> newSearchList = parseResponse(response);
                             model.getSearchList().postValue(newSearchList);
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -221,11 +257,11 @@ public class SearchFragment extends Fragment {
             }
         });
 
-        model.getSearchList().observe(getViewLifecycleOwner(), new Observer<List<Users>>() {
+        model.getSearchList().observe(getViewLifecycleOwner(), new Observer<List<SearchUser>>() {
             @Override
-            public void onChanged(List<Users> SearchedUsers) {
+            public void onChanged(List<SearchUser> SearchedUsers) {
                 listAdapter.clear();
-                for (Users user : SearchedUsers) {
+                for (SearchUser user : SearchedUsers) {
                     listAdapter.add(user.getName() + " (" + user.getMatchPercent() + "%)");
                 }
                 listAdapter.notifyDataSetChanged();
@@ -234,20 +270,20 @@ public class SearchFragment extends Fragment {
         return view;
     }
 
-    // Written fully by teammates
-    public List<Users> parseResponse(String response) {
+    // ChatGPT Usage: Partial
+    public List<SearchUser> parseResponse(String response) {
         Log.d("SearchFragment", "parseResponse: " + response);
-        List<Users> searchedUser = new ArrayList<>();
+        List<SearchUser> searchedUser = new ArrayList<>();
         try {
             JSONArray jsonArray = new JSONArray(response);
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 String name = jsonObject.getString("username");
-                String id = jsonObject.getString("id");
+                String id = jsonObject.getString("userId");
 
                 String match_score = jsonObject.getString("match_percent");
                 String profilePic = jsonObject.getString("profilePic");
-                Users user = new Users(name, id, profilePic);
+                SearchUser user = new SearchUser(name, id, profilePic);
                 user.setMatchPercent(match_score);
                 searchedUser.add(user);
 
@@ -258,7 +294,7 @@ public class SearchFragment extends Fragment {
         return searchedUser;
     }
 
-    // Partially written by ChatGPT
+    // ChatGPT Usage: Partial
     private String encodeUsername(String username) {
         String encodedName;
         try {

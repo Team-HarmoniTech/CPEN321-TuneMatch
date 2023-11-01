@@ -5,6 +5,41 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/songSearchBar"
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:queryHint="Search song"
+        app:iconifiedByDefault="false"/>
+
+    <ListView
+        android:id="@+id/suggestionListView"
+        android:layout_width="match_parent"
+        android:layout_height="145dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="16dp"
+        android:background="@color/darkGray"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/songSearchBar" />
+
+    <Button
+        android:id="@+id/exitBtn"
+        android:layout_width="85dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="300dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/custom_red_btn"
+        android:text="Exit"
+        android:textColor="@color/red"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/song_banner_imageview" />
+
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/song_banner_imageview"
         android:layout_width="359dp"
@@ -21,6 +56,44 @@
         tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
     <!--    image view with rounded corners -->
+
+    <SeekBar
+        android:id="@+id/seekBar"
+        android:layout_width="328dp"
+        android:layout_height="29dp"
+        android:alpha="2"
+        android:rotation="0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.571"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.262" />
+
+    <TextView
+        android:id="@+id/singer_name_text"
+        android:layout_width="145dp"
+        android:layout_height="20dp"
+        android:text="Singer Name"
+        app:layout_constraintBottom_toTopOf="@+id/seekBar"
+        app:layout_constraintEnd_toEndOf="@+id/song_banner_imageview"
+        app:layout_constraintHorizontal_bias="0.106"
+        app:layout_constraintStart_toStartOf="@+id/song_banner_imageview"
+        app:layout_constraintTop_toBottomOf="@+id/song_name_text"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/song_name_text"
+        android:layout_width="145dp"
+        android:layout_height="48dp"
+        android:text="Song Name"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@+id/seekBar"
+        app:layout_constraintEnd_toEndOf="@+id/song_banner_imageview"
+        app:layout_constraintHorizontal_bias="0.106"
+        app:layout_constraintStart_toStartOf="@+id/song_banner_imageview"
+        app:layout_constraintTop_toTopOf="@+id/song_banner_imageview"
+        app:layout_constraintVertical_bias="0.36" />
 
     <Button
         android:id="@+id/play_button"
@@ -60,42 +133,6 @@
         app:layout_constraintTop_toBottomOf="@+id/seekBar"
         app:layout_constraintVertical_bias="0.076" />
 
-    <SeekBar
-        android:id="@+id/seekBar"
-        android:layout_width="328dp"
-        android:layout_height="29dp"
-        android:alpha="2"
-        android:rotation="0"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.571"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.262" />
-
-    <TextView
-        android:id="@+id/singer_name_text"
-        android:layout_width="145dp"
-        android:layout_height="20dp"
-        android:text="Singer Name"
-        app:layout_constraintBottom_toTopOf="@+id/seekBar"
-        app:layout_constraintEnd_toEndOf="@+id/song_banner_imageview"
-        app:layout_constraintHorizontal_bias="0.106"
-        app:layout_constraintStart_toStartOf="@+id/song_banner_imageview"
-        app:layout_constraintTop_toBottomOf="@+id/song_name_text"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <TextView
-        android:id="@+id/song_name_text"
-        android:layout_width="145dp"
-        android:layout_height="48dp"
-        android:text="Song Name"
-        app:layout_constraintBottom_toTopOf="@+id/seekBar"
-        app:layout_constraintEnd_toEndOf="@+id/song_banner_imageview"
-        app:layout_constraintHorizontal_bias="0.106"
-        app:layout_constraintStart_toStartOf="@+id/song_banner_imageview"
-        app:layout_constraintTop_toTopOf="@+id/song_banner_imageview"
-        app:layout_constraintVertical_bias="0.36" />
 
     <TextView
         android:id="@+id/start_time_text"
@@ -125,8 +162,8 @@
         android:id="@+id/chatBtn"
         android:layout_width="85dp"
         android:layout_height="40dp"
-        android:layout_marginStart="85dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginStart="124dp"
+        android:layout_marginTop="12dp"
         android:background="@drawable/custom_green_btn"
         android:text="Chat"
         android:textColor="@color/pointGreen"
@@ -137,8 +174,8 @@
         android:id="@+id/queueBtn"
         android:layout_width="85dp"
         android:layout_height="40dp"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="85dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="296dp"
         android:background="@drawable/custom_green_btn"
         android:text="queue"
         android:textColor="@color/pointGreen"
@@ -146,16 +183,14 @@
         app:layout_constraintTop_toBottomOf="@+id/song_banner_imageview" />
 
     <FrameLayout
+        android:id="@+id/subFrame"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:layout_marginTop="70dp"
-        android:layout_marginBottom="70dp"
+        android:layout_height="330dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/song_banner_imageview">
-
-    </FrameLayout>
-
-
+        app:layout_constraintTop_toBottomOf="@+id/song_banner_imageview"></FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

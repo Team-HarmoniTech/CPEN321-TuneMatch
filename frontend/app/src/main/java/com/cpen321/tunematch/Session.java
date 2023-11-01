@@ -3,13 +3,23 @@ package com.cpen321.tunematch;
 import java.util.List;
 
 public class Session {
+    private String sessionId;
     private String roomName;
-    private List<Message> messages;
 
-    public Session(String roomName, List<Message> messages) {
+    // ChatGPT Usage: No
+    public Session(String sessionId, String roomName) {
         this.roomName = roomName;
-        this.messages = messages;
+        this.sessionId = sessionId;
     }
 
-    // getters and setters
+    // ChatGPT Usage: No
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    // ChatGPT Usage: No
+    public String getRoomName() {
+        return roomName;
+    }
+
 }

@@ -35,17 +35,19 @@ public class ProfileFragment extends Fragment {
     FragmentManager fm;
     FragmentTransaction ft;
 
+    // ChatGPT Usage: No
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        model = new ViewModelProvider(requireActivity()).get(ReduxStore.class);
+        model = ReduxStore.getInstance();
         apiClient = ((MainActivity) getActivity()).getApiClient();;
         fm = getActivity().getSupportFragmentManager();
 
         setupMyProfile();
     }
 
+    // ChatGPT Usage: Partial
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -55,10 +57,7 @@ public class ProfileFragment extends Fragment {
         friendsListBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                ArrayList<String> friendsNameList = model.friendsNameList();
-                Log.d("ProfileFragment", "friendsNameList:"+friendsNameList.toString());
-                // TODO: Redux store not completely working; need to work on this to show profile image along with friend list
-                ListFragment friendsListFragment = ListFragment.newInstance(friendsNameList, "Friends List");
+                ListFragment friendsListFragment = ListFragment.newInstance(new ArrayList<>(), "Friends List");
 
                 ft = fm.beginTransaction();
 
@@ -126,6 +125,7 @@ public class ProfileFragment extends Fragment {
         return view;
     }
 
+    // ChatGPT Usage: No
     public ArrayList<String> parseList(String response, String key) {
         Log.d("ProfileFragment", "parseList: "+key);
 
@@ -144,6 +144,7 @@ public class ProfileFragment extends Fragment {
         return parsedList;
     }
 
+    // ChatGPT Usage: Partial
     private void setupMyProfile() {
         new Thread(new Runnable() {
             @Override
@@ -153,7 +154,7 @@ public class ProfileFragment extends Fragment {
                     JSONObject resJson = new JSONObject(response);
 
                     String name = resJson.getString("username");
-                    String id = resJson.getString("id");
+                    String id = resJson.getString("userId");
                     String profileUrl = resJson.getString("profilePic");
                     Log.d("ProfileFragment", "name:"+name+" id:"+id);
 
