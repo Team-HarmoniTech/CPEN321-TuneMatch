@@ -196,7 +196,7 @@ public class LoginActivity extends AppCompatActivity {
                             }
 
                             // get top artists
-                            String topArtistsRes = spotifyApiClient.doGetRequest("me/top/artists", true);
+                            String topArtistsRes = spotifyApiClient.doGetRequest("me/top/artists?limit=50&time_range=long_term", true);
 
                             // Parse the top artists response
                             JSONObject topArtistsObject = new JSONObject(topArtistsRes);
