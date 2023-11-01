@@ -1,7 +1,6 @@
 package com.cpen321.tunematch;
 
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ServiceConnection;
