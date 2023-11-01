@@ -215,15 +215,12 @@ public class LoginActivity extends AppCompatActivity {
                                 }
                             }
 
-                            String topArtists = listToString(topArtistList);
-                            String topGenres = listToString(new ArrayList<>(genreSet));
-
                             JSONObject createUserBody = new JSONObject();
                             JSONObject userInfo = new JSONObject();
                             userInfo.put("spotify_id", spotifyUserId);
                             userInfo.put("username", spotifyUserName);
-                            userInfo.put("top_artists", topArtists);
-                            userInfo.put("top_genres", topGenres);
+                            userInfo.put("top_artists", new JSONArray(topArtistList));
+                            userInfo.put("top_genres", new JSONArray(new ArrayList<>(genreSet)));
                             userInfo.put("pfp_url", spotifyImageUrl);
                             createUserBody.put("userData", userInfo);
 
@@ -255,20 +252,6 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         }).start();
-    }
-
-    // ChatGPT Usage: Partial
-    private String listToString(ArrayList<String> list) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-        for (int i = 0; i < list.size(); i++) {
-            sb.append("\"").append(list.get(i)).append("\"");
-            if (i != list.size() - 1) {
-                sb.append(", ");
-            }
-        }
-        sb.append("]");
-        return sb.toString();
     }
 
     // ChatGPT Usage: Partial
