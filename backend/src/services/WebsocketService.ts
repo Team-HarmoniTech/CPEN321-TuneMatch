@@ -1,6 +1,6 @@
 import { BiMap } from "@jsdsl/bimap";
+import { SocketMessage } from "@models/WebsocketModels";
 import { Mutex } from "async-mutex";
-import { SocketMessage } from "../models/WebsocketModels";
 import WebSocket = require("ws");
 
 export class WebSocketService {

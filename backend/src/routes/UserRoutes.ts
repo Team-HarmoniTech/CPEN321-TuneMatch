@@ -1,5 +1,5 @@
+import { UserController } from "@controller/UserController";
 import { body, header, param, query } from "express-validator";
-import { UserController } from "../controller/UserController";
 
 export const UserRoutes = [
   {

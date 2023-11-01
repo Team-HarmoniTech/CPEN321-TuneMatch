@@ -1,23 +1,23 @@
-import { Prisma } from "@prisma/client";
-import { Request } from "express";
-import { WebSocket } from "ws";
-import { SessionMessage } from "../models/SessionModels";
+import { RequestController } from "@controller/RequestController";
+import { SessionController } from "@controller/SessionController";
+import { UserController } from "@controller/UserController";
+import { SessionMessage } from "@models/SessionModels";
 import {
   FriendsMessage,
   RequestsMessage,
   transformUser,
   transformUsers,
-} from "../models/UserModels";
-import { SocketMessage } from "../models/WebsocketModels";
+} from "@models/UserModels";
+import { SocketMessage } from "@models/WebsocketModels";
+import { Prisma } from "@prisma/client";
 import {
   database,
   sessionService,
   socketService,
   userService,
-} from "../services";
-import { RequestController } from "./RequestController";
-import { SessionController } from "./SessionController";
-import { UserController } from "./UserController";
+} from "@services";
+import { Request } from "express";
+import { WebSocket } from "ws";
 
 // ChatGPT Usage: No
 async function authenticateSocket(socket, req): Promise<number> {
@@ -128,7 +128,7 @@ export async function handleConnection(ws: WebSocket, req: Request) {
                   currentSource: user.current_source,
                 };
               }),
-            ),
+            ) as SocketMessage,
           );
           if (session) {
             await sessionService.messageSession(
@@ -139,7 +139,7 @@ export async function handleConnection(ws: WebSocket, req: Request) {
           }
         }
       }
-    } catch {}
+    } catch { /* empty */ }
     if (userId) {
       await socketService.removeConnectionBySocket(ws);
     }

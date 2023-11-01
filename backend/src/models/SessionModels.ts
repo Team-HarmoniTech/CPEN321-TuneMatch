@@ -1,7 +1,7 @@
+import { Queue } from "@models/Queue";
+import { SocketMessage } from "@models/WebsocketModels";
 import { Session, User } from "@prisma/client";
 import { Mutex } from "async-mutex";
-import { Queue } from "../models/Queue";
-import { SocketMessage } from "./WebsocketModels";
 
 export class SessionMessage extends SocketMessage {
   constructor(

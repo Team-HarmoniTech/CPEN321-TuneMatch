@@ -1,5 +1,5 @@
+import { SocketMessage } from "@models/WebsocketModels";
 import { User } from "@prisma/client";
-import { SocketMessage } from "./WebsocketModels";
 
 export type VisibleUser = {
   userId: String;

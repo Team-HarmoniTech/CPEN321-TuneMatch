@@ -1,16 +1,16 @@
+import { PORT } from "@config";
+import { handleConnection } from "@controller/WebsocketController";
+import { findCurrentUser } from "@middleware/CurrentUser";
+import { handleError } from "@middleware/ErrorHandler";
 import { Prisma } from "@prisma/client";
+import { Routes } from "@routes";
+import { database } from "@services";
 import * as express from "express";
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import * as http from "http";
 import * as morgan from "morgan";
 import { WebSocketServer } from "ws";
-import { PORT } from "./config";
-import { handleConnection } from "./controller/WebsocketController";
-import { findCurrentUser } from "./middleware/CurrentUser";
-import { handleError } from "./middleware/ErrorHandler";
-import { Routes } from "./routes";
-import { database } from "./services";
 
 const app = express();
 

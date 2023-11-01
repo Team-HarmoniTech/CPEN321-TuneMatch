@@ -1,5 +1,5 @@
 import { User } from "@prisma/client";
-import { database, userService } from "../services";
+import { database, userService } from "@services";
 
 export class UserMatchingService {
   private userDB = database.user;
@@ -78,7 +78,7 @@ export class UserMatchingService {
       const maxLength = Math.max(arr1.length, arr2.length, 1);
 
       // Score each index of array 2 against the created map
-      arr2.forEach((value, index) => {
+      arr2.forEach((value) => {
         if (arr1map.has(value)) {
           score += 1;
           //score += (maxLength - Math.abs(index - arr1map.get(value))) / Math.max(arr1.length, 1);

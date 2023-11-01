@@ -1,10 +1,10 @@
-import { NextFunction, Request, Response } from "express";
 import {
   FriendsMessage,
   transformUser,
   transformUsers,
-} from "../models/UserModels";
-import { userMatchingService, userService } from "../services";
+} from "@models/UserModels";
+import { userMatchingService, userService } from "@services";
+import { NextFunction, Request, Response } from "express";
 import WebSocket = require("ws");
 
 export class UserController {

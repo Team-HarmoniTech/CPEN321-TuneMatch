@@ -1,6 +1,6 @@
+import { FriendsMessage } from "@models/UserModels";
 import { Prisma, Session, User } from "@prisma/client";
-import { SocketMessage } from "../models/WebsocketModels";
-import { database, socketService } from "../services";
+import { database, socketService } from "@services";
 
 export class UserService {
   private userDB = database.user;
@@ -71,7 +71,7 @@ export class UserService {
     }
   }
 
-  async broadcastToFriends(userId: number, message: SocketMessage) {
+  async broadcastToFriends(userId: number, message: FriendsMessage) {
     const user = await this.getUserById(userId);
     const recipients = (await this.getUserFriends(user.id)).map(
       (user) => user.id,

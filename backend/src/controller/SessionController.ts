@@ -1,11 +1,11 @@
-import { WebSocket } from "ws";
-import { SessionMessage } from "../models/SessionModels";
+import { SessionMessage } from "@models/SessionModels";
 import {
   FriendsMessage,
   transformUser,
   transformUsers,
-} from "../models/UserModels";
-import { sessionService, userService } from "../services";
+} from "@models/UserModels";
+import { sessionService, userService } from "@services";
+import { WebSocket } from "ws";
 
 export class SessionController {
   // Websocket Route Dispatcher

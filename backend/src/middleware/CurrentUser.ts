@@ -1,6 +1,6 @@
 import { User } from "@prisma/client";
+import { database } from "@services";
 import { NextFunction, Request, Response } from "express";
-import { database } from "../services";
 
 // ChatGPT Usage: No
 export async function findCurrentUser(

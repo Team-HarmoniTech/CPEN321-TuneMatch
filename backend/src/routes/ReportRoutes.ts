@@ -1,5 +1,5 @@
+import { ReportController } from "@controller/ReportController";
 import { body, param, query } from "express-validator";
-import { ReportController } from "../controller/ReportController";
 
 export const ReportRoutes = [
   {
