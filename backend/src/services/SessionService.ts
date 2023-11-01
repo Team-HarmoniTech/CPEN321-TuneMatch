@@ -1,7 +1,7 @@
 import { Queue, Song } from "@models/Queue";
 import { SessionMessage, SessionQueue, SessionWithMembers } from "@models/SessionModels";
 import { transformUser } from "@models/UserModels";
-import { database, socketService, userService } from "@services";
+import { database, socketService, userService } from "@src/services";
 import { Mutex } from "async-mutex";
 
 export class SessionService {

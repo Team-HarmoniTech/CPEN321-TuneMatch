@@ -1,5 +1,5 @@
 import { User } from "@prisma/client";
-import { database } from "@services";
+import { database } from "@src/services";
 import { NextFunction, Request, Response } from "express";
 
 // ChatGPT Usage: No

@@ -5,7 +5,7 @@ import {
   transformUsers,
 } from "@models/UserModels";
 import { SocketMessage } from "@models/WebsocketModels";
-import { socketService, userService } from "@services";
+import { socketService, userService } from "@src/services";
 import WebSocket = require("ws");
 
 export class RequestController {

@@ -1,6 +1,6 @@
 import { FriendsMessage, transformUser } from "@models/UserModels";
 import { Prisma, Session, User } from "@prisma/client";
-import { database, socketService, userService } from "@services";
+import { database, socketService, userService } from "@src/services";
 
 export class UserService {
   private userDB = database.user;

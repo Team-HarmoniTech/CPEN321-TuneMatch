@@ -1,10 +1,12 @@
-import { PORT } from "@config";
+import 'module-alias/register';
+
 import { handleConnection } from "@controller/WebsocketController";
 import { findCurrentUser } from "@middleware/CurrentUser";
 import { handleError } from "@middleware/ErrorHandler";
 import { Prisma } from "@prisma/client";
-import { Routes } from "@routes";
-import { database } from "@services";
+import { PORT } from "@src/config";
+import { Routes } from "@src/routes";
+import { database } from "@src/services";
 import * as express from "express";
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";

@@ -1,4 +1,4 @@
-import { reportService } from "@services";
+import { reportService } from "@src/services";
 import { NextFunction, Request, Response } from "express";
 
 export class ReportController {

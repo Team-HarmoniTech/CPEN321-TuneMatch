@@ -12,7 +12,7 @@ import {
   sessionService,
   socketService,
   userService,
-} from "@services";
+} from "@src/services";
 import { Request } from "express";
 import { WebSocket } from "ws";
 

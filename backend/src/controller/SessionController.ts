@@ -3,7 +3,7 @@ import {
   transformUser,
   transformUsers
 } from "@models/UserModels";
-import { sessionService, userService } from "@services";
+import { sessionService, userService } from "@src/services";
 import { WebSocket } from "ws";
 
 export class SessionController {

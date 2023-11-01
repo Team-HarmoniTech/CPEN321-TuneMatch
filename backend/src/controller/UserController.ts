@@ -3,7 +3,7 @@ import {
   transformUser,
   transformUsers,
 } from "@models/UserModels";
-import { userMatchingService, userService } from "@services";
+import { userMatchingService, userService } from "@src/services";
 import { NextFunction, Request, Response } from "express";
 import WebSocket = require("ws");
 
