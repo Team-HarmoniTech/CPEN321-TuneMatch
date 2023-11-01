@@ -1,4 +1,4 @@
-import { Connection, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import { database, userService } from "..";
 
 export class UserMatchingService {
@@ -6,27 +6,27 @@ export class UserMatchingService {
 	private connectionDB = database.connection;
 
 	// ChatGPT Usage: No
-	async getConnection(userId1: number, userId2: number): Promise<Connection> {
+	async getMatch(userId1: number, userId2: number): Promise<number> {
 		if (userId1 === userId2) return;
-		const user1 = await userService.getUserById(userId1);
-		const user2 = await userService.getUserById(userId2);
-		let existingConnection = await this.connectionDB.findFirst({
-			where: {
-				user_id_1: userId1,
-				user_id_2: userId2,
-			},
-		});
+		let match: number;
+		const user1Connections = await this.getUserConnections(userId1);
 
-		if (!existingConnection) {
-			existingConnection = await this.connectionDB.create({
+		if (!user1Connections.some(c => c.id === userId2)) {
+			const user1 = await userService.getUserById(userId1);
+			const user2 = await userService.getUserById(userId2);
+
+			match = (await this.connectionDB.create({
 				data: {
 					match_percent: this.calcPercentMatch(user1, user2),
 					user_1: { connect: { id: userId1 } },
 					user_2: { connect: { id: userId2 } },
 				},
-			});
+			})).match_percent;
+		} else {
+			match = user1Connections.find(c => c.id === userId2).match;
 		}
-		return existingConnection;
+
+		return match;
 	}
 
 	// ChatGPT Usage: Partial
@@ -56,18 +56,6 @@ export class UserMatchingService {
         });
     }
 
-    // ChatGPT Usage: No
-    // async addUserConnection(userId1: number, userId2: number, match: number) {
-    //     if (userId1 === userId2) return;
-    //     await this.connectionDB.create({
-    //         data: {
-    //             match_percent: match,
-    //             user_1: { connect: { id: userId1 } },
-    //             user_2: { connect: { id: userId2 } }
-    //         }
-    //     })
-    // }
-
 	// ChatGPT usage: No
 	calcPercentMatch(u1: User, u2: User): number {
 		const arrayScore = (arr1, arr2): number => {
@@ -83,7 +71,8 @@ export class UserMatchingService {
 			// Score each index of array 2 against the created map
 			arr2.forEach((value, index) => {
 				if (arr1map.has(value)) {
-					score += (maxLength - Math.abs(index - arr1map.get(value))) / Math.max(arr1.length/10, 1);
+					score += 1;
+					//score += (maxLength - Math.abs(index - arr1map.get(value))) / Math.max(arr1.length, 1);
 				}
 			});
 
@@ -121,19 +110,7 @@ export class UserMatchingService {
 			}
 
 			// If the user is from the queue, retrieve the match percentage from the database
-			const connection = await this.getConnection(userId, userToMatch.id);
-
-			let matchPercent;
-			if (connection) {
-				matchPercent = connection.match_percent;
-			} else {
-				// Calculate the match percentage
-				// matchPercent = await this.calcPercentMatch(user, userToMatch);
-
-				// await this.addUserConnection(userId, userToMatch.id, matchPercent);
-
-				await this.getConnection(userId, userToMatch.id);
-			}
+			const matchPercent = await this.getMatch(userId, userToMatch.id);
 
 			matchedUsers.push(userToMatch.id);
 
@@ -147,13 +124,7 @@ export class UserMatchingService {
 						matchedUsers.length < maxMatches &&
 						userId !== friend.id
 					) {
-						// const friendMatchPercent = await this.calcPercentMatch(user, friend);
-
-						// await userService.addUserConnection(userId, friend.id, friendMatchPercent);
-
-						const friendConnection = await this.getConnection(userId, friend.id);
-
-						const friendMatchPercent = friendConnection.match_percent;
+						const friendMatchPercent = await this.getMatch(userId, friend.id);
 
 						matchedUsers.push(friend.id);
 

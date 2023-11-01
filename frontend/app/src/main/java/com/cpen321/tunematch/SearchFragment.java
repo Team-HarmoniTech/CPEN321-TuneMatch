@@ -43,6 +43,7 @@ public class SearchFragment extends Fragment {
     ReduxStore model;
     ApiClient apiClient;
 
+    // Written fully by teammates
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +69,7 @@ public class SearchFragment extends Fragment {
         }).start();
     }
 
+    // Written fully by teammates
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -226,6 +228,7 @@ public class SearchFragment extends Fragment {
         });
         return view;
     }
+
     public List<SearchUser> parseResponse(String response) {
         Log.d("SearchFragment", "parseResponse: " + response);
         List<SearchUser> searchedUser = new ArrayList<>();
@@ -249,6 +252,7 @@ public class SearchFragment extends Fragment {
         return searchedUser;
     }
 
+    // Partially written by ChatGPT
     private String encodeUsername(String username) {
         String encodedName;
         try {

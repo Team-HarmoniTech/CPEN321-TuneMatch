@@ -38,6 +38,8 @@ public class LoginActivity extends AppCompatActivity {
     private static final int MAX_PROFILE_URL = 500;
 
     private String spotifyUserId;
+
+    // Partially written by ChatGPT
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,6 +94,7 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    // Partially written in ChatGPT
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
 
@@ -124,6 +127,7 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    // Partially written by ChatGPT
     private void fetchSpotifyUserId(String authToken) {
         Log.d("fetchSpotifyUserId", "Inside function");
         // Set up your custom headers (including the Authorization header with the access token)
@@ -244,6 +248,7 @@ public class LoginActivity extends AppCompatActivity {
         }).start();
     }
 
+    // Partially written by ChatGPT
     private String listToString(ArrayList<String> list) {
         StringBuilder sb = new StringBuilder();
         sb.append("[");
@@ -257,6 +262,7 @@ public class LoginActivity extends AppCompatActivity {
         return sb.toString();
     }
 
+    // Partially written by ChatGPT
     private void handleError(String warningMessage) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
