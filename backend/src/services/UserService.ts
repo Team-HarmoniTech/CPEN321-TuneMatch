@@ -172,7 +172,6 @@ export class UserService {
     song?: string,
     source?: { type: string; uri?: string },
   ): Promise<User> {
-    let user: any = await this.getUserById(userId);
     let updateData: any = {};
     /* If they are in a session don't update the source */
     if (source !== undefined) {
@@ -183,7 +182,7 @@ export class UserService {
     }
 
     /* Update user */
-    user = await this.updateUser(updateData, userId);
+    const user = await this.updateUser(updateData, userId);
 
     /* Inform friends */
     await userService.broadcastToFriends(
