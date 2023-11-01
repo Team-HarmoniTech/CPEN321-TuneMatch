@@ -27,13 +27,12 @@ Routes.forEach((route) => {
     route.route,
     route.validation,
     async (req: Request, res: Response, next: Function) => {
-      // Request Validation
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        // If there are validation errors, send a response with the error messages
+        /* If there are validation errors, send a response with the error messages */
         return res.status(400).json({ errors: errors.array() });
       }
-      // Request Handling
+
       try {
         const result = await new (route.controller as any)()[route.action](
           req,

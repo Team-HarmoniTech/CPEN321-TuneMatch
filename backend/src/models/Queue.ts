@@ -25,6 +25,9 @@ export class Queue {
     this.runQueue = null;
   }
 
+  /**
+   * Start playing the current queue.
+   */
   start() {
     if (this.songs.length !== 0 && !this.running) {
       this.running = true;
@@ -44,6 +47,9 @@ export class Queue {
     }
   }
 
+  /**
+   * Stop the queue from playing.
+   */
   stop() {
     if (this.running) {
       this.running = false;
@@ -60,8 +66,12 @@ export class Queue {
     }
   }
 
+  /**
+   * Replace the entire queue.
+   * @param songs the new queue
+   */
   replace(songs: Song[]) {
-    if (this.runQueue) {
+    if (this.currentlyPlaying) {
       clearTimeout(this.runQueue);
     }
     this.songs = songs;
@@ -70,6 +80,12 @@ export class Queue {
     this.start();
   }
 
+  /**
+   * Add a song after the given index or at the end of the queue if index is 
+   * null.
+   * @param song the song to add
+   * @param index the index to add after
+   */
   addAfter(song: Song, index?: number) {
     const splicePos = index ? index : Infinity;
     song.leftMs = song.durationMs;
@@ -80,6 +96,9 @@ export class Queue {
     }
   }
 
+  /**
+   * Skip the currently playing song.
+   */
   skip() {
     if (this.currentlyPlaying != null) {
       clearTimeout(this.runQueue);
@@ -88,6 +107,11 @@ export class Queue {
     }
   }
 
+  /**
+   * Drag the song at start index to the end index.
+   * @param startIdx start index
+   * @param endIdx end index
+   */
   drag(startIdx: number, endIdx: number) {
     const song = this.songs.splice(startIdx, 1)[0];
     if (song) {
@@ -95,6 +119,10 @@ export class Queue {
     }
   }
 
+  /**
+   * Seek the current song
+   * @param seekPosition position to seek to
+   */
   seek(seekPosition: number) {
     clearTimeout(this.runQueue);
     /* Round to greater than 0 but less than endPosition */
