@@ -105,6 +105,7 @@ export class SessionController {
     async leave(ws: WebSocket, message: SessionMessage, currentUserId: number) {
         const session = await sessionService.leaveSession(currentUserId);
         const user = await userService.getUserById(currentUserId);
+        ws.send(JSON.stringify(new SessionMessage("leave", await transformUser(user))));
         await userService.broadcastToFriends(currentUserId, 
             new FriendsMessage("update", await transformUser(user, async (user) => {
                 return { 
