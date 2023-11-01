@@ -182,6 +182,9 @@ export class UserService {
       updateData["current_song"] = song;
     }
 
+    /* Update user */
+    user = await this.updateUser(updateData, userId);
+    
     /* Inform friends */
     await userService.broadcastToFriends(
       userId,
@@ -196,6 +199,6 @@ export class UserService {
       ),
     );
 
-    return await this.updateUser(updateData, userId);
+    return user;
   }
 }

@@ -67,6 +67,11 @@ export class UserMatchingService {
 
   // ChatGPT usage: No
   calcPercentMatch(u1: User, u2: User): number {
+    // Apply f(x)= -0.00002*x^3 -0.001*x^2 + x + 30 to make users feel better :)
+    const outputMultiplier = (score): number => {
+      return -0.00002*Math.pow(score, 3) + -0.00002*Math.pow(score, 2) + score + 30;
+    }
+
     const arrayScore = (arr1, arr2): number => {
       // Create map from value to index
       const arr1map = new Map<string, number>();
@@ -84,14 +89,16 @@ export class UserMatchingService {
           //score += (maxLength - Math.abs(index - arr1map.get(value))) / Math.max(arr1.length, 1);
         }
       });
-
+      console.log(score);
       return score / maxLength;
     };
 
-    return (
-      (arrayScore(u1.top_artists, u2.top_artists) +
-        arrayScore(u1.top_genres, u2.top_genres)) *
-      50
+    return outputMultiplier(
+      (
+        (arrayScore(u1.top_artists, u2.top_artists) +
+          arrayScore(u1.top_genres, u2.top_genres)) *
+        50
+      )
     );
   }
 
