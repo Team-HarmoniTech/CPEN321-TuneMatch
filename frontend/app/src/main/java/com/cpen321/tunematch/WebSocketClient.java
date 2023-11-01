@@ -260,7 +260,15 @@ public class WebSocketClient {
                 String profilePic = body.optString("profilePic", null);
                 String currentSong = body.optString("currentSong", null);
                 String currentSource = body.optString("currentSource", null);
+
                 // TODO: Update the Redux store with the new friend request or new friend
+                SearchUser newRequest = new SearchUser(username, userId, profilePic);
+                model.addFriendRequest(newRequest);
+
+                Friend newFriend = new Friend(username, userId, profilePic);
+                newFriend.setCurrentSong(currentSong);
+                newFriend.setCurrentSource(new JSONObject(currentSource));
+                model.addFriend(newFriend);
             }
 
             // Handling the remove action
@@ -269,7 +277,13 @@ public class WebSocketClient {
                 String userId = body.getString("userId");
                 String username = body.optString("username", null);
                 String profilePic = body.optString("profilePic", null);
+
                 // TODO: Update the Redux store to remove the friend or friend request
+                SearchUser rmvRequest = new SearchUser(username, userId, profilePic);
+                model.removeFriendRequest(rmvRequest);
+
+                Friend friendToRemove = new Friend(username, userId, profilePic);
+                model.removeFriend(friendToRemove);
             }
 
             // Handling any other unexpected actions
