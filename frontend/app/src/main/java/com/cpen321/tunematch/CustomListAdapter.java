@@ -7,7 +7,10 @@ import static android.text.method.TextKeyListener.clear;
 import static java.util.Collections.addAll;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,20 +22,27 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.List;
 
 public class CustomListAdapter extends BaseAdapter {
     private Context context;
     private Activity parentView;
     private String listType;
-
+    ReduxStore model= ReduxStore.getInstance();
     private List<String> itemList;
-
-    public CustomListAdapter(Context context, Activity parentView, String listType, List<String> itemList) {
+    private WebSocketService webSocketService;
+    private boolean isServiceBound;
+    public CustomListAdapter(Context context, Activity parentView, String listType, List<String> itemList, WebSocketService webSocketService, boolean isServiceBound) {
         this.context = context;
         this.parentView = parentView;
         this.listType = listType;
         this.itemList = itemList;
+        this.webSocketService = webSocketService;
+        this.isServiceBound = isServiceBound;
     }
 
     @Override
@@ -76,18 +86,30 @@ public class CustomListAdapter extends BaseAdapter {
         } else if (listType.equals("SessionsList")) {                                       // in the HomeFragment
             // Set room name                                                                // items = "owner"
             TextView roomNameText = convertView.findViewById(R.id.roomNameText);
-            String ownerText = itemList.get(position);
+            String ownerId = itemList.get(position);
+            String ownerText = model.getFriendName(ownerId);
             roomNameText.setText(String.format("%s's room", ownerText));
-
-
             Button joinBtn = convertView.findViewById(R.id.joinBtn);
             // TODO: Whatever is required to join to existing listening session, need to send info through itemlist
-            int sessionId = 0;
 
             joinBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // TODO: send join request (query reduxstore)
+                    JSONObject messageToSend = new JSONObject();
+                    JSONObject body = new JSONObject();
+                    try {
+                        body.put("userId", ownerId);
+                        messageToSend.put("method", "SESSION");
+                        messageToSend.put("action", "join");
+                        messageToSend.put("body", body);
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                    Log.d("CustomListAdapter", "Sending message to server: " + messageToSend.toString());
+                    if (isServiceBound && webSocketService != null) {
+                        Log.d("CustomListAdapter", "Sending message to server because its true: " + messageToSend.toString());
+                        webSocketService.sendMessage(messageToSend.toString());
+                    }
                     BottomNavigationView bottomNavigationView = parentView.findViewById(R.id.bottomNavi);
                     bottomNavigationView.setSelectedItemId(R.id.navigation_room);
                 }
@@ -113,5 +135,7 @@ public class CustomListAdapter extends BaseAdapter {
         this.itemList = data;
         notifyDataSetChanged();
     }
+
+
 }
 

@@ -167,6 +167,7 @@ public class LoginActivity extends AppCompatActivity {
                                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                 intent.putExtra("spotifyUserId", spotifyUserId);
                                 Intent webSocketServiceIntent = new Intent(LoginActivity.this, WebSocketService.class);
+                                webSocketServiceIntent.putExtra("spotifyUserId", spotifyUserId);
                                 startService(webSocketServiceIntent);
                                 startActivity(intent);
                             }

@@ -55,6 +55,17 @@ public class ReduxStore extends ViewModel {
         return id;
     }
 
+    public String getFriendName(String id) {
+        String name = new String();
+        for (Friend f : friendsList.getValue()) {
+            if ((f.getId()).equals(id)) {
+                name = f.getName();
+                break;
+            }
+        }
+        return name;
+    }
+
     public MutableLiveData<CurrentSession> getCurrentSession() {
         return currentSession;
     }
@@ -107,6 +118,9 @@ public class ReduxStore extends ViewModel {
         currentQueue.remove(song);
         songQueue.setValue(currentQueue);
     }
+
+//    Handle sessions
+
 }
 
 
