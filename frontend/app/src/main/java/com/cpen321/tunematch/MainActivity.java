@@ -39,7 +39,6 @@ public class MainActivity extends AppCompatActivity {
 
         webSocketClient = new WebSocketClient(model);
 
-
         // Retrieve the Spotify User ID from the Intent
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("spotifyUserId")) {
