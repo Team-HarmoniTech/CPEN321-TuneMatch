@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { sessionService, userMatchingService, userService } from "..";
-import { SessionMessage } from "../models/SessionModels";
 import { FriendsMessage, transformUser, transformUsers } from "../models/UserModels";
+import { userMatchingService, userService } from "../services";
 import WebSocket = require("ws");
 
 export class UserController {
@@ -104,7 +103,7 @@ export class UserController {
 
     // ChatGPT Usage: No
     async update(ws: WebSocket, message: FriendsMessage, currentUserId: number) {
-        const user = await userService.updateUserStatus(currentUserId, message?.body.song, message?.body?.source.uri);
+        const user = await userService.updateUserStatus(currentUserId, message?.body?.song, undefined);
         await userService.broadcastToFriends(currentUserId, 
             new FriendsMessage("update", await transformUser(user, async (user) => {
                 return { 
@@ -113,9 +112,9 @@ export class UserController {
                 };
             }))
         );
-        if (user.sessionId) {
-            await sessionService.messageSession(user.sessionId, currentUserId, 
-                new SessionMessage("music", message?.body.song));
-        }
+        // if (user.sessionId) {
+        //     await sessionService.messageSession(user.sessionId, currentUserId, 
+        //         new SessionMessage("music", message?.body?.song));
+        // }
     }
 }

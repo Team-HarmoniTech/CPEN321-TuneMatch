@@ -1,7 +1,7 @@
 import { WebSocket } from "ws";
-import { sessionService, userService } from "..";
 import { SessionMessage } from "../models/SessionModels";
 import { FriendsMessage, transformUser, transformUsers } from "../models/UserModels";
+import { sessionService, userService } from "../services";
 
 export class SessionController {
 
@@ -104,11 +104,12 @@ export class SessionController {
     // ChatGPT Usage: No
     async leave(ws: WebSocket, message: SessionMessage, currentUserId: number) {
         const session = await sessionService.leaveSession(currentUserId);
+        const user = await userService.getUserById(currentUserId);
         if (session) {
             await sessionService.messageSession(session.id, currentUserId, 
-                new SessionMessage("leave", await transformUser(session.members.find(x => x.id === currentUserId))));
+                new SessionMessage("leave", await transformUser(user)));
             await userService.broadcastToFriends(currentUserId, 
-                new FriendsMessage("update", await transformUser(session.members.find(x => x.id === currentUserId), async (user) => {
+                new FriendsMessage("update", await transformUser(user, async (user) => {
                     return { 
                         currentSong: user.current_song, 
                         currentSource: user.current_source

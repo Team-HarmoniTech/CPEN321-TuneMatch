@@ -1,5 +1,5 @@
 import { User } from "@prisma/client";
-import { database, userService } from "..";
+import { database, userService } from "../services";
 
 export class UserMatchingService {
 	private userDB = database.user;
