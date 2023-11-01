@@ -1,8 +1,7 @@
 import { SessionMessage } from "@models/SessionModels";
 import {
-  FriendsMessage,
   transformUser,
-  transformUsers,
+  transformUsers
 } from "@models/UserModels";
 import { sessionService, userService } from "@services";
 import { WebSocket } from "ws";
@@ -177,32 +176,6 @@ export class SessionController {
         }),
       ),
     );
-
-    await sessionService.messageSession(
-      session.id,
-      currentUserId,
-      new SessionMessage(
-        "join",
-        await transformUser(
-          session.members.find((x) => x.id === currentUserId),
-        ),
-      ),
-    );
-    await userService.broadcastToFriends(
-      currentUserId,
-      new FriendsMessage(
-        "update",
-        await transformUser(
-          session.members.find((x) => x.id === currentUserId),
-          async (user) => {
-            return {
-              currentSong: user.current_song,
-              currentSource: user.current_source,
-            };
-          },
-        ),
-      ),
-    );
   }
 
   // ChatGPT Usage: No
@@ -212,24 +185,5 @@ export class SessionController {
     ws.send(
       JSON.stringify(new SessionMessage("leave", await transformUser(user))),
     );
-    await userService.broadcastToFriends(
-      currentUserId,
-      new FriendsMessage(
-        "update",
-        await transformUser(user, async (user) => {
-          return {
-            currentSong: user.current_song,
-            currentSource: user.current_source,
-          };
-        }),
-      ),
-    );
-    if (session) {
-      await sessionService.messageSession(
-        session.id,
-        currentUserId,
-        new SessionMessage("leave", await transformUser(user)),
-      );
-    }
   }
 }

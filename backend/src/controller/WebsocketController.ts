@@ -1,15 +1,12 @@
 import { RequestController } from "@controller/RequestController";
 import { SessionController } from "@controller/SessionController";
 import { UserController } from "@controller/UserController";
-import { SessionMessage } from "@models/SessionModels";
 import {
   FriendsMessage,
   RequestsMessage,
-  transformUser,
-  transformUsers,
+  transformUsers
 } from "@models/UserModels";
 import { SocketMessage } from "@models/WebsocketModels";
-import { Prisma } from "@prisma/client";
 import {
   database,
   sessionService,
@@ -112,32 +109,8 @@ export async function handleConnection(ws: WebSocket, req: Request) {
     const userId = await socketService.retrieveBySocket(ws);
     try {
       if (userId) {
-        const session = await sessionService.leaveSession(userId);
-        const user = await userService.updateUser(
-          { current_song: null, current_source: Prisma.DbNull },
-          userId,
-        );
-        if (user) {
-          await userService.broadcastToFriends(
-            userId,
-            new FriendsMessage(
-              "update",
-              await transformUser(user, async (user) => {
-                return {
-                  currentSong: user.current_song,
-                  currentSource: user.current_source,
-                };
-              }),
-            ) as SocketMessage,
-          );
-          if (session) {
-            await sessionService.messageSession(
-              session.id,
-              userId,
-              new SessionMessage("leave", await transformUser(user)),
-            );
-          }
-        }
+        await sessionService.leaveSession(userId);
+        await userService.updateUserStatus(userId, null, null);
       }
     } catch { /* empty */ }
     if (userId) {

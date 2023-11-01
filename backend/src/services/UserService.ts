@@ -1,6 +1,6 @@
-import { FriendsMessage } from "@models/UserModels";
+import { FriendsMessage, transformUser } from "@models/UserModels";
 import { Prisma, Session, User } from "@prisma/client";
-import { database, socketService } from "@services";
+import { database, socketService, userService } from "@services";
 
 export class UserService {
   private userDB = database.user;
@@ -170,17 +170,32 @@ export class UserService {
   async updateUserStatus(
     userId: number,
     song?: string,
-    source?: { type: string; uri: string },
+    source?: { type: string; uri?: string },
   ): Promise<User> {
     let user: any = await this.getUserById(userId);
     let updateData: any = {};
     /* If they are in a session don't update the source */
-    // if (!user.session && source !== undefined) {
-    //     updateData["current_source"] = source === null ? Prisma.DbNull : source;
-    // }
+    if (!user.session && source !== undefined) {
+        updateData["current_source"] = source === null ? Prisma.DbNull : source;
+    }
     if (song !== undefined) {
       updateData["current_song"] = song;
     }
+
+    /* Inform friends */
+    await userService.broadcastToFriends(
+      userId,
+      new FriendsMessage(
+        "update",
+        await transformUser(user, async (user) => {
+          return {
+            currentSong: user.current_song,
+            currentSource: user.current_source,
+          };
+        }),
+      ),
+    );
+
     return await this.updateUser(updateData, userId);
   }
 }

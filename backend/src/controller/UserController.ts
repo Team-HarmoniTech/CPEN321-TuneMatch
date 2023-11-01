@@ -156,21 +156,5 @@ export class UserController {
       message?.body?.song,
       undefined,
     );
-    await userService.broadcastToFriends(
-      currentUserId,
-      new FriendsMessage(
-        "update",
-        await transformUser(user, async (user) => {
-          return {
-            currentSong: user.current_song,
-            currentSource: user.current_source,
-          };
-        }),
-      ),
-    );
-    // if (user.sessionId) {
-    //     await sessionService.messageSession(user.sessionId, currentUserId,
-    //         new SessionMessage("music", message?.body?.song));
-    // }
   }
 }

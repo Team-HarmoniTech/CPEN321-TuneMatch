@@ -1,5 +1,5 @@
-import { database } from ".@services";
 import { Report } from "@prisma/client";
+import { database } from "@services";
 
 export class ReportService {
   private reportDB = database.report;

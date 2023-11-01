@@ -1,6 +1,7 @@
-import { Queue, Song } from ".@models/Queue";
-import { SessionQueue, SessionWithMembers } from ".@models/SessionModels";
-import { database, socketService, userService } from ".@services";
+import { Queue, Song } from "@models/Queue";
+import { SessionMessage, SessionQueue, SessionWithMembers } from "@models/SessionModels";
+import { transformUser } from "@models/UserModels";
+import { database, socketService, userService } from "@services";
 import { Mutex } from "async-mutex";
 
 export class SessionService {
@@ -45,10 +46,18 @@ export class SessionService {
       });
     }
 
-    await userService.updateUser(
-      { current_source: { type: "session" } },
+    /* Update user with session */
+    const user = await userService.updateUserStatus(userId, undefined, { type: "session" });
+    await this.messageSession(
+      session.id,
       userId,
+      new SessionMessage(
+        "join",
+        await transformUser(user),
+      ),
     );
+
+    /* update session before returning */
     session = await this.sessionDB.findFirstOrThrow({
       where: { id: session.id },
       include: { members: true },
@@ -58,32 +67,44 @@ export class SessionService {
   }
 
   // ChatGPT Usage: No
-  async leaveSession(userId: number): Promise<SessionWithMembers> {
+  async leaveSession(userId: number): Promise<void> {
     // Find user's session if it exists
-    let session = await this.sessionDB.findFirst({
+    const session = await this.sessionDB.findFirst({
       where: { members: { some: { id: userId } } },
       include: { members: true },
     });
-    const hadSession = !!session;
+
+    if (!session) {
+      return undefined;
+    }
+
     // If session will be empty delete, otherwise leave
-    if (hadSession && session.members.length <= 1) {
+    const toDelete = session.members.length <= 1;
+    if (toDelete) {
       await this.sessionDB.delete({
         where: { id: session.id },
       });
-      session = undefined;
-    } else if (hadSession) {
-      session = await this.sessionDB.update({
+    } else {
+      await this.sessionDB.update({
         where: { id: session.id },
         data: { members: { disconnect: { id: userId } } },
         include: { members: true },
       });
     }
 
-    if (hadSession) {
-      await userService.updateUser({ current_source: null }, userId);
+    /* update user */
+    const user = await userService.updateUserStatus(userId, undefined, null);
+    if (!toDelete) {
+      /* inform old session */
+      await this.messageSession(
+        session.id,
+        userId,
+        new SessionMessage(
+          "leave",
+          await transformUser(user)
+        ),
+      );
     }
-
-    return session;
   }
 
   // ChatGPT Usage: No
