@@ -185,7 +185,7 @@ public class LoginActivity extends AppCompatActivity {
                             // account does not exist need to create
                             String spotifyUserName = jsonResponse.getString("display_name");
                             JSONArray spotifyImage = jsonResponse.getJSONArray("images");
-                            String spotifyImageUrl = new String();
+                            String spotifyImageUrl = "";
                             for (int i = 0; i < spotifyImage.length(); i++) {
                                 JSONObject imageObject = spotifyImage.getJSONObject(i);
                                 spotifyImageUrl = imageObject.getString("url");
