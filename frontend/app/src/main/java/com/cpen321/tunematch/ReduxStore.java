@@ -112,7 +112,7 @@ public class ReduxStore extends ViewModel {
 
     // ChatGPT Usage: No
     public String getFriendName(String id) {
-        String name = new String();
+        String name = "";
         for (Friend f : friendsList.getValue()) {
             if ((f.getId()).equals(id)) {
                 name = f.getName();
