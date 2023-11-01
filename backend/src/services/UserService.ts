@@ -175,7 +175,7 @@ export class UserService {
     let user: any = await this.getUserById(userId);
     let updateData: any = {};
     /* If they are in a session don't update the source */
-    if (!user.session && source !== undefined) {
+    if (source !== undefined) {
         updateData["current_source"] = source === null ? Prisma.DbNull : source;
     }
     if (song !== undefined) {
@@ -184,7 +184,7 @@ export class UserService {
 
     /* Update user */
     user = await this.updateUser(updateData, userId);
-    
+
     /* Inform friends */
     await userService.broadcastToFriends(
       userId,
