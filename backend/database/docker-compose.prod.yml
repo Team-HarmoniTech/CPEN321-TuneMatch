@@ -2,7 +2,7 @@
 
 # ChatGPT Usage: Partial
 
-version: '3.8'
+version: "3.8"
 services:
   # MySQL Database Service
   mysql:
@@ -15,7 +15,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql 
+      - mysql_data:/var/lib/mysql
 
   # Express.js/Prisma Backend Service
   backend:

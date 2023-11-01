@@ -2,7 +2,7 @@
 
 # ChatGPT Usage: No
 
-version: '3'
+version: "3"
 services:
   mysql:
     image: mysql:8.0.17
