@@ -31,9 +31,6 @@ public class ListFragment extends Fragment{
     private WebSocketService webSocketService;
     private boolean isServiceBound = false;
 
-    // ChatGPT Usage: Partial
-
-
     // ChatGPT Usage: No
     public ListFragment() {}
 

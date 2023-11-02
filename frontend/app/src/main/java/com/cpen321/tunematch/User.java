@@ -1,10 +1,15 @@
 package com.cpen321.tunematch;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
 // ChatGPT Usage: No
 public class User {
     private String userId;
     private String userName;
     private String profileImageUrl;
+    private ArrayList<String> topArtists;
+    private ArrayList<String> topGenres;
 
     // Constructor
     // ChatGPT Usage: No
@@ -12,7 +17,6 @@ public class User {
         this.userId = userId;
         this.userName = userName;
         this.profileImageUrl = profileImageUrl;
-
     }
 
     // Getters and Setters
@@ -20,7 +24,6 @@ public class User {
     public String getUserId() {
         return userId;
     }
-
 
     // ChatGPT Usage: No
     public String getUserName() {
@@ -34,5 +37,10 @@ public class User {
 
     // ChatGPT Usage: No
     public String getProfileImageUrl() { return profileImageUrl; }
+
+    public void setTopArtists(ArrayList<String> topArtists) {this.topArtists = topArtists;}
+    public void setTopGenres(ArrayList<String> topGenres) {this.topGenres = topGenres;}
+    public ArrayList<String> getTopArtists() { return topArtists; }
+    public ArrayList<String> getTopGenres() { return topGenres; }
 
 }

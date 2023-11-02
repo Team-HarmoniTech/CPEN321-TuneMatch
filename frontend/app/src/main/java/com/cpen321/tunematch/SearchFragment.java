@@ -131,8 +131,7 @@ public class SearchFragment extends Fragment {
                             String profileUrl = userInfo.getString("profilePic");
                             friendId[0] = userInfo.getString("userId");
                             if (!profileUrl.equals("profile.com/url")) {
-                                Handler mainHandler = new Handler(Looper.getMainLooper());
-                                mainHandler.post(new Runnable() {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
                                     @Override
                                     public void run() {
                                         // Update your UI components here

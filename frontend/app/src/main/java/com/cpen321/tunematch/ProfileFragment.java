@@ -41,8 +41,6 @@ public class ProfileFragment extends Fragment {
         model = ReduxStore.getInstance();
         apiClient = ((MainActivity) getActivity()).getApiClient();;
         fm = getActivity().getSupportFragmentManager();
-
-        setupMyProfile();
     }
 
     // ChatGPT Usage: Partial
@@ -50,6 +48,7 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.frag_profile, container, false);
+        setupMyProfile();
 
         Button friendsListBtn = view.findViewById(R.id.friendsListBtn);
         friendsListBtn.setOnClickListener(new View.OnClickListener(){
@@ -70,26 +69,14 @@ public class ProfileFragment extends Fragment {
         topArtistBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            String response = apiClient.doGetRequest("/me?fullProfile=true", true);
-                            ArrayList<String> topArtistsList = parseList(response, "topArtists");
+                ArrayList<String> topArtistsList = model.getCurrentUser().getValue().getTopArtists();
+                ListFragment topArtistFragment = ListFragment.newInstance(topArtistsList, "Top Artists");
 
-                            ListFragment topArtistFragment = ListFragment.newInstance(topArtistsList, "Top Artists");
-
-                            // Begin a fragment transaction
-                            ft = fm.beginTransaction();
-                            ft.replace(R.id.mainFrame, topArtistFragment);
-                            ft.addToBackStack(null);
-                            ft.commit();
-
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).start();
+                // Begin a fragment transaction
+                ft = fm.beginTransaction();
+                ft.replace(R.id.mainFrame, topArtistFragment);
+                ft.addToBackStack(null);
+                ft.commit();
             }
 
         });
@@ -98,48 +85,18 @@ public class ProfileFragment extends Fragment {
         topGenresBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                new Thread(new Runnable(){
-                    @Override
-                    public void run() {
-                        try {
-                            String response = apiClient.doGetRequest("/me?fullProfile=true", true);
-                            ArrayList<String> topGenreList = parseList(response, "topGenres");
+                ArrayList<String> topGenreList = model.getCurrentUser().getValue().getTopGenres();
+                ListFragment topArtistFragment = ListFragment.newInstance(topGenreList, "Top Genres");
 
-                            ListFragment topGenresFragment = ListFragment.newInstance(topGenreList, "Top Genres");
-
-                            // Begin a fragment transaction
-                            ft = fm.beginTransaction();
-                            ft.replace(R.id.mainFrame, topGenresFragment);
-                            ft.addToBackStack(null);
-                            ft.commit();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).start();
+                // Begin a fragment transaction
+                ft = fm.beginTransaction();
+                ft.replace(R.id.mainFrame, topArtistFragment);
+                ft.addToBackStack(null);
+                ft.commit();
             }
         });
 
         return view;
-    }
-
-    // ChatGPT Usage: No
-    public ArrayList<String> parseList(String response, String key) {
-        Log.d("ProfileFragment", "parseList: "+key);
-
-        ArrayList<String> parsedList = new ArrayList<>();
-        try {
-            JSONObject jsonObject = new JSONObject(response);
-            String tempList = jsonObject.getString(key).replace("[", "").replace("]","").trim();
-            Log.d("ProfileFragment", "tempList:"+tempList);
-
-            for (String item : tempList.split(",")) {
-                parsedList.add(item.replace("\"", ""));
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return parsedList;
     }
 
     // ChatGPT Usage: Partial
