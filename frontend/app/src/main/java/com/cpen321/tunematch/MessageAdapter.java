@@ -1,29 +1,24 @@
 package com.cpen321.tunematch;
 
 import android.view.View;
-
 import androidx.annotation.NonNull;
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
-
 import java.util.List;
 
 public class MessageAdapter extends RecyclerView.Adapter  {
 
     private List<Message> messages;
     private SessionUser currentUser;
-    private Context context;
 
     public final static int MESSAGE_TYPE_RECEIVED = 0;
     public final static int MESSAGE_TYPE_SENT = 0;
 
-    public MessageAdapter(Context context, List<Message> messages, SessionUser currentUser) {
-        this.context = context;
+    public MessageAdapter(List<Message> messages, SessionUser currentUser) {
         this.messages = messages;
         this.currentUser = currentUser;
     }
@@ -50,20 +45,39 @@ public class MessageAdapter extends RecyclerView.Adapter  {
         if (getMessageType(position) == MESSAGE_TYPE_SENT) {
             SentMessageViewHolder view = (SentMessageViewHolder) holder;
             view.getMessageText().setText(message.getMessageText());
-            view.getDateTimeText().setText(message.getTimestamp().toString());
         } else {
             RecievedMessageViewHolder view = (RecievedMessageViewHolder) holder;
             view.getMessageText().setText(message.getMessageText());
-            view.getDateTimeText().setText(message.getTimestamp().toString());
-            new DownloadImageTask(view.getProfileImage())
-                    .execute(message.getSenderProfileImageUrl());
+            // Only render image if first
+            if (isFirstMessage(position)) {
+                new DownloadImageTask(view.getProfileImage())
+                        .execute(message.getSenderProfileImageUrl());
+            }
         }
+
+        // Set padding to 0 if next to message from same user
+        ConstraintLayout container = ((SentMessageViewHolder) holder).getContainer();
+        container.setPadding(
+                container.getPaddingLeft(),
+                isLastMessage(position) ? container.getPaddingTop() : 0,
+                isFirstMessage(position) ? container.getPaddingRight() : 0,
+                container.getPaddingBottom());
     }
 
     // ChatGPT Usage: No
     @Override
     public int getItemCount() {
         return messages.size();
+    }
+
+    // ChatGPT Usage: No
+    public boolean isFirstMessage(int position) {
+        return (position - 1 < 0 || messages.get(position - 1).getSenderUserId() != currentUser.getUserId());
+    }
+
+    // ChatGPT Usage: No
+    public boolean isLastMessage(int position) {
+        return (position + 1 >= messages.size() || messages.get(position + 1).getSenderUserId() != currentUser.getUserId());
     }
 
     // ChatGPT Usage: No
@@ -78,39 +92,39 @@ public class MessageAdapter extends RecyclerView.Adapter  {
     // ChatGPT Usage: No
     static class SentMessageViewHolder extends RecyclerView.ViewHolder {
         private final TextView messageText;
-        private final TextView dateTimeText;
+        private final ConstraintLayout container;
         public TextView getMessageText() {
             return messageText;
         }
-        public TextView getDateTimeText() {
-            return dateTimeText;
+        public ConstraintLayout getContainer() {
+            return container;
         }
         public SentMessageViewHolder(@NonNull View view) {
             super(view);
+            container = (ConstraintLayout) view.findViewById(R.id.container);
             messageText = (TextView) view.findViewById(R.id.textMessage);
-            dateTimeText = (TextView) view.findViewById(R.id.textDateTime);
         }
     }
 
     // ChatGPT Usage: No
     static class RecievedMessageViewHolder extends RecyclerView.ViewHolder {
         private final TextView messageText;
-        private final TextView dateTimeText;
         private final ImageView profileImage;
+        private final ConstraintLayout container;
         public TextView getMessageText() {
             return messageText;
-        }
-        public TextView getDateTimeText() {
-            return dateTimeText;
         }
         public ImageView getProfileImage() {
             return profileImage;
         }
+        public ConstraintLayout getContainer() {
+            return container;
+        }
         public RecievedMessageViewHolder(@NonNull View view) {
             super(view);
             messageText = (TextView) view.findViewById(R.id.textMessage);
-            dateTimeText = (TextView) view.findViewById(R.id.textDateTime);
             profileImage = (ImageView) view.findViewById(R.id.profileImage);
+            container = (ConstraintLayout) view.findViewById(R.id.container);
         }
     }
 }
