@@ -6,21 +6,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-
 import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+
 import org.json.JSONObject;
 
+import androidx.fragment.app.Fragment;
+
+
 import java.util.ArrayList;
-import java.util.List;
 
 public class ListFragment extends Fragment{
 

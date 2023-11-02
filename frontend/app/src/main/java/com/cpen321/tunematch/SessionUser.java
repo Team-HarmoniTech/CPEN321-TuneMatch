@@ -4,14 +4,15 @@ package com.cpen321.tunematch;
 public class SessionUser {
     private String userId;
     private String userName;
-    private String profilePic;
+    private String profileImageUrl;
 
     // Constructor
     // ChatGPT Usage: No
-    public SessionUser(String userId, String userName, String profilePic) {
+    public SessionUser(String userId, String userName, String profileImageUrl) {
         this.userId = userId;
         this.userName = userName;
-        this.profilePic = profilePic;
+        this.profileImageUrl = profileImageUrl;
+
     }
 
     // Getters and Setters
@@ -31,5 +32,7 @@ public class SessionUser {
         return profilePic;
     }
 
+    // ChatGPT Usage: No
+    public String getProfileImageUrl() { return profileImageUrl; }
 
 }

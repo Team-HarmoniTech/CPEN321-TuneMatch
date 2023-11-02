@@ -13,8 +13,6 @@ import android.widget.Button;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.cpen321.tunematch.MainActivity;
-import com.cpen321.tunematch.R;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.spotify.sdk.android.auth.AuthorizationClient;
 import com.spotify.sdk.android.auth.AuthorizationRequest;
@@ -168,9 +166,9 @@ public class LoginActivity extends AppCompatActivity {
                                                         null);
 
                     try {
-                        String haveAcctRes = apiClient.doGetRequest("/users/" + spotifyUserId, false);
+                        apiClient.doGetRequest("/users/" + spotifyUserId, false);
 
-                        // Start MainActivity with the Spotify User ID
+                        // If didn't fail start MainActivity with the Spotify User ID; user already exist
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                             @Override
                             public void run() {
@@ -190,7 +188,7 @@ public class LoginActivity extends AppCompatActivity {
                             // account does not exist need to create
                             String spotifyUserName = jsonResponse.getString("display_name");
                             JSONArray spotifyImage = jsonResponse.getJSONArray("images");
-                            String spotifyImageUrl = new String();
+                            String spotifyImageUrl = "";
                             for (int i = 0; i < spotifyImage.length(); i++) {
                                 JSONObject imageObject = spotifyImage.getJSONObject(i);
                                 spotifyImageUrl = imageObject.getString("url");
@@ -201,7 +199,7 @@ public class LoginActivity extends AppCompatActivity {
                             }
 
                             // get top artists
-                            String topArtistsRes = spotifyApiClient.doGetRequest("me/top/artists", true);
+                            String topArtistsRes = spotifyApiClient.doGetRequest("me/top/artists?limit=50&time_range=long_term", true);
 
                             // Parse the top artists response
                             JSONObject topArtistsObject = new JSONObject(topArtistsRes);
