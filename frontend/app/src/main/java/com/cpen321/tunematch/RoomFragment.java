@@ -3,6 +3,7 @@ package com.cpen321.tunematch;
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -10,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,93 +52,120 @@ import okhttp3.Headers;
 
 
 public class RoomFragment extends Fragment {
-    private View view;
-    private static final String CLIENT_ID = "0dcb406f508a4845b32a1342a91a71af";
-    private static final String REDIRECT_URI = "cpen321tunematch://callback";
-    private SpotifyAppRemote mSpotifyAppRemote;
+    // Constants
+    private static final String SPOTIFY_BASE_URL = "https://api.spotify.com/v1/";
 
-    private Button playpauseButton;
-    private Button nextButton;
-    private Button prevButton;
+    // Views
+    private View view;
+    private Button playpauseButton, nextButton, prevButton, chatBtn, queueBtn, exitBtn;
     private SeekBar seekBar;
     private ImageView songBanner;
-    private TextView songTitle;
-    private TextView songArtist;
-    private TextView currentDuration;
-    private TextView totalDuration;
+    private TextView songTitle, songArtist, currentDuration, totalDuration;
+    private SearchView songSearchBar;
+    private ListView suggestionListView;
+
+    // Services and other fields
+    private SpotifyAppRemote mSpotifyAppRemote;
     private ChatFragment chatFrag;
     private QueueFragment queueFrag;
     private ArrayAdapter<String> searchAdapter;
-    private ListView suggestionListView;
     private String authToken;
     private ApiClient spotifyApiClient;
-
-    ReduxStore model;
-    ApiClient apiClient;
-    CurrentSession currentSession;
-    private Button chatBtn;
-    private Button queueBtn;
-    private Button exitBtn;
+    private MainActivity mainActivity;
+    private ReduxStore model;
+    private ApiClient apiClient;
+    private CurrentSession currentSession;
     private WebSocketService webSocketService;
-    private boolean isServiceBound = false;
-
-    // ChatGPT Usage: Partial
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            WebSocketService.LocalBinder binder = (WebSocketService.LocalBinder) service;
-            webSocketService = binder.getService();
-            isServiceBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            isServiceBound = false;
-        }
-    };
+    private SpotifyService mSpotifyService;
 
     // ChatGPT Usage: Partial
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Initialize ViewModel and ApiClient here.
-        model = ((MainActivity) getActivity()).getModel();
-        apiClient = ((MainActivity) getActivity()).getApiClient();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String response;
-                try {
-                    response = apiClient.doGetRequest("/me/matches", true);
-                    // Parse the response.
-//                    List<SearchUser> newSearchList = parseResponse(response);
-                    // Update LiveData.
-//                    model.getSearchList().postValue(newSearchList);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-
+        initServices();
     }
-
-    // ChatGPT Usage: partial
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.frag_room, container, false);
+        initializeViews();
+        initializeEventListeners();
+        return view;
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        setUpPlayerControls();
+    }
+
+    private void initServices() {
+        // Initialize ViewModel and ApiClient
+        model = ReduxStore.getInstance();
+        apiClient = ((MainActivity) getActivity()).getApiClient();
+
+        // Get instances of MainActivity, WebSocketService, and SpotifyService
+        mainActivity = (MainActivity) getActivity();
+        webSocketService = mainActivity.getWebSocketService();
+        mSpotifyService = mainActivity.getSpotifyService();
+        mSpotifyAppRemote = mSpotifyService.getSpotifyAppRemote();
+    }
+    private void initializeViews() {
         chatBtn = view.findViewById(R.id.chatBtn);
         queueBtn = view.findViewById(R.id.queueBtn);
         exitBtn = view.findViewById(R.id.exitBtn);
-        Log.d("RoomFragment", "onCreateView: session :: "+model.checkCurrentSessionActive());
-        if(!model.checkCurrentSessionActive()) {
-            chatBtn.setVisibility(View.GONE);
-            exitBtn.setVisibility(View.GONE);
-        }
-  
+        playpauseButton = view.findViewById(R.id.play_button);
+        nextButton = view.findViewById(R.id.next_button);
+        prevButton = view.findViewById(R.id.previous_button);
+        seekBar = view.findViewById(R.id.seekBar);
+        songBanner = view.findViewById(R.id.song_banner_imageview);
+        songTitle = view.findViewById(R.id.song_name_text);
+        songArtist = view.findViewById(R.id.singer_name_text);
+        currentDuration = view.findViewById(R.id.start_time_text);
+        totalDuration = view.findViewById(R.id.end_time_text);
+        songSearchBar = view.findViewById(R.id.songSearchBar);
+        suggestionListView = view.findViewById(R.id.suggestionListView);
+
+        // Initialize chat and queue fragments
         chatFrag = new ChatFragment();
         queueFrag = new QueueFragment();
 
+        // Initially set chatBtn and exitBtn to GONE
+        chatBtn.setVisibility(View.GONE);
+        exitBtn.setVisibility(View.GONE);
+
+        // Get the current session
+        CurrentSession currentSession = model.getCurrentSession().getValue();
+
+        // Observer to check if session is active and modify button visibility accordingly
+        model.checkSessionActive().observe(getViewLifecycleOwner(), isActive -> {
+            Log.d("RoomFragment", "Session is active: " + isActive);
+            if (isActive) {
+                chatBtn.setVisibility(View.VISIBLE);
+                exitBtn.setVisibility(View.VISIBLE);
+            } else {
+                chatBtn.setVisibility(View.GONE);
+                exitBtn.setVisibility(View.GONE);
+            }
+        });
+
+        // Set the queue fragment to be the default fragment in the subFrame
+        switchFragment(R.id.subFrame, queueFrag);
+
+        // Initialize the search adapter and set it to the suggestion list view
+        searchAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<>());
+        suggestionListView.setAdapter(searchAdapter);
+
+        // Retrieve the authentication token
+        SharedPreferences preferences = getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
+        authToken = preferences.getString("auth_token", null);
+        Headers headers = new Headers.Builder()
+                .add("Authorization", "Bearer " + authToken)
+                .build();
+
+        // Initialize the Spotify API client with the base URL and custom headers
+        spotifyApiClient = new ApiClient(SPOTIFY_BASE_URL, headers);
+    }
+    private void initializeEventListeners() {
         chatBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
@@ -151,158 +180,46 @@ public class RoomFragment extends Fragment {
             }
         });
 
-        // Retrieve the authentication token
-        SharedPreferences preferences = getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
-        authToken = preferences.getString("auth_token", null);
-
-        Headers headers = new Headers.Builder()
-                .add("Authorization", "Bearer "+authToken)
-                .build();
-
-        // Initialize your ApiClient with the base URL and custom headers
-        String spotifyBaseUrl = "https://api.spotify.com/v1/";
-        spotifyApiClient = new ApiClient(spotifyBaseUrl, headers);
-
-        // initialize to chat
-        switchFragment(R.id.subFrame, chatFrag);
-
-        SearchView songSearchBar = view.findViewById(R.id.songSearchBar);
-
-        // Create an adapter for suggestions (for example, ArrayAdapter)
-        searchAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<>());
-        suggestionListView = view.findViewById(R.id.suggestionListView);
-        suggestionListView.setAdapter(searchAdapter);
-        suggestionListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String selectedText = (String) parent.getItemAtPosition(position);
-                String selectedSong = selectedText.split(" - ")[0];
-                String selectedArtist = selectedText.split(" - ")[1];
-
-                String endpoint = "search/?q=track:"+encodeSongTitle(selectedSong)+"&type=track";
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            String songListJson = spotifyApiClient.doGetRequest(endpoint, true);
-                            JSONObject rawResponse = new JSONObject(songListJson);
-                            JSONArray songItems = rawResponse.getJSONObject("tracks").getJSONArray("items");
-
-                            for (int i = 0; i < songItems.length(); i++) {
-                                JSONObject song = songItems.getJSONObject(i);
-                                String artist = song.getJSONArray("artists").getJSONObject(0).getString("name");
-                                if (song.getString("name").equals(selectedSong) && artist.equals(selectedArtist)) {
-                                    JSONObject body = new JSONObject();
-                                    body.put("uri", song.getString("uri"));
-                                    body.put("durationMs", song.getString("duration_ms"));
-
-                                    JSONObject messageToSend = new JSONObject();
-                                    try {
-                                        messageToSend.put("method", "SESSION");
-                                        messageToSend.put("action", "queueAdd");
-                                        messageToSend.put("body", body);
-                                    } catch (JSONException e) {
-                                        throw new RuntimeException(e);
-                                    }
-
-                                    Log.d("RoomFragment", "isServiceBound:"+isServiceBound);
-                                    if (isServiceBound && webSocketService != null) {
-                                        Log.d("RoomFragment", "Add to queue: " + messageToSend);
-                                        webSocketService.sendMessage(messageToSend.toString());
-                                    }
-                                    break;
-                                }
-                            }
-
-                            Handler mainHandler = new Handler(Looper.getMainLooper());
-                            mainHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                }
-                            });
-
-                        } catch (IOException | JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).start();
-            }
-        });
-
-        // ChatGPT Usage: Partial
         songSearchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                suggestionListView.setVisibility(View.GONE);
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if (newText.equals("")) {
+                if (TextUtils.isEmpty(newText)) {
                     suggestionListView.setVisibility(View.GONE);
-                    Log.d("RoomFragment", "onQueryTextChange: change suggestionListView visibility to GONE");
                 } else {
                     filterSuggestions(newText);
                 }
                 return false;
             }
         });
-  
-        return view;
+
+        exitBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSpotifyAppRemote.getPlayerApi().pause();
+                JSONObject messageToSend = new JSONObject();
+                try {
+                    messageToSend.put("method", "SESSION");
+                    messageToSend.put("action", "leave");
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+                if(webSocketService != null) {
+                    webSocketService.sendMessage(messageToSend.toString());
+                    model.checkSessionActive().postValue(false);
+                }
+                model.getCurrentSession().postValue(new CurrentSession(null,null));
+                BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottomNavi);
+                bottomNavigationView.setSelectedItemId(R.id.navigation_home);
+            }
+        });
     }
-
-    // ChatGPT Usage: Partial
-    @Override
-    public void onStart() {
-        super.onStart();
-        ConnectionParams connectionParams =
-                new ConnectionParams.Builder(CLIENT_ID)
-                        .setRedirectUri(REDIRECT_URI)
-                        .showAuthView(true)
-                        .build();
-
-        SpotifyAppRemote.connect(getContext(), connectionParams,
-                new Connector.ConnectionListener() {
-
-                    public void onConnected(SpotifyAppRemote spotifyAppRemote) {
-                        mSpotifyAppRemote = spotifyAppRemote;
-                        Log.d("MainActivity", "Connected! Yay!");
-
-                        // Now you can start interacting with App Remote
-                        connected();
-
-                    }
-
-                    public void onFailure(Throwable throwable) {
-                        Log.e("MyActivity", throwable.getMessage(), throwable);
-
-                        // Something went wrong when attempting to connect! Handle errors here
-                    }
-                });
-    }
-
-    // ChatGPT Usage: No
-    @Override
-    public void onStop() {
-        super.onStop();
-        SpotifyAppRemote.disconnect(mSpotifyAppRemote);
-    }
-
-    // ChatGPT Usage: Partial
-    public void connected() {
-        // Play a playlist
-        playpauseButton = view.findViewById(R.id.play_button);
-        nextButton = view.findViewById(R.id.next_button);
-        prevButton = view.findViewById(R.id.previous_button);
-        seekBar = view.findViewById(R.id.seekBar);
-        songBanner = view.findViewById(R.id.song_banner_imageview);
-        songTitle = view.findViewById(R.id.song_name_text);
-        songArtist = view.findViewById(R.id.singer_name_text);
-        currentDuration = view.findViewById(R.id.start_time_text);
-        totalDuration = view.findViewById(R.id.end_time_text);
-
-//        use spotify api to get the album art, the user is logged in, so use its token
+    private void setUpPlayerControls() {
         final Handler handler = new Handler();
         final Runnable runnable = new Runnable() {
             @Override
@@ -321,8 +238,6 @@ public class RoomFragment extends Fragment {
                 .setEventCallback(playerState -> {
                     final Track track = playerState.track;
                     if (track != null) {
-                        Log.d(TAG, track.name + " by " + track.artist.name);
-                        // Load image into ImageView
                         mSpotifyAppRemote.getImagesApi().getImage(track.imageUri).setResultCallback(bitmap -> {
                             // Create a new ImageView to hold the bitmap
                             ImageView tempImageView = new ImageView(getContext());
@@ -347,31 +262,24 @@ public class RoomFragment extends Fragment {
                             songBanner.setImageBitmap(blurryBitmap);
                         });
 
-                        // Update song title and artist
+
                         songTitle.setText(track.name);
                         songArtist.setText(track.artist.name);
-
-                        // Update seekbar and duration
                         seekBar.setMax(100); // Set max to 100 for percentage
                         int progress = (int) ((float) playerState.playbackPosition / track.duration * 100);
                         seekBar.setProgress(progress);
                         totalDuration.setText(formatDuration(track.duration));
-
-                        // Start updating current duration every second
                         handler.post(runnable);
                     }
                 });
 
-        final long[] trackDuration = {0}; // Add this line at the beginning of your class
-
-
+        final long[] trackDuration = {0};
         mSpotifyAppRemote.getPlayerApi()
                 .subscribeToPlayerState()
                 .setEventCallback(playerState -> {
                     final Track track = playerState.track;
                     if (track != null) {
-                        trackDuration[0] = track.duration; // Store track duration
-                        // ... rest of your code ...
+                        trackDuration[0] = track.duration;
                     }
                 });
 
@@ -388,13 +296,11 @@ public class RoomFragment extends Fragment {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                // TODO Auto-generated method stub
                 handler.removeCallbacks(runnable);
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                // TODO Auto-generated method stub
                 mSpotifyAppRemote.getPlayerApi().seekTo(newProgress);
                 handler.post(runnable);
             }
@@ -414,7 +320,6 @@ public class RoomFragment extends Fragment {
                 });
             }
         });
-
 
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -437,18 +342,10 @@ public class RoomFragment extends Fragment {
                 playpauseButton.setText("Pause");
             }
         });
-
-        exitBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mSpotifyAppRemote.getPlayerApi().pause();
-                model.getCurrentSession().postValue(null);
-                BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottomNavi);
-                bottomNavigationView.setSelectedItemId(R.id.navigation_home);
-            }
-        });
     }
 
+
+    // Utility Methods
     // ChatGPT Usage: No
     private String formatDuration(long duration) {
         int seconds = (int) (duration / 1000) % 60;
@@ -499,11 +396,9 @@ public class RoomFragment extends Fragment {
                             // Show/hide the suggestion list based on whether suggestions are available
                             if (filteredSuggestions.isEmpty()) {
                                 suggestionListView.setVisibility(View.GONE);
-                                Log.d("RoomFragment", "change suggestion visibility to GONE");
                             } else {
                                 suggestionListView.setVisibility(View.VISIBLE);
                                 suggestionListView.bringToFront();
-                                Log.d("RoomFragment", "change suggestion visibility to VISIBLE");
                             }
                         }
                     });
@@ -520,10 +415,18 @@ public class RoomFragment extends Fragment {
         String encoded;
         try {
             encoded = URLEncoder.encode(title, Charsets.UTF_8.toString());
-            Log.d("RoomFragment", "encodedTitle: " + encoded);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
         return encoded;
+    }
+    // ChatGPT Usage: No
+
+    public WebSocketService getWebSocketService() {
+        return webSocketService;
+    }
+
+    public SpotifyService getSpotifyService() {
+        return mSpotifyService;
     }
 }

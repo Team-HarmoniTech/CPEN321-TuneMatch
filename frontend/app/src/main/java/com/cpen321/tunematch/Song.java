@@ -1,15 +1,21 @@
 package com.cpen321.tunematch;
 
 public class Song {
-    private String songName;
-    private String artist;
+    private String songID;
+    private String duration;
 
     // ChatGPT Usage: No
-    public Song(String songName, String artist) {
-        this.songName = songName;
-        this.artist = artist;
+    public Song(String songID, String duration) {
+        this.songID = songID;
+        this.duration = duration;
     }
 
-    // getters and setters
+    public String getSongID() {
+        return songID;
+    }
+
+    public String getDuration() {
+        return duration;
+    }
 }
 

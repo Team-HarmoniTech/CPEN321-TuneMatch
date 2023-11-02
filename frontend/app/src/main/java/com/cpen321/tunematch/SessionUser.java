@@ -4,16 +4,14 @@ package com.cpen321.tunematch;
 public class SessionUser {
     private String userId;
     private String userName;
-    private boolean isHost; // Indicates if this user is the host of the session
-    private boolean isListening; // Indicates if this user is currently listening to the session music
+    private String profilePic;
 
     // Constructor
     // ChatGPT Usage: No
-    public SessionUser(String userId, String userName, boolean isHost, boolean isListening) {
+    public SessionUser(String userId, String userName, String profilePic) {
         this.userId = userId;
         this.userName = userName;
-        this.isHost = isHost;
-        this.isListening = isListening;
+        this.profilePic = profilePic;
     }
 
     // Getters and Setters
@@ -22,10 +20,6 @@ public class SessionUser {
         return userId;
     }
 
-    // ChatGPT Usage: No
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
 
     // ChatGPT Usage: No
     public String getUserName() {
@@ -33,34 +27,9 @@ public class SessionUser {
     }
 
     // ChatGPT Usage: No
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public String getProfilePic() {
+        return profilePic;
     }
 
-    // ChatGPT Usage: No
-    public boolean isHost() {
-        return isHost;
-    }
 
-    // ChatGPT Usage: No
-    public void setHost(boolean isHost) {
-        this.isHost = isHost;
-    }
-
-    // ChatGPT Usage: No
-    public boolean isListening() {
-        return isListening;
-    }
-
-    // ChatGPT Usage: No
-    public void setListening(boolean isListening) {
-        this.isListening = isListening;
-    }
-
-    // Additional Methods
-    // For example, you may have methods to manage user's actions within a session.
-    // ChatGPT Usage: No
-    public void toggleListening() {
-        isListening = !isListening;
-    }
 }

@@ -57,7 +57,7 @@ public class WebSocketClient {
                     String method = json.getString("method");
                     if (method.equals("FRIENDS")) {
                         handleFriends(json);
-                    } else if (method.equals("SESSIONS")) {
+                    } else if (method.equals("SESSION")) {
                         handleSession(json);
                     } else if (method.equals("REQUESTS")){
                         handleRequests(json);
@@ -111,7 +111,6 @@ public class WebSocketClient {
                 List<Friend> friends = new ArrayList<>();
                 List<Session> sessions = new ArrayList<>();
                 for (int i = 0; i < body.length(); i++) {
-                    Log.d("WebSocketClient", "friend number : " + body.getJSONObject(i));
                     JSONObject friendJson = body.getJSONObject(i);
                     String id = friendJson.getString("userId");
                     String username = friendJson.getString("username");
@@ -186,7 +185,6 @@ public class WebSocketClient {
     private void handleSession(JSONObject json){
         try {
             String action = json.getString("action");
-
             // Handling the join action
             if (action.equals("join")) {
                 JSONObject body = json.getJSONObject("body");
@@ -194,7 +192,12 @@ public class WebSocketClient {
                 String username = body.optString("username", null);
                 String profilePic = body.optString("profilePic", null);
                 // TODO: Update the Redux store with the new member's details
-
+                CurrentSession currentSession = model.getCurrentSession().getValue();
+                List<SessionUser> sessionMembers = currentSession.getSessionMembers();
+                SessionUser sessionUser = new SessionUser(username, userId, profilePic);
+                sessionMembers.add(sessionUser);
+                currentSession.setSessionMembers(sessionMembers);
+                model.getCurrentSession().postValue(currentSession);
             }
 
             // Handling the leave action
@@ -202,6 +205,16 @@ public class WebSocketClient {
                 JSONObject body = json.getJSONObject("body");
                 String userId = body.getString("userId");
                 // TODO: Update the Redux store to remove the member's details
+                CurrentSession currentSession = model.getCurrentSession().getValue();
+                List<SessionUser> sessionMembers = currentSession.getSessionMembers();
+                for (SessionUser s : sessionMembers) {
+                    if (s.getUserId().equals(userId)) {
+                        sessionMembers.remove(s);
+                        break;
+                    }
+                }
+                currentSession.setSessionMembers(sessionMembers);
+                model.getCurrentSession().postValue(currentSession);
             }
 
             // Handling the refresh action
@@ -211,6 +224,40 @@ public class WebSocketClient {
                 JSONObject currentlyPlaying = body.optJSONObject("currentlyPlaying");
                 JSONArray queue = body.getJSONArray("queue");
                 // TODO: Update the Redux store with the refreshed data
+                CurrentSession currentSession = model.getCurrentSession().getValue();
+                if(currentSession == null){
+                    currentSession = new CurrentSession("session", "My Session");
+                }
+                List<SessionUser> sessionMembers = new ArrayList<>();
+                List<Song> sessionQueue = new ArrayList<>();
+                for (int i = 0; i < members.length(); i++) {
+                    JSONObject member = members.getJSONObject(i);
+                    String id = member.getString("userId");
+                    String username = member.getString("username");
+                    String profilePic = member.getString("profilePic");
+                    SessionUser sessionUser = new SessionUser(username, id, profilePic);
+                    sessionMembers.add(sessionUser);
+                }
+                for (int i = 0; i < queue.length(); i++) {
+                    JSONObject song = queue.getJSONObject(i);
+                    String songId = song.getString("uri");
+                    String duration = song.getString("durationMs");
+                    Song songToAdd = new Song(songId, duration);
+                    sessionQueue.add(songToAdd);
+                }
+                if(currentlyPlaying != null){
+                    String songId = currentlyPlaying.getString("uri");
+                    String duration = currentlyPlaying.getString("durationMs");
+                    String timeStarted = currentlyPlaying.getString("timeStarted");
+                    CurrentSong currentSong = new CurrentSong(songId, duration, timeStarted);
+                    currentSession.setCurrentSong(currentSong);
+                }
+                currentSession.setSessionMembers(sessionMembers);
+                currentSession.setSessionQueue(sessionQueue);
+                currentSession.setSessionId("session");
+                model.getCurrentSession().postValue(currentSession);
+                model.getSongQueue().postValue(sessionQueue);
+                model.checkSessionActive().postValue(true);
             }
 
             // Handling the queueReplace action
