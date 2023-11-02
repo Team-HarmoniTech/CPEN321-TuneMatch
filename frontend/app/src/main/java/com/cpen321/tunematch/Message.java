@@ -2,7 +2,7 @@ package com.cpen321.tunematch;
 
 import java.util.Date;
 
-public class Message {
+public class Message implements Comparable<Message> {
     private SessionUser sender;
     private String messageText;
     private Date timestamp;
@@ -16,7 +16,7 @@ public class Message {
 
     // Getters and Setters
     // ChatGPT Usage: No
-    public Date getTimestamp() {
+    public Date getTimeSent() {
         return timestamp;
     }
 
@@ -37,6 +37,11 @@ public class Message {
 
     public String getSenderUsername() {
         return sender.getUserName();
+    }
+
+    @Override
+    public int compareTo(Message otherMessage) {
+        return otherMessage.getTimeSent().compareTo(this.getTimeSent());
     }
 }
 
