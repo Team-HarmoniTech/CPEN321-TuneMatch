@@ -23,20 +23,19 @@ public class CustomListAdapter extends BaseAdapter {
     private Context context;
     private Activity parentView;
     private String listType;
-
+    ;
     ReduxStore model= ReduxStore.getInstance();
     private List<String> itemList;
     private WebSocketService webSocketService;
-    private boolean isServiceBound;
 
     // ChatGPT Usage: Partial
-    public CustomListAdapter(Context context, Activity parentView, String listType, List<String> itemList, WebSocketService webSocketService, boolean isServiceBound) {
+
+    public CustomListAdapter(Context context, Activity parentView, String listType, List<String> itemList, WebSocketService webSocketService){
         this.context = context;
         this.parentView = parentView;
         this.listType = listType;
         this.itemList = itemList;
         this.webSocketService = webSocketService;
-        this.isServiceBound = isServiceBound;
     }
 
     // ChatGPT Usage: Yes
@@ -105,10 +104,14 @@ public class CustomListAdapter extends BaseAdapter {
                         throw new RuntimeException(e);
                     }
                     Log.d("CustomListAdapter", "Sending message to server: " + messageToSend.toString());
-                    if (isServiceBound && webSocketService != null) {
-                        Log.d("CustomListAdapter", "Sending message to server because its true: " + messageToSend.toString());
+
+
+                    if (webSocketService != null) {
                         webSocketService.sendMessage(messageToSend.toString());
                     }
+//                    CurrentSession currSession = model.getCurrentSession().getValue();
+//                    currSession.setSessionId(ownerId);
+//                    model.getCurrentSession().postValue(currSession);
                     BottomNavigationView bottomNavigationView = parentView.findViewById(R.id.bottomNavi);
                     bottomNavigationView.setSelectedItemId(R.id.navigation_room);
                 }
@@ -148,7 +151,7 @@ public class CustomListAdapter extends BaseAdapter {
                         throw new RuntimeException(e);
                     }
 
-                    if (isServiceBound && webSocketService != null) {
+                    if (webSocketService != null) {
                         webSocketService.sendMessage(messageToSend.toString());
                     }
                 }

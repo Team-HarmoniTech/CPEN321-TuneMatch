@@ -12,6 +12,7 @@ public class SessionUser {
         this.userId = userId;
         this.userName = userName;
         this.profileImageUrl = profileImageUrl;
+
     }
 
     // Getters and Setters
@@ -20,16 +21,18 @@ public class SessionUser {
         return userId;
     }
 
+
     // ChatGPT Usage: No
     public String getUserName() {
         return userName;
     }
 
     // ChatGPT Usage: No
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public String getProfilePic() {
+        return profilePic;
     }
 
     // ChatGPT Usage: No
     public String getProfileImageUrl() { return profileImageUrl; }
+
 }

@@ -27,36 +27,23 @@ import java.util.List;
 public class HomeFragment extends Fragment {
     private View view;
     ReduxStore model;
-    WebSocketClient webSocketClient;
+
     Button createSessionButton;
     MainActivity mainActivity;
     BottomNavigationView bottomNavigationView;
     private WebSocketService webSocketService;
-    private boolean isServiceBound = false;
 
     // ChatGPT Usage: Partial
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            WebSocketService.LocalBinder binder = (WebSocketService.LocalBinder) service;
-            webSocketService = binder.getService();
-            isServiceBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            isServiceBound = false;
-        }
-    };
 
     // ChatGPT Usage: Partial
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         model = ReduxStore.getInstance();
-        webSocketClient = ((MainActivity) getActivity()).getWebSocketClient();
         mainActivity = (MainActivity) getActivity();
+        webSocketService = mainActivity.getWebSocketService();
         bottomNavigationView = mainActivity.findViewById(R.id.bottomNavi);
+
     }
 
     // ChatGPT Usage: Partial
@@ -64,11 +51,17 @@ public class HomeFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.frag_home, container, false);
+        return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
         createSessionButton = view.findViewById(R.id.createListeningSessionBtn);
         // Add friends activity
         ListView friendsActivityList = view.findViewById(R.id.friendsList);
 
-        CustomListAdapter friendsAdapter = new CustomListAdapter(getContext(), getActivity(), "FriendsList", new ArrayList<>(), getWebSocketService(), isServiceBound());
+        CustomListAdapter friendsAdapter = new CustomListAdapter(getContext(), getActivity(), "FriendsList", new ArrayList<>(), webSocketService);
 
         friendsActivityList.setAdapter(friendsAdapter);
 
@@ -87,13 +80,12 @@ public class HomeFragment extends Fragment {
         // Add existing listening session
         ListView sessionList = view.findViewById(R.id.listeningSessionList);
         List<String> sessionListItems = new ArrayList<>();
-
+        CustomListAdapter sessionAdapter = new CustomListAdapter(getContext(), getActivity(), "SessionsList", sessionListItems, webSocketService);
         model.getSessionList().observe(getViewLifecycleOwner(), sessions -> {
             sessionListItems.clear();
             for (Session s : sessions) {
                 sessionListItems.add(s.getSessionId());
             }
-            CustomListAdapter sessionAdapter = new CustomListAdapter(getContext(), getActivity(), "SessionsList", sessionListItems, getWebSocketService(), isServiceBound());
             sessionList.setAdapter(sessionAdapter);
         });
 
@@ -109,7 +101,7 @@ public class HomeFragment extends Fragment {
                     throw new RuntimeException(e);
                 }
 
-                if (isServiceBound && webSocketService != null) {
+                if (webSocketService != null) {
                     webSocketService.sendMessage(messageToSend.toString());
                 }
 
@@ -120,35 +112,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        return view;
-    }
 
-    // ChatGPT Usage: No
-    @Override
-    public void onResume() {
-        super.onResume();
-        Intent intent = new Intent(getActivity(), WebSocketService.class);
-        getActivity().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
-    }
-
-    // ChatGPT Usage: No
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (isServiceBound) {
-            getActivity().unbindService(serviceConnection);
-            isServiceBound = false;
-        }
-    }
-
-    // ChatGPT Usage: No
-    public WebSocketService getWebSocketService() {
-        return webSocketService;
-    }
-
-    // ChatGPT Usage: No
-    public boolean isServiceBound() {
-        return isServiceBound;
     }
 
 }

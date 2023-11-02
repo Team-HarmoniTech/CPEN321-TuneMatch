@@ -9,6 +9,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.support.annotation.Nullable;
+import android.util.Log;
+import android.view.MenuItem;
+
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import okhttp3.Headers;
@@ -26,6 +38,84 @@ public class MainActivity extends AppCompatActivity {
     private WebSocketClient webSocketClient;
     private ReduxStore model;
 
+    public boolean isServiceBound = false;
+    private WebSocketService webSocketService;
+    private SpotifyService mSpotifyService;
+    private boolean mSpotifyBound = false;
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            WebSocketService.LocalBinder binder = (WebSocketService.LocalBinder) service;
+            webSocketService = binder.getService();
+            isServiceBound = true;
+
+            homeFrag = new HomeFragment();
+            roomFrag = new RoomFragment();
+            searchFrag = new SearchFragment();
+            profileFrag = new ProfileFragment();
+            setFragment(0);             // Initialize default fragment to home
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            webSocketService = null;
+            isServiceBound = false;
+        }
+    };
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Intent intention = new Intent(this, WebSocketService.class);
+        bindService(intention, serviceConnection, Context.BIND_AUTO_CREATE);
+        Intent spotifyIntent = new Intent(this, SpotifyService.class);
+        bindService(spotifyIntent, mSpotifyConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (isServiceBound) {
+            unbindService(serviceConnection);
+            isServiceBound = false;
+        }
+        if (mSpotifyBound) {
+            unbindService(mSpotifyConnection);
+            mSpotifyBound = false;
+        }
+    }
+
+    private ServiceConnection mSpotifyConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            SpotifyService.LocalBinder binder = (SpotifyService.LocalBinder) service;
+            mSpotifyService = binder.getService();
+            mSpotifyBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mSpotifyBound = false;
+        }
+    };
+
+    public SpotifyService getSpotifyService() {
+        if (mSpotifyBound) {
+            return mSpotifyService;
+        } else {
+            return null;
+        }
+    }
+
+    public void sendMessageViaWebSocket(String message) {
+        if (isServiceBound && webSocketService != null) {
+            webSocketService.sendMessage(message);
+        }
+    }
+
+
     // ChatGPT Usage: No
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         model = ReduxStore.getInstance();
 
-        webSocketClient = new WebSocketClient(model);
+
 
         // Retrieve the Spotify User ID from the Intent
         Intent intent = getIntent();
@@ -42,7 +132,6 @@ public class MainActivity extends AppCompatActivity {
 
             apiClient = new ApiClient("https://zphy19my7b.execute-api.us-west-2.amazonaws.com/v1",
                     new Headers.Builder().add("user-id", spotifyUserId).build());
-            webSocketClient.start(new Headers.Builder().add("user-id", spotifyUserId).build());
         }
 
         bottomNavigationView = findViewById(R.id.bottomNavi);
@@ -66,11 +155,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-        homeFrag = new HomeFragment();
-        roomFrag = new RoomFragment();
-        searchFrag = new SearchFragment();
-        profileFrag = new ProfileFragment();
-        setFragment(0);             // Initialize default fragment to home
+
     }
 
     // ChatGPT Usage: No
@@ -103,6 +188,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         webSocketClient.stop();
+
     }
 
     // ChatGPT Usage: No
@@ -113,6 +199,11 @@ public class MainActivity extends AppCompatActivity {
 
     // ChatGPT Usage: No
     public ReduxStore getModel() {return model;}
-
+    public WebSocketService getWebSocketService() {
+        if (isServiceBound && webSocketService != null) {
+            return webSocketService;
+        }
+        return null;
+    }
 }
 
