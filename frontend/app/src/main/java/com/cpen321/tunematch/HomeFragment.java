@@ -27,13 +27,11 @@ import java.util.List;
 public class HomeFragment extends Fragment {
     private View view;
     ReduxStore model;
-
     Button createSessionButton;
     MainActivity mainActivity;
     BottomNavigationView bottomNavigationView;
     private WebSocketService webSocketService;
 
-    // ChatGPT Usage: Partial
 
     // ChatGPT Usage: Partial
     @Override

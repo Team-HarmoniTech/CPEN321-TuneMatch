@@ -74,6 +74,17 @@ public class ListFragment extends Fragment{
             // Updated the CustomListAdapter instantiation to pass `this` as the SessionJoinListener
             CustomListAdapter adapter = new CustomListAdapter(getContext(), getActivity(), "EditFriendsList", listItems, webSocketService);
             listView.setAdapter(adapter);
+
+            listView.setAdapter(adapter);
+
+            model.getFriendsList().observe(getViewLifecycleOwner(), friends -> {
+                ArrayList<String> friendsListItems = new ArrayList<>();
+                for (Friend f : friends) {
+                    friendsListItems.add(f.getName()+";"+f.getId()+";"+f.getProfilePic());
+                }
+                adapter.setData(friendsListItems);
+                adapter.notifyDataSetChanged();
+            });
         } else {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, listItems);
             listView.setAdapter(adapter);
