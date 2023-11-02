@@ -30,7 +30,6 @@ public class ProfileFragment extends Fragment {
     private View view;
     ReduxStore model;
     ApiClient apiClient;
-
     FragmentManager fm;
     FragmentTransaction ft;
 
@@ -145,41 +144,18 @@ public class ProfileFragment extends Fragment {
 
     // ChatGPT Usage: Partial
     private void setupMyProfile() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String response = apiClient.doGetRequest("/me", true);
-                    JSONObject resJson = new JSONObject(response);
+        User current = model.getCurrentUser().getValue();
+        TextView nameView = view.findViewById(R.id.profileNameText);
+        nameView.setText(current.getUserName());
 
-                    String name = resJson.getString("username");
-                    String id = resJson.getString("userId");
-                    String profileUrl = resJson.getString("profilePic");
-                    Log.d("ProfileFragment", "name:"+name+" id:"+id);
+        TextView idView = view.findViewById(R.id.searchIdText);
+        idView.setText(current.getUserId());
 
-                    Handler mainHandler = new Handler(Looper.getMainLooper());
-                    mainHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            // Update your UI components here
-                            TextView nameView = view.findViewById(R.id.profileNameText);
-                            nameView.setText(name);
-
-                            TextView idView = view.findViewById(R.id.searchIdText);
-                            idView.setText(id);
-
-                            ImageView profileView = view.findViewById(R.id.pfpImageView);
-                            Picasso.get()
-                                    .load(profileUrl)
-                                    .placeholder(R.drawable.default_profile_image)      // Set the default image
-                                    .error(R.drawable.default_profile_image)            // Use the default image in case of an error
-                                    .into(profileView);
-                        }
-                    });
-                } catch (IOException | JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+        ImageView profileView = view.findViewById(R.id.pfpImageView);
+        Picasso.get()
+                .load(current.getProfilePic())
+                .placeholder(R.drawable.default_profile_image)      // Set the default image
+                .error(R.drawable.default_profile_image)            // Use the default image in case of an error
+                .into(profileView);
     }
 }

@@ -23,6 +23,11 @@ import android.view.MenuItem;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+
 import okhttp3.Headers;
 
 public class MainActivity extends AppCompatActivity {
@@ -118,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
 
     // ChatGPT Usage: No
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         model = ReduxStore.getInstance();
@@ -132,6 +137,19 @@ public class MainActivity extends AppCompatActivity {
 
             apiClient = new ApiClient("https://zphy19my7b.execute-api.us-west-2.amazonaws.com/v1",
                     new Headers.Builder().add("user-id", spotifyUserId).build());
+
+            try {
+                String response = apiClient.doGetRequest("/me", true);
+                JSONObject resJson = new JSONObject(response);
+
+                String name = resJson.getString("username");
+                String id = resJson.getString("userId");
+                String profileUrl = resJson.getString("profilePic");
+
+                model.setCurrentUser(new User(id, name, profileUrl));
+            } catch (IOException | JSONException e) {
+                e.printStackTrace();
+            }
         }
 
         bottomNavigationView = findViewById(R.id.bottomNavi);

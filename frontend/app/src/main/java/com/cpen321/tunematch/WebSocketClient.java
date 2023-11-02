@@ -188,9 +188,9 @@ public class WebSocketClient {
                 String profilePic = body.optString("profilePic", null);
                 // TODO: Update the Redux store with the new member's details
                 CurrentSession currentSession = model.getCurrentSession().getValue();
-                List<SessionUser> sessionMembers = currentSession.getSessionMembers();
-                SessionUser sessionUser = new SessionUser(username, userId, profilePic);
-                sessionMembers.add(sessionUser);
+                List<User> sessionMembers = currentSession.getSessionMembers();
+                User user = new User(username, userId, profilePic);
+                sessionMembers.add(user);
                 currentSession.setSessionMembers(sessionMembers);
                 model.getCurrentSession().postValue(currentSession);
             }
@@ -201,8 +201,8 @@ public class WebSocketClient {
                 String userId = body.getString("userId");
                 // TODO: Update the Redux store to remove the member's details
                 CurrentSession currentSession = model.getCurrentSession().getValue();
-                List<SessionUser> sessionMembers = currentSession.getSessionMembers();
-                for (SessionUser s : sessionMembers) {
+                List<User> sessionMembers = currentSession.getSessionMembers();
+                for (User s : sessionMembers) {
                     if (s.getUserId().equals(userId)) {
                         sessionMembers.remove(s);
                         break;
@@ -223,15 +223,15 @@ public class WebSocketClient {
                 if(currentSession == null){
                     currentSession = new CurrentSession("session", "My Session");
                 }
-                List<SessionUser> sessionMembers = new ArrayList<>();
+                List<User> sessionMembers = new ArrayList<>();
                 List<Song> sessionQueue = new ArrayList<>();
                 for (int i = 0; i < members.length(); i++) {
                     JSONObject member = members.getJSONObject(i);
                     String id = member.getString("userId");
                     String username = member.getString("username");
                     String profilePic = member.getString("profilePic");
-                    SessionUser sessionUser = new SessionUser(username, id, profilePic);
-                    sessionMembers.add(sessionUser);
+                    User user = new User(username, id, profilePic);
+                    sessionMembers.add(user);
                 }
                 for (int i = 0; i < queue.length(); i++) {
                     JSONObject song = queue.getJSONObject(i);

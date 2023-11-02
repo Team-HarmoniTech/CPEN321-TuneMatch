@@ -8,17 +8,19 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.Collections;
 import java.util.List;
 
 public class MessageAdapter extends RecyclerView.Adapter  {
 
     private List<Message> messages;
-    private SessionUser currentUser;
+    private User currentUser;
 
     public final static int MESSAGE_TYPE_RECEIVED = 0;
     public final static int MESSAGE_TYPE_SENT = 0;
 
-    public MessageAdapter(List<Message> messages, SessionUser currentUser) {
+    public MessageAdapter(List<Message> messages, User currentUser) {
         this.messages = messages;
         this.currentUser = currentUser;
     }
@@ -62,6 +64,12 @@ public class MessageAdapter extends RecyclerView.Adapter  {
                 isLastMessage(position) ? container.getPaddingTop() : 0,
                 isFirstMessage(position) ? container.getPaddingRight() : 0,
                 container.getPaddingBottom());
+    }
+
+    public void updateMessages(List<Message> messages) {
+        Collections.sort(messages);
+        this.messages = messages;
+        this.notifyDataSetChanged();
     }
 
     // ChatGPT Usage: No

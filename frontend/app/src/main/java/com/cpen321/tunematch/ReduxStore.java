@@ -17,7 +17,8 @@ public class ReduxStore extends ViewModel {
     private final MutableLiveData<CurrentSession> currentSession;
     private final MutableLiveData<MediaControllerState> mediaControllerState;
     private final MutableLiveData<List<Message>> chatMessages;
-    private final MutableLiveData<Boolean> SessionActive;
+    private final MutableLiveData<Boolean> sessionActive;
+    private final MutableLiveData<User> currentUser;
     public ReduxStore() {
         friendsList = new MutableLiveData<>();
         friendRequests = new MutableLiveData<>();
@@ -27,13 +28,24 @@ public class ReduxStore extends ViewModel {
         currentSession = new MutableLiveData<>();
         mediaControllerState = new MutableLiveData<>();
         chatMessages = new MutableLiveData<>();
-        SessionActive = new MutableLiveData<>(false);
+        sessionActive = new MutableLiveData<>(false);
+        currentUser = new MutableLiveData<>(null);
     }
     public static synchronized ReduxStore getInstance() {
         if (instance == null) {
             instance = new ReduxStore();
         }
         return instance;
+    }
+
+    // ChatGPT Usage: No
+    public MutableLiveData<User> getCurrentUser() {
+        return currentUser;
+    }
+
+    // ChatGPT Usage: No
+    public void setCurrentUser(User user) {
+        currentUser.setValue(user);
     }
 
     // ChatGPT Usage: No
@@ -45,7 +57,7 @@ public class ReduxStore extends ViewModel {
     public MutableLiveData<List<SearchUser>> getFriendsRequest() {return friendRequests;}
 
     public MutableLiveData<Boolean> checkSessionActive() {
-        return SessionActive;
+        return sessionActive;
     }
     // ChatGPT Usage: No
     public void setFriendsRequestList(List<SearchUser> newRequests) {friendRequests.setValue(newRequests);}
@@ -99,6 +111,11 @@ public class ReduxStore extends ViewModel {
         List<Message> currentMessages = chatMessages.getValue();
         currentMessages.add(message);
         chatMessages.setValue(currentMessages);
+    }
+
+    // ChatGPT Usage: No
+    public MutableLiveData<List<Message>> getMessages() {
+        return chatMessages;
     }
 
     // ChatGPT Usage: No

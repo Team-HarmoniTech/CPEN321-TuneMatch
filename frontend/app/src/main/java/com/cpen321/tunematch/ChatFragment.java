@@ -1,6 +1,11 @@
 package com.cpen321.tunematch;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,7 +33,40 @@ public class ChatFragment extends Fragment {
     private MessageAdapter chatAdapter;
     private TextInputEditText chatInput;
     private FloatingActionButton sendChat;
-    private List<Message> messages;
+    private WebSocketService webSocketService;
+    private boolean isServiceBound = false;
+    ReduxStore model;
+
+    // ChatGPT Usage: Partial
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            WebSocketService.LocalBinder binder = (WebSocketService.LocalBinder) service;
+            webSocketService = binder.getService();
+            isServiceBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            isServiceBound = false;
+        }
+    };
+    // ChatGPT Usage: No
+    @Override
+    public void onResume() {
+        super.onResume();
+        Intent intent = new Intent(getActivity(), WebSocketService.class);
+        getActivity().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+    }
+    // ChatGPT Usage: No
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (isServiceBound) {
+            getActivity().unbindService(serviceConnection);
+            isServiceBound = false;
+        }
+    }
 
     @Nullable
     @Override
@@ -38,7 +76,12 @@ public class ChatFragment extends Fragment {
         chatInput = view.findViewById(R.id.chatInput);
         sendChat = view.findViewById(R.id.sendChatButton);
 
+        model = ReduxStore.getInstance();
         initializeChat();
+
+        model.getMessages().observe(getViewLifecycleOwner(), messages -> {
+            chatAdapter.updateMessages(messages);
+        });
         sendChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -52,21 +95,13 @@ public class ChatFragment extends Fragment {
         String messageText = chatInput.getText().toString();
         if (messageText == "") return;
 
-        Message message = new Message(currentUser, messageText, new Date());
+        Message message = new Message(model.getCurrentUser().getValue(), messageText, new Date());
         // TODO: SEND MESSAGE IN THE WEBSOCKET
-        addMessage(message);
-    }
-
-    private void addMessage(Message message) {
-        messages.add(message);
-        Collections.sort(messages);
-        chatAdapter.notifyDataSetChanged();
+        model.addMessage(message);
     }
 
     private void initializeChat() {
-        messages = new ArrayList<>();
-        SessionUser currentUser = null;
-        chatAdapter = new MessageAdapter(messages, currentUser);
+        chatAdapter = new MessageAdapter(model.getMessages().getValue(), model.getCurrentUser().getValue());
         chatWindow.setAdapter(chatAdapter);
         chatWindow.setLayoutManager(new LinearLayoutManager(getContext()));
     }

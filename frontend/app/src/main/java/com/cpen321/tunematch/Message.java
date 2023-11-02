@@ -3,12 +3,12 @@ package com.cpen321.tunematch;
 import java.util.Date;
 
 public class Message implements Comparable<Message> {
-    private SessionUser sender;
+    private User sender;
     private String messageText;
     private Date timestamp;
 
     // ChatGPT Usage: No
-    public Message(SessionUser sender, String messageText, Date timestamp) {
+    public Message(User sender, String messageText, Date timestamp) {
         this.sender = sender;
         this.messageText = messageText;
         this.timestamp = timestamp;
