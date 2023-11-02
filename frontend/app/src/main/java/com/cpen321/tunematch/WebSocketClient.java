@@ -372,7 +372,7 @@ public class WebSocketClient {
             @Override
             public void run() {
                 if (webSocket != null) {
-                    webSocket.send(okio.ByteString.EMPTY);  // Send an empty Ping frame
+                    webSocket.send(ByteString.EMPTY);  // Send an empty Ping frame
                 }
                 handler.postDelayed(this, PING_INTERVAL);
             }

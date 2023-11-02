@@ -22,9 +22,6 @@ public class ListFragment extends Fragment{
     private WebSocketService webSocketService;
     private boolean isServiceBound = false;
 
-    // ChatGPT Usage: No
-    public ListFragment() {}
-
     // ChatGPT Usage: Yes
     public static ListFragment newInstance(ArrayList<String> listItem, String listTitle) {
         ListFragment fragment = new ListFragment();
