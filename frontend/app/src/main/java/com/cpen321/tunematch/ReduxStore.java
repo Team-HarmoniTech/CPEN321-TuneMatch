@@ -17,6 +17,7 @@ public class ReduxStore extends ViewModel {
     private final MutableLiveData<CurrentSession> currentSession;
     private final MutableLiveData<MediaControllerState> mediaControllerState;
     private final MutableLiveData<List<Message>> chatMessages;
+    private final MutableLiveData<Boolean> SessionActive;
     public ReduxStore() {
         friendsList = new MutableLiveData<>();
         friendRequests = new MutableLiveData<>();
@@ -26,6 +27,7 @@ public class ReduxStore extends ViewModel {
         currentSession = new MutableLiveData<>();
         mediaControllerState = new MutableLiveData<>();
         chatMessages = new MutableLiveData<>();
+        SessionActive = new MutableLiveData<>(false);
     }
     public static synchronized ReduxStore getInstance() {
         if (instance == null) {
@@ -42,6 +44,9 @@ public class ReduxStore extends ViewModel {
     // ChatGPT Usage: No
     public MutableLiveData<List<SearchUser>> getFriendsRequest() {return friendRequests;}
 
+    public MutableLiveData<Boolean> checkSessionActive() {
+        return SessionActive;
+    }
     // ChatGPT Usage: No
     public void setFriendsRequestList(List<SearchUser> newRequests) {friendRequests.setValue(newRequests);}
 

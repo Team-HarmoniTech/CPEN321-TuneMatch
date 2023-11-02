@@ -14,11 +14,15 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+
+import org.json.JSONObject;
+
 import androidx.fragment.app.Fragment;
+
 
 import java.util.ArrayList;
 
-public class ListFragment extends Fragment {
+public class ListFragment extends Fragment{
 
     ReduxStore model;
     private String listTitle;
@@ -28,19 +32,7 @@ public class ListFragment extends Fragment {
     private boolean isServiceBound = false;
 
     // ChatGPT Usage: Partial
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            WebSocketService.LocalBinder binder = (WebSocketService.LocalBinder) service;
-            webSocketService = binder.getService();
-            isServiceBound = true;
-        }
 
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            isServiceBound = false;
-        }
-    };
 
     // ChatGPT Usage: No
     public ListFragment() {}
@@ -82,8 +74,8 @@ public class ListFragment extends Fragment {
 
         // Create an ArrayAdapter to populate the ListView
         if (listTitle.equals("Friends List")) {
-
-            CustomListAdapter adapter = new CustomListAdapter(getContext(), null, "EditFriendsList", listItems, webSocketService, isServiceBound);
+            // Updated the CustomListAdapter instantiation to pass `this` as the SessionJoinListener
+            CustomListAdapter adapter = new CustomListAdapter(getContext(), getActivity(), "EditFriendsList", listItems, webSocketService);
             listView.setAdapter(adapter);
         } else {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, listItems);
@@ -93,23 +85,7 @@ public class ListFragment extends Fragment {
         return view;
     }
 
-    // ChatGPT Usage: No
-    @Override
-    public void onResume() {
-        super.onResume();
-        Intent intent = new Intent(getActivity(), WebSocketService.class);
-        getActivity().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
-    }
 
-    // ChatGPT Usage: No
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (isServiceBound) {
-            getActivity().unbindService(serviceConnection);
-            isServiceBound = false;
-        }
-    }
 
     // ChatGPT Usage: No
     public WebSocketService getWebSocketService() {
@@ -120,5 +96,7 @@ public class ListFragment extends Fragment {
     public boolean isServiceBound() {
         return isServiceBound;
     }
+
+
 }
 

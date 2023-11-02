@@ -26,12 +26,15 @@ public class WebSocketService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         // You can initialize your WebSocketClient here and start the connection.
         // Assuming you get your ReduxStore instance from MainActivity or another source:
-        ReduxStore model = ReduxStore.getInstance();
-        webSocketClient = new WebSocketClient(model);
-        Headers customheaders = new Headers.Builder().add("user-id", intent.getStringExtra("spotifyUserId")).build();
-        webSocketClient.start(customheaders); // You can provide custom headers if needed
+        if (intent != null) {
+            ReduxStore model = ReduxStore.getInstance();
+            webSocketClient = new WebSocketClient(model);
+            Headers customheaders = new Headers.Builder().add("user-id", intent.getStringExtra("spotifyUserId")).build();
+            webSocketClient.start(customheaders); // You can provide custom headers if needed
+        }
         return START_STICKY;
     }
+
 
     @Override
     public void onDestroy() {
