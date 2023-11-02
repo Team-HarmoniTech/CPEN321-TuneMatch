@@ -1,12 +1,7 @@
 // Wrote by team member following online tutorial regarding BottomNavigationView usage
 package com.cpen321.tunematch;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,11 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-
-import org.json.JSONObject;
-
 import androidx.fragment.app.Fragment;
-
 
 import java.util.ArrayList;
 
@@ -92,8 +83,6 @@ public class ListFragment extends Fragment{
 
         return view;
     }
-
-
 
     // ChatGPT Usage: No
     public WebSocketService getWebSocketService() {

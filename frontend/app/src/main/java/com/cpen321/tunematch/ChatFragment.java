@@ -19,13 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 public class ChatFragment extends Fragment {
     private View view;
