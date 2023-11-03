@@ -1,5 +1,6 @@
 package com.cpen321.tunematch;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -71,7 +72,6 @@ public class MessageAdapter extends RecyclerView.Adapter  {
 
     // ChatGPT Usage: No
     public void updateMessages(List<Message> messages) {
-        Collections.sort(messages);
         this.messages = messages;
         this.notifyDataSetChanged();
     }

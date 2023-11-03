@@ -35,10 +35,12 @@ public class Message implements Comparable<Message> {
         return sender.getProfileImageUrl();
     }
 
+    // ChatGPT Usage: No
     public String getSenderUsername() {
         return sender.getUserName();
     }
 
+    // ChatGPT Usage: No
     @Override
     public int compareTo(Message otherMessage) {
         return otherMessage.getTimeSent().compareTo(this.getTimeSent());

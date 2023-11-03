@@ -305,10 +305,10 @@ public class RoomFragment extends Fragment {
                 mSpotifyAppRemote.getPlayerApi().getPlayerState().setResultCallback(playerState -> {
                     if (playerState.isPaused) {
                         mSpotifyAppRemote.getPlayerApi().resume();
-                        playpauseButton.setText("Pause");
+                        playpauseButton.setBackgroundResource(R.drawable.pause_btn);
                     } else {
                         mSpotifyAppRemote.getPlayerApi().pause();
-                        playpauseButton.setText("Play");
+                        playpauseButton.setBackgroundResource(R.drawable.play_btn);
                     }
                 });
             }
@@ -330,9 +330,9 @@ public class RoomFragment extends Fragment {
 
         mSpotifyAppRemote.getPlayerApi().getPlayerState().setResultCallback(playerState -> {
             if (playerState.isPaused) {
-                playpauseButton.setText("Play");
+                playpauseButton.setBackgroundResource(R.drawable.play_btn);
             } else {
-                playpauseButton.setText("Pause");
+                playpauseButton.setBackgroundResource(R.drawable.pause_btn);
             }
         });
     }
