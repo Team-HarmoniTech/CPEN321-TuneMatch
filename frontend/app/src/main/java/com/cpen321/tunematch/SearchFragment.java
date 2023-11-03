@@ -142,7 +142,7 @@ public class SearchFragment extends Fragment {
                                 });
                             }
 
-                        } catch (ApiException e) {
+                        } catch (ApiException | RuntimeException e) {
                             e.printStackTrace();
                         }
                     }

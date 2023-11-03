@@ -22,7 +22,7 @@ import retrofit2.http.Query;
 public class SpotifyClient extends ApiClient<SpotifyInterface> {
     @Override
     protected String getBaseUrl() {
-        return "https://api.spotify.com/v1";
+        return "https://api.spotify.com/";
     }
     private String auth;
 
@@ -53,9 +53,9 @@ public class SpotifyClient extends ApiClient<SpotifyInterface> {
         Set<String> genreSet = new HashSet<>();
         for (int i = 0; i < topArtistsArray.size(); i++) {
             JsonObject artist = topArtistsArray.get(i).getAsJsonObject();
-            artistList.add(artist.get("name").toString());
+            artistList.add(artist.get("name").getAsString());
 
-            String genres = artist.get("genres").toString().replace("[", "").replace("]", "").trim();
+            String genres = artist.get("genres").getAsString().replace("[", "").replace("]", "").trim();
             for (String g : genres.split(",")) {
                 genreSet.add(g.replace("\"", ""));
             }

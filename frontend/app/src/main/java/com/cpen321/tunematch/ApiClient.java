@@ -1,5 +1,7 @@
 package com.cpen321.tunematch;
 
+import android.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -15,6 +17,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public abstract class ApiClient<T> {
@@ -26,6 +29,7 @@ public abstract class ApiClient<T> {
         retrofit = new Retrofit.Builder()
                 .baseUrl(getBaseUrl())
                 .addConverterFactory(ScalarsConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
         api = retrofit.create(serviceClass);
@@ -53,6 +57,7 @@ public abstract class ApiClient<T> {
     protected JsonElement call(Call<String> call) throws ApiException {
         try {
             Response<String> response = call.execute();
+            Log.d("APICLIENT", response.toString());
             if (response.isSuccessful()) {
                 if (response.body() != null && !response.body().isEmpty()) {
                     return parseJsonObject(response.body());

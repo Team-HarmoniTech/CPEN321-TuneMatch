@@ -6,14 +6,14 @@ export class ReportService {
 
   // ChatGPT Usage: No
   async generateReport(
-    offenderId: number,
-    reporterId: number,
+    offenderId: string,
+    reporterId: string,
     report: any,
   ): Promise<Report> {
     return await this.reportDB.create({
       data: {
-        offender: { connect: { id: offenderId } },
-        reporter: { connect: { id: reporterId } },
+        offender: { connect: { spotify_id: offenderId } },
+        reporter: { connect: { spotify_id: reporterId } },
         reason: report.reason,
         reason_text: report.text,
         report_context: report.context,
@@ -35,9 +35,9 @@ export class ReportService {
   }
 
   // ChatGPT Usage: No
-  async banUser(userId: number) {
+  async banUser(userId: string) {
     await database.user.update({
-      where: { id: userId },
+      where: { spotify_id: userId },
       data: { is_banned: true },
     });
   }

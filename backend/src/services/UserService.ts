@@ -156,11 +156,10 @@ export class UserService {
     search: string,
     max?: number,
   ): Promise<User[]> {
-    const friends = await this.getUserFriends(userId);
     return await this.userDB.findMany({
       where: {
         username: { contains: search },
-        id: { notIn: [userId, ...friends.map((f) => f.id)] },
+        id: { not: userId },
       },
       take: max || 50,
     });

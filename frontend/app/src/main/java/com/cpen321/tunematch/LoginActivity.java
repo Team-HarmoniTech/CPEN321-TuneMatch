@@ -152,7 +152,7 @@ public class LoginActivity extends AppCompatActivity {
 
                     // Example using JSONObject (make sure to handle exceptions and null checks)
                     Log.d(TAG, "Spotify my info: "+userResponse);
-                    spotifyUserId = userResponse.get("id").toString();
+                    spotifyUserId = userResponse.get("id").getAsString();
                     Log.d(TAG, "Spotify User ID: " + spotifyUserId);
 
                     // Use the Spotify User ID to check if user already have an account

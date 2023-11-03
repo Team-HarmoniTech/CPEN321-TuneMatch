@@ -1,5 +1,7 @@
 package com.cpen321.tunematch;
 
+import android.util.Log;
+
 import androidx.annotation.Nullable;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -13,7 +15,7 @@ import retrofit2.Call;
 public class BackendClient extends ApiClient<BackendInterface> {
     @Override
     protected String getBaseUrl() {
-        return "https://zphy19my7b.execute-api.us-west-2.amazonaws.com/v1";
+        return "https://zphy19my7b.execute-api.us-west-2.amazonaws.com/";
     }
     private @Nullable String currentUserId;
 
@@ -31,16 +33,16 @@ public class BackendClient extends ApiClient<BackendInterface> {
         User user;
         if (fullProfile) {
             user = new User(
-                    response.get("userId").toString(),
-                    response.get("username").toString(),
-                    response.get("profilePic").toString()
+                    response.get("userId").getAsString(),
+                    response.get("username").getAsString(),
+                    response.get("profilePic").getAsString()
             );
         } else {
             user = new User(
-                    response.get("userId").toString(),
-                    response.get("username").toString(),
-                    response.get("profilePic").toString(),
-                    response.get("bio").toString(),
+                    response.get("userId").getAsString(),
+                    response.get("username").getAsString(),
+                    response.get("profilePic").getAsString(),
+                    response.get("bio").getAsString(),
                     getAsStringList(response.getAsJsonArray("topArtists")),
                     getAsStringList(response.getAsJsonArray("topGenres"))
             );
@@ -71,10 +73,10 @@ public class BackendClient extends ApiClient<BackendInterface> {
         Call<String> call = api.createUser(createUserBody);
         JsonObject response = call(call).getAsJsonObject();
         return new User(
-                response.get("userId").toString(),
-                response.get("username").toString(),
-                response.get("profilePic").toString(),
-                response.get("bio").toString(),
+                response.get("userId").getAsString(),
+                response.get("username").getAsString(),
+                response.get("profilePic").getAsString(),
+                    response.get("bio").getAsString(),
                 getAsStringList(response.getAsJsonArray("topArtists")),
                 getAsStringList(response.getAsJsonArray("topGenres"))
         );
@@ -85,21 +87,24 @@ public class BackendClient extends ApiClient<BackendInterface> {
             throw new ApiException(400, "userId is not set");
         }
         Call<String> call = api.searchUser(searchTerm, this.currentUserId);
-        JsonArray response = call(call).getAsJsonArray();
+        JsonElement respons = call(call);
+        JsonArray response = respons.getAsJsonArray();
         List<SearchUser> searchedUser = new ArrayList<>();
-
+        Log.d("", respons.toString());
         for (int i = 0; i < response.size(); i++) {
             JsonObject jsonObject = response.get(i).getAsJsonObject();
 
-            String name = jsonObject.get("username").toString();
-            String id = jsonObject.get("userId").toString();
-            String match_score = jsonObject.get("match_percent").toString();
-            String profilePic = jsonObject.get("profilePic").toString();
+            String name = jsonObject.get("username").getAsString();
+            String id = jsonObject.get("userId").getAsString();
+            String match_score = jsonObject.get("match_percent").getAsString();
+            String profilePic = jsonObject.get("profilePic").getAsString();
 
             SearchUser user = new SearchUser(name, id, profilePic);
             user.setMatchPercent(match_score);
             searchedUser.add(user);
         }
+
+        Log.d("", searchedUser.toString());
 
         return searchedUser;
     }
@@ -113,16 +118,16 @@ public class BackendClient extends ApiClient<BackendInterface> {
         User user;
         if (fullProfile) {
             user = new User(
-                    response.get("userId").toString(),
-                    response.get("username").toString(),
-                    response.get("profilePic").toString()
+                    response.get("userId").getAsString(),
+                    response.get("username").getAsString(),
+                    response.get("profilePic").getAsString()
             );
         } else {
             user = new User(
-                    response.get("userId").toString(),
-                    response.get("username").toString(),
-                    response.get("profilePic").toString(),
-                    response.get("bio").toString(),
+                    response.get("userId").getAsString(),
+                    response.get("username").getAsString(),
+                    response.get("profilePic").getAsString(),
+                    response.get("bio").getAsString(),
                     getAsStringList(response.getAsJsonArray("topArtists")),
                     getAsStringList(response.getAsJsonArray("topGenres"))
             );
@@ -141,10 +146,10 @@ public class BackendClient extends ApiClient<BackendInterface> {
         for (int i = 0; i < response.size(); i++) {
             JsonObject jsonObject = response.get(i).getAsJsonObject();
 
-            String name = jsonObject.get("username").toString();
-            String id = jsonObject.get("userId").toString();
-            String match_score = jsonObject.get("match_percent").toString();
-            String profilePic = jsonObject.get("profilePic").toString();
+            String name = jsonObject.get("username").getAsString();
+            String id = jsonObject.get("userId").getAsString();
+            String match_score = jsonObject.get("match_percent").getAsString();
+            String profilePic = jsonObject.get("profilePic").getAsString();
 
             SearchUser user = new SearchUser(name, id, profilePic);
             user.setMatchPercent(match_score);

@@ -8,11 +8,11 @@ export const ReportRoutes = [
     controller: ReportController,
     action: "generateReport",
     validation: [
-      body("offenderId").isNumeric(),
-      body("reporterId").isNumeric(),
+      body("offenderId").isAlphanumeric(),
+      body("reporterId").isAlphanumeric(),
       body("reason").isString(),
       body("text").isString(),
-      body("context").isString(),
+      body("context").isJSON(),
     ],
   },
   {
@@ -30,6 +30,6 @@ export const ReportRoutes = [
     route: "/reports/ban/:userId",
     controller: ReportController,
     action: "banUser",
-    validation: [param("userId").isNumeric()],
+    validation: [param("userId").isAlphanumeric()],
   },
 ];

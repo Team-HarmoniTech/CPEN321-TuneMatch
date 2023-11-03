@@ -9,10 +9,10 @@ import retrofit2.http.QueryMap;
 
 public interface SpotifyInterface {
 
-    @GET("/me")
+    @GET("/v1/me")
     Call<String> getUser(@Header("Authorization") String authHeader);
-    @GET("/me/top/artists?limit=50&time_range=long_term")
+    @GET("/v1/me/top/artists?limit=50&time_range=long_term")
     Call<String> getTopArtists(@Header("Authorization") String authHeader);
-    @GET("/search")
+    @GET("/v1/search")
     Call<String> getSong(@Header("Authorization") String authHeader, @Query("q") String query, @Query("type") String type);
 }
