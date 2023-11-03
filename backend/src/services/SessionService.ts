@@ -1,6 +1,7 @@
 import { Queue, Song } from "@models/Queue";
 import { SessionMessage, SessionQueue, SessionWithMembers } from "@models/SessionModels";
 import { transformUser } from "@models/UserModels";
+import { Session } from "@prisma/client";
 import { database, socketService, userService } from "@src/services";
 import { Mutex } from "async-mutex";
 
@@ -106,6 +107,16 @@ export class SessionService {
       );
     }
   }
+
+  // ChatGPT Usage: No
+  async getSession(userId: number): Promise<Session> {
+    const user = await userService.getUserById(userId);
+    if (!user.session) {
+      throw { message: `User is not in a session.`, statusCode: 400 };
+    }
+    return user.session;
+  }
+
 
   // ChatGPT Usage: No
   async messageSession(sessionId: number, senderId: number, message: any) {
