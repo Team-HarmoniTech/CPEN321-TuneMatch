@@ -1,15 +1,15 @@
 import { ReportController } from "@controller/ReportController";
-import { body, param, query } from "express-validator";
+import { body, header, param, query } from "express-validator";
 
 export const ReportRoutes = [
   {
     method: "post",
-    route: "/reports",
+    route: "/reports/create",
     controller: ReportController,
     action: "generateReport",
     validation: [
+      header("user-id").isAlphanumeric(),
       body("offenderId").isAlphanumeric(),
-      body("reporterId").isAlphanumeric(),
       body("reason").isString(),
       body("text").isString(),
       body("context").isJSON(),
@@ -26,7 +26,7 @@ export const ReportRoutes = [
     ],
   },
   {
-    method: "post",
+    method: "put",
     route: "/reports/ban/:userId",
     controller: ReportController,
     action: "banUser",

@@ -11,6 +11,8 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
+import retrofit2.http.Body;
+import retrofit2.http.Header;
 
 public class BackendClient extends ApiClient<BackendInterface> {
     @Override
@@ -166,4 +168,26 @@ public class BackendClient extends ApiClient<BackendInterface> {
 //        Call<String> call = api.updateMe(body, this.currentUserId);
 //        call(call, callback);
 //    }
+
+    enum ReportReason {
+        OFFENSIVE_LANGUAGE,
+        PLAYLIST_ABUSE,
+        SPAMING_CHAT,
+        OTHER
+    }
+
+    public void generateReport(String offenderId, ReportReason reason, List<Message> context, String text) throws ApiException {
+        if (this.currentUserId == null) {
+            throw new ApiException(400, "userId is not set");
+        }
+        Gson gson = new Gson();
+        JsonObject body = new JsonObject();
+        body.add("offenderId", gson.toJsonTree(offenderId));
+        body.add("reason", gson.toJsonTree(reason));
+        body.add("text", gson.toJsonTree(text));
+        body.add("context", gson.toJsonTree(context));
+
+        Call<String> call = api.createReport(body, this.currentUserId);
+        call(call);
+    }
 }
