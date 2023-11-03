@@ -37,7 +37,7 @@ export class UserController {
     const matches = await userMatchingService.getTopMatches(req.currentUserId);
     res.send(
       await transformUsers(matches, async (user) => {
-        return { match_percent: user.match };
+        return { match: user.match };
       }),
     );
   }
@@ -65,7 +65,14 @@ export class UserController {
   async insertUser(req: Request, res: Response, next: NextFunction) {
     const user = await userService.createUser(req.body.userData);
     userMatchingService.matchNewUser(user.id);
-    res.send(await transformUser(user));
+    res.send(await transformUser(user, async (user) => {
+      return {
+          bio: user.bio,
+          topArtists: user.top_artists,
+          topGenres: user.top_genres,
+        }
+      }),
+    );
   }
 
   // ChatGPT Usage: No
@@ -97,7 +104,7 @@ export class UserController {
     res.send(
       await transformUsers(users, async (user) => {
         return {
-          match_percent: await userMatchingService.getMatch(
+          match: await userMatchingService.getMatch(
             user.id,
             req.currentUserId,
           ),

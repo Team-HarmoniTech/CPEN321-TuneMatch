@@ -44,7 +44,7 @@ public class SearchFragment extends Fragment {
     private ArrayAdapter<String> listAdapter;
     private AlertDialog profileDialog;
     ReduxStore model;
-    ApiClient apiClient;
+    BackendClient backend;
     private WebSocketService webSocketService;
     private boolean isServiceBound = false;
 
@@ -70,19 +70,17 @@ public class SearchFragment extends Fragment {
 
         // Initialize ViewModel and ApiClient here.
         model = ((MainActivity) getActivity()).getModel();
-        apiClient = ((MainActivity) getActivity()).getApiClient();;
+        backend = ((MainActivity) getActivity()).getBackend();;
 
         new Thread(new Runnable() {
             @Override
             public void run() {
                 String response;
                 try {
-                    response = apiClient.doGetRequest("/me/matches", true);
-                    // Parse the response.
-                    List<SearchUser> newSearchList = parseResponse(response);
+                    List<SearchUser> newSearchList = backend.getMatches();
                     // Update LiveData.
                     model.getSearchList().postValue(newSearchList);
-                } catch (IOException e) {
+                } catch (ApiException e) {
                     e.printStackTrace();
                 }
             }
@@ -123,14 +121,13 @@ public class SearchFragment extends Fragment {
                     @Override
                     public void run() {
                         try {
-                            String response = apiClient.doGetRequest("/users/search/"+encodedName, true);
-                            JSONArray resJson = new JSONArray(response);
-                            JSONObject userInfo = resJson.getJSONObject(0);         // only one user has to be returned
-                            Log.d("SearchFragment", "selected user info: " + userInfo.toString());
+                            // only one user has to be returned
+                            SearchUser user = backend.searchUser(encodedName).get(0);
+                            Log.d("SearchFragment", "selected user info: " + user);
 
-                            String profileUrl = userInfo.getString("profilePic");
-                            friendId[0] = userInfo.getString("userId");
-                            if (!profileUrl.equals("profile.com/url")) {
+                            String profileUrl = user.getProfilePic();
+                            friendId[0] = user.getId();
+                            if (profileUrl != null) {
                                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -145,7 +142,7 @@ public class SearchFragment extends Fragment {
                                 });
                             }
 
-                        } catch (IOException | JSONException e) {
+                        } catch (ApiException | RuntimeException e) {
                             e.printStackTrace();
                         }
                     }
@@ -190,69 +187,11 @@ public class SearchFragment extends Fragment {
         searchFriend.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
             @Override
             public boolean onQueryTextSubmit(String query) {
-                String encodedQuery;
-                try {
-                     encodedQuery = URLEncoder.encode(query, Charsets.UTF_8.toString());
-                    Log.d("SearchFragment", "onQueryTextSubmit: " + encodedQuery);
-                } catch (UnsupportedEncodingException e) {
-                    throw new RuntimeException(e);
-                }
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        String response;
-                        try {
-
-                            if(query.isEmpty()){
-                                response = apiClient.doGetRequest("/me/matches", true);
-                            }
-                            else{
-                                response = apiClient.doGetRequest("/users/search/" + encodedQuery, true);
-                            }
-                            List<SearchUser> newSearchList = parseResponse(response);
-                            model.getSearchList().postValue(newSearchList);
-
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).start();
-
-                return true;
-
+                return updateQuery(query);
             }
-
             @Override
             public boolean onQueryTextChange(String newText) {
-
-                String encoded_newText;
-                try {
-                    encoded_newText = URLEncoder.encode(newText, Charsets.UTF_8.toString());
-                } catch (UnsupportedEncodingException e) {
-                    throw new RuntimeException(e);
-                }
-
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        String response;
-                        try {
-                            if(newText.isEmpty()){
-                                response = apiClient.doGetRequest("/me/matches", true);
-                            }
-                            else{
-                                response = apiClient.doGetRequest("/users/search/" + encoded_newText, true);
-                            }
-                          
-                            List<SearchUser> newSearchList = parseResponse(response);
-                            model.getSearchList().postValue(newSearchList);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).start();
-                return true;
-
+                return updateQuery(newText);
             }
         });
 
@@ -269,28 +208,34 @@ public class SearchFragment extends Fragment {
         return view;
     }
 
-    // ChatGPT Usage: Partial
-    public List<SearchUser> parseResponse(String response) {
-        Log.d("SearchFragment", "parseResponse: " + response);
-        List<SearchUser> searchedUser = new ArrayList<>();
+    private boolean updateQuery(String query) {
+        String encodedQuery;
         try {
-            JSONArray jsonArray = new JSONArray(response);
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                String name = jsonObject.getString("username");
-                String id = jsonObject.getString("userId");
-
-                String match_score = jsonObject.getString("match_percent");
-                String profilePic = jsonObject.getString("profilePic");
-                SearchUser user = new SearchUser(name, id, profilePic);
-                user.setMatchPercent(match_score);
-                searchedUser.add(user);
-
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
+            encodedQuery = URLEncoder.encode(query, Charsets.UTF_8.toString());
+            Log.d("SearchFragment", "onQueryTextSubmit: " + encodedQuery);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
         }
-        return searchedUser;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                List<SearchUser> newSearchList;
+                try {
+                    if(query.isEmpty()){
+                        newSearchList = backend.getMatches();
+                    }
+                    else{
+                        newSearchList = backend.searchUser(encodedQuery);
+                    }
+
+                    model.getSearchList().postValue(newSearchList);
+                } catch (ApiException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+        return true;
     }
 
     // ChatGPT Usage: Partial
