@@ -18,7 +18,7 @@ public class MessageAdapter extends RecyclerView.Adapter  {
     private List<Message> messages;
     private User currentUser;
 
-    public final static int MESSAGE_TYPE_RECEIVED = 0;
+    public final static int MESSAGE_TYPE_RECEIVED = 1;
     public final static int MESSAGE_TYPE_SENT = 0;
 
     public MessageAdapter(List<Message> messages, User currentUser) {
@@ -60,13 +60,16 @@ public class MessageAdapter extends RecyclerView.Adapter  {
 
         // Set padding to 0 if next to message from same user
         ConstraintLayout container = ((SentMessageViewHolder) holder).getContainer();
-        container.setPadding(
-                container.getPaddingLeft(),
-                isLastMessage(position) ? container.getPaddingTop() : 0,
-                isFirstMessage(position) ? container.getPaddingRight() : 0,
-                container.getPaddingBottom());
+        if (container != null) {
+            container.setPadding(
+                    container.getPaddingLeft(),
+                    isLastMessage(position) ? container.getPaddingTop() : 0,
+                    isFirstMessage(position) ? container.getPaddingRight() : 0,
+                    container.getPaddingBottom());
+        }
     }
 
+    // ChatGPT Usage: No
     public void updateMessages(List<Message> messages) {
         Collections.sort(messages);
         this.messages = messages;

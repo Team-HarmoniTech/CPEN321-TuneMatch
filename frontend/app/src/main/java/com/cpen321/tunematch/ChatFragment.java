@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +20,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
+import kotlin.collections.ArrayDeque;
 
 public class ChatFragment extends Fragment {
     private View view;
@@ -45,6 +50,7 @@ public class ChatFragment extends Fragment {
             isServiceBound = false;
         }
     };
+
     // ChatGPT Usage: No
     @Override
     public void onResume() {
@@ -76,12 +82,17 @@ public class ChatFragment extends Fragment {
         model.getMessages().observe(getViewLifecycleOwner(), messages -> {
             chatAdapter.updateMessages(messages);
         });
+
+        // Set focus to the chatInput
+        chatInput.requestFocus();
+
         sendChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 onSendMessage();
             }
         });
+
         return view;
     }
 
@@ -89,13 +100,19 @@ public class ChatFragment extends Fragment {
         String messageText = chatInput.getText().toString();
         if (messageText == "") return;
 
+        Log.d("ChatFragment", "Send: " + messageText);
         Message message = new Message(model.getCurrentUser().getValue(), messageText, new Date());
         // TODO: SEND MESSAGE IN THE WEBSOCKET
         model.addMessage(message);
     }
 
     private void initializeChat() {
-        chatAdapter = new MessageAdapter(model.getMessages().getValue(), model.getCurrentUser().getValue());
+        List<Message> chatMsg = model.getMessages().getValue();
+        if (chatMsg == null) {
+            chatMsg = new ArrayList<Message>();
+            model.getMessages().setValue(chatMsg);
+        }
+        chatAdapter = new MessageAdapter(chatMsg, model.getCurrentUser().getValue());
         chatWindow.setAdapter(chatAdapter);
         chatWindow.setLayoutManager(new LinearLayoutManager(getContext()));
     }
