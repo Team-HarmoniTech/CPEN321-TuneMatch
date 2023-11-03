@@ -112,7 +112,7 @@ public class WebSocketClient {
                     String profilePic = friendJson.getString("profilePic");
                     String currentSong = friendJson.optString("currentSong");  // Using optString to avoid null values
                     JSONObject currentSource = friendJson.optJSONObject("currentSource");  // Using optJSONObject to avoid null values  // Using optString to avoid null values
-                    Friend friend = new Friend(username, id, profilePic);
+                    Friend friend = new Friend(id, username, profilePic);
                     friend.setCurrentSong(currentSong);
                     friend.setCurrentSource(currentSource);
                     friends.add(friend);
@@ -189,7 +189,7 @@ public class WebSocketClient {
                 // TODO: Update the Redux store with the new member's details
                 CurrentSession currentSession = model.getCurrentSession().getValue();
                 List<User> sessionMembers = currentSession.getSessionMembers();
-                User user = new User(username, userId, profilePic);
+                User user = new User(userId, username, profilePic);
                 sessionMembers.add(user);
                 currentSession.setSessionMembers(sessionMembers);
                 model.getCurrentSession().postValue(currentSession);
@@ -230,7 +230,7 @@ public class WebSocketClient {
                     String id = member.getString("userId");
                     String username = member.getString("username");
                     String profilePic = member.getString("profilePic");
-                    User user = new User(username, id, profilePic);
+                    User user = new User(id, username, profilePic);
                     sessionMembers.add(user);
                 }
                 for (int i = 0; i < queue.length(); i++) {
@@ -337,7 +337,7 @@ public class WebSocketClient {
                 SearchUser newRequest = new SearchUser(username, userId, profilePic);
                 model.addFriendRequest(newRequest);
 
-                Friend newFriend = new Friend(username, userId, profilePic);
+                Friend newFriend = new Friend(userId, username, profilePic);
                 newFriend.setCurrentSong(currentSong);
                 newFriend.setCurrentSource(new JSONObject(currentSource));
                 model.addFriend(newFriend);
@@ -354,7 +354,7 @@ public class WebSocketClient {
                 SearchUser rmvRequest = new SearchUser(username, userId, profilePic);
                 model.removeFriendRequest(rmvRequest);
 
-                Friend friendToRemove = new Friend(username, userId, profilePic);
+                Friend friendToRemove = new Friend(userId, username, profilePic);
                 model.removeFriend(friendToRemove);
             }
 

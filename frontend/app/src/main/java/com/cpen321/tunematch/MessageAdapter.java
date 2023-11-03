@@ -61,13 +61,11 @@ public class MessageAdapter extends RecyclerView.Adapter  {
 
         // Set padding to 0 if next to message from same user
         ConstraintLayout container = ((SentMessageViewHolder) holder).getContainer();
-        if (container != null) {
-            container.setPadding(
-                    container.getPaddingLeft(),
-                    isLastMessage(position) ? container.getPaddingTop() : 0,
-                    isFirstMessage(position) ? container.getPaddingRight() : 0,
-                    container.getPaddingBottom());
-        }
+        container.setPadding(
+                container.getPaddingLeft(),
+                2,
+                container.getPaddingRight(),
+                isFirstMessage(position) ? container.getPaddingBottom() : 2);
     }
 
     // ChatGPT Usage: No
@@ -84,12 +82,12 @@ public class MessageAdapter extends RecyclerView.Adapter  {
 
     // ChatGPT Usage: No
     public boolean isFirstMessage(int position) {
-        return (position - 1 < 0 || messages.get(position - 1).getSenderUserId() != currentUser.getUserId());
+        return (position - 1 >= 0 && messages.get(position - 1).getSenderUserId() != currentUser.getUserId());
     }
 
     // ChatGPT Usage: No
     public boolean isLastMessage(int position) {
-        return (position + 1 >= messages.size() || messages.get(position + 1).getSenderUserId() != currentUser.getUserId());
+        return (position + 1 < messages.size() && messages.get(position + 1).getSenderUserId() != currentUser.getUserId());
     }
 
     // ChatGPT Usage: No

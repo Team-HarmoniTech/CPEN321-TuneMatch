@@ -4,7 +4,8 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp">
+    android:paddingHorizontal="8dp"
+    android:paddingBottom="8dp">
     <ImageView
         android:id="@+id/profileImage"
         android:layout_width="32dp"
@@ -19,8 +20,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
         android:background="@drawable/chat_message_background"
         android:padding="12dp"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -82,7 +82,9 @@ public class ChatFragment extends Fragment {
         model.getMessages().observe(getViewLifecycleOwner(), messages -> {
             chatAdapter.updateMessages(messages);
             // Scroll to the newly added item
-            chatWindow.smoothScrollToPosition(chatAdapter.getItemCount() - 1);
+            if (!messages.isEmpty()) {
+                chatWindow.smoothScrollToPosition(chatAdapter.getItemCount() - 1);
+            }
         });
 
         // Set focus to the chatInput
