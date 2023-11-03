@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="330dp">
+    android:layout_height="match_parent">
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/sendChatButton"
@@ -15,8 +15,8 @@
         android:contentDescription="@string/send_message_string"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/chatInputLayout"
+        app:layout_constraintTop_toBottomOf="@+id/chatWindow"
         app:srcCompat="@android:drawable/ic_menu_send" />
 
     <com.google.android.material.textfield.TextInputLayout
@@ -26,8 +26,8 @@
         android:layout_marginStart="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/sendChatButton"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:hintEnabled="false">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/chatInput"
@@ -40,10 +40,9 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatWindow"
-        android:layout_width="412dp"
-        android:layout_height="251dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="2dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="20dp"
         app:layout_constraintBottom_toTopOf="@+id/chatInputLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

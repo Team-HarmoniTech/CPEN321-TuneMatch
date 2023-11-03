@@ -5,7 +5,7 @@ export class ReportController {
   // ChatGPT usage: No
   async generate(req: Request, res: Response, next: NextFunction) {
     const { offenderId, reporterId, reason, text, context } = req.body;
-    const report = await reportService.generateReport(offenderId, reporterId, {
+    const report = await reportService.generateReport(offenderId, req.currentUserId, {
       reason,
       text,
       context,

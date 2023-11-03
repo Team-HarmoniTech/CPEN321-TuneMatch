@@ -24,5 +24,7 @@ public interface BackendInterface {
     Call<String> getMatches(@Header("user-id") String currentUserId);
     @PUT("/v1/me/update")
     Call<String> updateMe(@Body JsonObject body, @Header("user-id") String currentUserId);
+    @POST("/v1/reports/create")
+    Call<String> createReport(@Body JsonObject body, @Header("user-id") String currentUserId);
 
 }

@@ -97,6 +97,13 @@ public class ChatFragment extends Fragment {
             }
         });
 
+        chatWindow.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                return false;
+            }
+        });
+
         return view;
     }
 
