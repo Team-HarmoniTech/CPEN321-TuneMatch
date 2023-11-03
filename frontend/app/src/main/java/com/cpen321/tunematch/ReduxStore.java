@@ -163,20 +163,22 @@ public class ReduxStore extends ViewModel {
             }
         }
 
-        setFriendsList(currFriendList);
+        friendsList.postValue(currFriendList);
     }
 
     // ChatGPT Usage: No
     public void removeFriendRequest(SearchUser userToRemove) {
         List<SearchUser> currRequestList = friendRequests.getValue();
-        for (int i = 0; i < currRequestList.size(); i++) {
-            SearchUser f = currRequestList.get(i);
-            if (f.getId().equals(userToRemove.getId()) & f.getName().equals(userToRemove.getName())) {
-                currRequestList.remove(i);
-                break;
+        if (currRequestList != null) {
+            for (int i = 0; i < currRequestList.size(); i++) {
+                SearchUser f = currRequestList.get(i);
+                if (f.getId().equals(userToRemove.getId()) & f.getName().equals(userToRemove.getName())) {
+                    currRequestList.remove(i);
+                    break;
+                }
             }
+            friendRequests.postValue(currRequestList);
         }
-        setFriendsRequestList(currRequestList);
     }
 
 

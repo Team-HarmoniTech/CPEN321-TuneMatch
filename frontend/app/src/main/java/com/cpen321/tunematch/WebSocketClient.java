@@ -344,7 +344,9 @@ public class WebSocketClient {
 
                 Friend newFriend = new Friend(userId, username, profilePic);
                 newFriend.setCurrentSong(currentSong);
-                newFriend.setCurrentSource(new JSONObject(currentSource));
+                if (currentSource != "null") {
+                    newFriend.setCurrentSource(new JSONObject(currentSource));
+                }
                 List<Friend> friendList = model.getFriendsList().getValue();
                 if (friendList == null) {
                     friendList = new ArrayList<Friend>();
