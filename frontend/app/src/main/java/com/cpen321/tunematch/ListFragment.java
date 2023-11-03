@@ -11,7 +11,9 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ListFragment extends Fragment{
 
@@ -63,8 +65,6 @@ public class ListFragment extends Fragment{
             CustomListAdapter adapter = new CustomListAdapter(getContext(), getActivity(), "EditFriendsList", listItems, ((MainActivity) getActivity()).getWebSocketService());
             listView.setAdapter(adapter);
 
-            listView.setAdapter(adapter);
-
             model.getFriendsList().observe(getViewLifecycleOwner(), friends -> {
                 ArrayList<String> friendsListItems = new ArrayList<>();
                 for (Friend f : friends) {
@@ -73,6 +73,18 @@ public class ListFragment extends Fragment{
                 adapter.setData(friendsListItems);
                 adapter.notifyDataSetChanged();
             });
+        } else if (listTitle.equals("Request List")) {
+            List<SearchUser> requestList = new ArrayList<SearchUser>();
+            RequestListAdapter adapter = new RequestListAdapter(getContext(), requestList, ((MainActivity) getActivity()).getWebSocketService());
+            listView.setAdapter(adapter);
+            model.getReceivedRequests().observe(getViewLifecycleOwner(), request -> {
+                for (SearchUser r: request) {
+                    requestList.add(r);
+                }
+                adapter.setData(requestList);
+                adapter.notifyDataSetChanged();
+            });
+
         } else {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, listItems);
             listView.setAdapter(adapter);

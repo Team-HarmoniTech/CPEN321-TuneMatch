@@ -11,7 +11,8 @@ import java.util.List;
 public class ReduxStore extends ViewModel {
     private static ReduxStore instance;
     private final MutableLiveData<List<Friend>> friendsList;
-    private final MutableLiveData<List<SearchUser>> friendRequests;
+    private final MutableLiveData<List<SearchUser>> sentRequests;
+    private final MutableLiveData<List<SearchUser>> receivedRequests;
     private final MutableLiveData<List<Session>> sessionList;
     private final MutableLiveData<List<Song>> songQueue;
     private final MutableLiveData<List<SearchUser>> searchList;
@@ -22,7 +23,8 @@ public class ReduxStore extends ViewModel {
     private final MutableLiveData<User> currentUser;
     public ReduxStore() {
         friendsList = new MutableLiveData<>();
-        friendRequests = new MutableLiveData<>();
+        sentRequests = new MutableLiveData<>();
+        receivedRequests = new MutableLiveData<>();
         sessionList = new MutableLiveData<>();
         songQueue = new MutableLiveData<>();
         searchList = new MutableLiveData<>();
@@ -55,13 +57,18 @@ public class ReduxStore extends ViewModel {
     }
 
     // ChatGPT Usage: No
-    public MutableLiveData<List<SearchUser>> getFriendsRequest() {return friendRequests;}
+    public MutableLiveData<List<SearchUser>> getSentRequests() { return sentRequests; }
+    public MutableLiveData<List<SearchUser>> getReceivedRequests() { return receivedRequests; }
+
+    // ChatGPT Usage: No
+    public void setSentRequestsList(List<SearchUser> newRequests) { sentRequests.postValue(newRequests); }
+
+    // ChatGPT Usage: No
+    public void setReceivedRequestsList(List<SearchUser> newRequests) { receivedRequests.postValue(newRequests); }
 
     public MutableLiveData<Boolean> checkSessionActive() {
         return sessionActive;
     }
-    // ChatGPT Usage: No
-    public void setFriendsRequestList(List<SearchUser> newRequests) {friendRequests.setValue(newRequests);}
 
     // ChatGPT Usage: No
     public MutableLiveData<List<SearchUser>> getSearchList() {return searchList;}
@@ -162,13 +169,12 @@ public class ReduxStore extends ViewModel {
                 break;
             }
         }
-
         friendsList.postValue(currFriendList);
     }
 
     // ChatGPT Usage: No
-    public void removeFriendRequest(SearchUser userToRemove) {
-        List<SearchUser> currRequestList = friendRequests.getValue();
+    public void removeRequest(MutableLiveData<List<SearchUser>> requestList, SearchUser userToRemove) {
+        List<SearchUser> currRequestList = requestList.getValue();
         if (currRequestList != null) {
             for (int i = 0; i < currRequestList.size(); i++) {
                 SearchUser f = currRequestList.get(i);
@@ -177,10 +183,9 @@ public class ReduxStore extends ViewModel {
                     break;
                 }
             }
-            friendRequests.postValue(currRequestList);
+            requestList.postValue(currRequestList);
         }
     }
-
 
 //    Handle sessions
 

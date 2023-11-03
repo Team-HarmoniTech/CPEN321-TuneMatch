@@ -312,6 +312,7 @@ public class WebSocketClient {
         }
     }
 
+    // ChatGPT Usage: No
     private void handleRequests(JSONObject json){
         try {
             String action = json.getString("action");
@@ -322,6 +323,33 @@ public class WebSocketClient {
                 JSONArray requesting = body.getJSONArray("requesting");
                 JSONArray requested = body.getJSONArray("requested");
                 // TODO: Update the Redux store with the refreshed lists of requesting and requested users
+                List<SearchUser> newRequests = model.getReceivedRequests().getValue();
+                if (newRequests == null) {
+                    newRequests = new ArrayList<SearchUser>();
+                }
+                for (int i = 0; i < requesting.length(); i++) {
+                    JSONObject request = requesting.getJSONObject(i);
+                    String userId = request.getString("userId");
+                    String userName = request.getString("username");
+                    String profilePic = request.getString("profilePic");
+                    SearchUser requestingUser = new SearchUser(userName, userId, profilePic);
+                    newRequests.add(requestingUser);
+                }
+                model.getReceivedRequests().postValue(newRequests);
+
+                List<SearchUser> sentRequests = model.getSentRequests().getValue();
+                if (sentRequests == null) {
+                    sentRequests = new ArrayList<SearchUser>();
+                }
+                for (int i = 0; i < requested.length(); i++) {
+                    JSONObject request = requested.getJSONObject(i);
+                    String userId = request.getString("userId");
+                    String userName = request.getString("username");
+                    String profilePic = request.getString("profilePic");
+                    SearchUser requestedUser = new SearchUser(userName, userId, profilePic);
+                    sentRequests.add(requestedUser);
+                }
+                model.getSentRequests().postValue(sentRequests);
             }
 
             // Handling the add action
@@ -335,24 +363,44 @@ public class WebSocketClient {
 
                 Log.d("WebSocketClient", "Add friend: "+username);
                 SearchUser newRequest = new SearchUser(username, userId, profilePic);
-                List<SearchUser> requestList = model.getFriendsRequest().getValue();
-                if (requestList == null) {
-                    requestList = new ArrayList<SearchUser>();
-                }
-                requestList.add(newRequest);
-                model.getFriendsRequest().postValue(requestList);
 
-                Friend newFriend = new Friend(userId, username, profilePic);
-                newFriend.setCurrentSong(currentSong);
-                if (currentSource != "null") {
-                    newFriend.setCurrentSource(new JSONObject(currentSource));
+                // If request is from user that I sent request before add to friend
+                Boolean friendsAdded = false;
+                List<SearchUser> sentRequestList = model.getSentRequests().getValue();
+                if (sentRequestList != null) {
+                    for (SearchUser u : sentRequestList) {
+                        if (u.getId().equals(userId)) {
+                            // Add to friend
+                            Friend newFriend = new Friend(userId, username, profilePic);
+                            newFriend.setCurrentSong(currentSong);
+                            if (currentSource != "null") {
+                                newFriend.setCurrentSource(new JSONObject(currentSource));
+                            }
+                            List<Friend> friendList = model.getFriendsList().getValue();
+                            if (friendList == null) {
+                                friendList = new ArrayList<Friend>();
+                            }
+                            friendList.add(newFriend);
+                            model.getFriendsList().postValue(friendList);
+
+                            // Remove added user from sent request list
+                            model.removeRequest(model.getSentRequests(), u);
+
+                            friendsAdded = true;
+                        }
+                    }
                 }
-                List<Friend> friendList = model.getFriendsList().getValue();
-                if (friendList == null) {
-                    friendList = new ArrayList<Friend>();
+
+                // If request is from new user, add it to received request list
+                if (!friendsAdded) {
+                    List<SearchUser> requestList = model.getReceivedRequests().getValue();
+                    if (requestList == null) {
+                        requestList = new ArrayList<SearchUser>();
+                    }
+                    requestList.add(newRequest);
+                    model.getReceivedRequests().postValue(requestList);
                 }
-                friendList.add(newFriend);
-                model.getFriendsList().postValue(friendList);
+
             }
 
             // Handling the remove action
@@ -364,7 +412,8 @@ public class WebSocketClient {
 
                 // TODO: Update the Redux store to remove the friend or friend request
                 SearchUser rmvRequest = new SearchUser(username, userId, profilePic);
-                model.removeFriendRequest(rmvRequest);
+                model.removeRequest(model.getSentRequests(), rmvRequest);
+                model.removeRequest(model.getReceivedRequests(), rmvRequest);
 
                 Friend friendToRemove = new Friend(userId, username, profilePic);
                 model.removeFriend(friendToRemove);

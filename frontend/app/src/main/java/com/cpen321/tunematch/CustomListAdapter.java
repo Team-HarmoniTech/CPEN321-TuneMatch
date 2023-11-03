@@ -73,7 +73,7 @@ public class CustomListAdapter extends BaseAdapter {
             String[] item = itemList.get(position).split(";");                        // items = "name;song"
 
             // Set friend name
-            TextView friendNameText = view.findViewById(R.id.friendNameText);
+            TextView friendNameText = view.findViewById(R.id.requestNameText);
             friendNameText.setText(item[0]);
 
             // Set name of the song the friend is listening
@@ -122,11 +122,11 @@ public class CustomListAdapter extends BaseAdapter {
             String profilePicUrl = item[2];
 
             // Set name
-            TextView friendNameText = view.findViewById(R.id.friendNameText);
+            TextView friendNameText = view.findViewById(R.id.requestNameText);
             friendNameText.setText(nameText);
 
             // Set profile pic
-            ImageView profilePic = view.findViewById(R.id.profileImageView);
+            ImageView profilePic = view.findViewById(R.id.requestPfpImgView);
             Picasso.get()
                     .load(profilePicUrl)
                     .placeholder(R.drawable.default_profile_image)      // Set the default image
