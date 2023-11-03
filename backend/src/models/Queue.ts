@@ -78,7 +78,6 @@ export class Queue {
     this.songs = songs;
     this.running = false;
     this.currentlyPlaying = null;
-    this.start();
   }
 
   /**
