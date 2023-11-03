@@ -186,6 +186,7 @@ public class BackendClient extends ApiClient<BackendInterface> {
         body.add("reason", gson.toJsonTree(reason));
         body.add("text", gson.toJsonTree(text));
         body.add("context", gson.toJsonTree(context));
+        Log.d("", body.toString());
 
         Call<String> call = api.createReport(body, this.currentUserId);
         call(call);

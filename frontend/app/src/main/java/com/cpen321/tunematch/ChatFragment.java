@@ -123,7 +123,11 @@ public class ChatFragment extends Fragment {
             chatMsg = new ArrayList<Message>();
             model.getMessages().setValue(chatMsg);
         }
-        chatAdapter = new MessageAdapter(chatMsg, model.getCurrentUser().getValue());
+        chatAdapter = new MessageAdapter(chatMsg,
+                model.getCurrentUser().getValue(),
+                getLayoutInflater(),
+                requireContext(),
+                new BackendClient(model.getCurrentUser().getValue().getUserId()));
         chatWindow.setAdapter(chatAdapter);
         chatWindow.setLayoutManager(new LinearLayoutManager(getContext()));
     }

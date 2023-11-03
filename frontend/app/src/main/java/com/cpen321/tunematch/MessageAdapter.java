@@ -1,30 +1,53 @@
 package com.cpen321.tunematch;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
+import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MessageAdapter extends RecyclerView.Adapter  {
 
     private List<Message> messages;
     private User currentUser;
+    private LayoutInflater inflater;
+    private Context context;
+
+    private BackendClient backend;
 
     public final static int MESSAGE_TYPE_RECEIVED = 1;
     public final static int MESSAGE_TYPE_SENT = 0;
 
-    public MessageAdapter(List<Message> messages, User currentUser) {
+    public MessageAdapter(List<Message> messages, User currentUser, @NonNull LayoutInflater inflater, @NonNull Context context, @NonNull BackendClient backend) {
         this.messages = messages;
         this.currentUser = currentUser;
+        this.inflater = inflater;
+        this.context = context;
+        this.backend = backend;
     }
 
     // ChatGPT Usage: No
@@ -49,6 +72,8 @@ public class MessageAdapter extends RecyclerView.Adapter  {
         if (getMessageType(position) == MESSAGE_TYPE_SENT) {
             SentMessageViewHolder view = (SentMessageViewHolder) holder;
             view.getMessageText().setText(message.getMessageText());
+            OnLongClickReportListener listener = new OnLongClickReportListener(position);
+            view.getMessageText().setOnLongClickListener(listener);
         } else {
             RecievedMessageViewHolder view = (RecievedMessageViewHolder) holder;
             view.getMessageText().setText(message.getMessageText());
@@ -135,6 +160,87 @@ public class MessageAdapter extends RecyclerView.Adapter  {
             messageText = (TextView) view.findViewById(R.id.textMessage);
             profileImage = (ImageView) view.findViewById(R.id.profileImage);
             container = (ConstraintLayout) view.findViewById(R.id.container);
+        }
+    }
+
+    public class OnLongClickReportListener implements View.OnLongClickListener {
+        private int position;
+
+        public OnLongClickReportListener(int position) {
+            super();
+            this.position = position;
+        }
+
+        @Override
+        public boolean onLongClick(View view) {
+            // Create the dialog
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            View dialogView = inflater.inflate(R.layout.report_user_dialogue, null);
+            builder.setView(dialogView);
+
+            Message message = messages.get(position);
+
+            // Find views in the dialog layout
+            TextView nameText = dialogView.findViewById(R.id.reportTitle);
+            TextInputEditText otherText = dialogView.findViewById(R.id.otherTextValue);
+            Spinner spinner = dialogView.findViewById(R.id.spinner);
+            Button submit = dialogView.findViewById(R.id.submitButton);
+
+            nameText.setText("Report " + message.getSenderUsername());
+
+            otherText.setVisibility(View.GONE);
+            ArrayAdapter<BackendClient.ReportReason> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item,
+                    BackendClient.ReportReason.values());
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinner.setAdapter(adapter);
+            // Set items
+            spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                    BackendClient.ReportReason selectedValue = (BackendClient.ReportReason) adapterView.getItemAtPosition(i);
+                    Log.d("MEssagead", selectedValue.toString() + BackendClient.ReportReason.OTHER.toString());
+                    if (selectedValue.equals(BackendClient.ReportReason.OTHER)) {
+                        otherText.setVisibility(View.VISIBLE);
+                    } else {
+                        otherText.setVisibility(View.GONE);
+                    }
+                }
+                @Override
+                public void onNothingSelected(AdapterView<?> adapterView) {
+                    otherText.setVisibility(View.GONE);
+                }
+            });
+
+            final AlertDialog alertDialog = builder.create();
+            // Submit report on submit clicked
+            submit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                List<Message> context = new ArrayList(messages);
+                                backend.generateReport(
+                                        message.getSenderUserId(),
+                                        (BackendClient.ReportReason) spinner.getSelectedItem(),
+                                        context,
+                                        otherText.getText().toString()
+                                );
+                                Log.d("MessageAdapter", "user reported: " + message.getSenderUsername());
+                            } catch (ApiException | RuntimeException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
+
+                    alertDialog.dismiss();
+                }
+            });
+
+            // Finally show dialog
+            alertDialog.show();
+            return true;
         }
     }
 }
