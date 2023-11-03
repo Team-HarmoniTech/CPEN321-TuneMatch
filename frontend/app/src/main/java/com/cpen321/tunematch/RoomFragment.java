@@ -26,6 +26,8 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.spotify.protocol.types.Track;
 
@@ -41,13 +43,9 @@ import java.util.Locale;
 
 import jp.wasabeef.blurry.Blurry;
 import kotlin.text.Charsets;
-import okhttp3.Headers;
 
 
 public class RoomFragment extends Fragment {
-    // Constants
-    private static final String SPOTIFY_BASE_URL = "https://api.spotify.com/v1/";
-
     // Views
     private View view;
     private Button playpauseButton, nextButton, prevButton, chatBtn, queueBtn, exitBtn;
@@ -63,7 +61,7 @@ public class RoomFragment extends Fragment {
     private QueueFragment queueFrag;
     private ArrayAdapter<String> searchAdapter;
     private String authToken;
-    private ApiClient spotifyApiClient;
+    private SpotifyClient spotifyClient;
     private MainActivity mainActivity;
     private ReduxStore model;
     private ApiClient apiClient;
@@ -94,7 +92,7 @@ public class RoomFragment extends Fragment {
     private void initServices() {
         // Initialize ViewModel and ApiClient
         model = ReduxStore.getInstance();
-        apiClient = ((MainActivity) getActivity()).getApiClient();
+        apiClient = ((MainActivity) getActivity()).getBackend();
 
         // Get instances of MainActivity, WebSocketService, and SpotifyService
         mainActivity = (MainActivity) getActivity();
@@ -151,12 +149,9 @@ public class RoomFragment extends Fragment {
         // Retrieve the authentication token
         SharedPreferences preferences = getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
         authToken = preferences.getString("auth_token", null);
-        Headers headers = new Headers.Builder()
-                .add("Authorization", "Bearer " + authToken)
-                .build();
 
         // Initialize the Spotify API client with the base URL and custom headers
-        spotifyApiClient = new ApiClient(SPOTIFY_BASE_URL, headers);
+        spotifyClient = new SpotifyClient(authToken);
     }
     private void initializeEventListeners() {
         chatBtn.setOnClickListener(new View.OnClickListener(){
@@ -361,20 +356,19 @@ public class RoomFragment extends Fragment {
         // Filter the suggestions based on the newText and update the adapter
         ArrayList<String> filteredSuggestions = new ArrayList<>();
 
-        String endpoint = "search/?q=track:"+encodeSongTitle(newText)+"&type=track";
+        String query = "track:" + encodeSongTitle(newText);
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    String songListJson = spotifyApiClient.doGetRequest(endpoint, true);
-                    JSONObject rawResponse = new JSONObject(songListJson);
-                    JSONArray songItems = rawResponse.getJSONObject("tracks").getJSONArray("items");
+                    JsonObject rawResponse = spotifyClient.getSong(query);
+                    JsonArray songItems = rawResponse.get("tracks").getAsJsonObject().get("items").getAsJsonArray();
 
-                    for (int i = 0; i < songItems.length(); i++) {
-                        JSONObject song = songItems.getJSONObject(i);
-                        JSONArray artists = song.getJSONArray("artists");
-                        filteredSuggestions.add(song.getString("name")+" - "+artists.getJSONObject(0).getString("name"));
-                        Log.d("RoomFragment", "name of song: "+song.getString("name"));
+                    for (int i = 0; i < songItems.size(); i++) {
+                        JsonObject song = songItems.get(i).getAsJsonObject();
+                        JsonArray artists = song.get("artists").getAsJsonArray();
+                        filteredSuggestions.add(song.get("name").toString() + " - " + artists.get(0).getAsJsonObject().get("name").toString());
+                        Log.d("RoomFragment", "name of song: "+song.get("name"));
                     }
 
                     Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -396,7 +390,7 @@ public class RoomFragment extends Fragment {
                         }
                     });
 
-                } catch (IOException | JSONException e) {
+                } catch (ApiException e) {
                     e.printStackTrace();
                 }
             }
