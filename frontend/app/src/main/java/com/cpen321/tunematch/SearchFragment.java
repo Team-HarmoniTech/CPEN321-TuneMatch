@@ -46,22 +46,6 @@ public class SearchFragment extends Fragment {
     ReduxStore model;
     BackendClient backend;
     private WebSocketService webSocketService;
-    private boolean isServiceBound = false;
-
-    // ChatGPT Usage: No
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            WebSocketService.LocalBinder binder = (WebSocketService.LocalBinder) service;
-            webSocketService = binder.getService();
-            isServiceBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            isServiceBound = false;
-        }
-    };
 
     // ChatGPT Usage: No
     @Override
@@ -70,6 +54,7 @@ public class SearchFragment extends Fragment {
 
         // Initialize ViewModel and ApiClient here.
         model = ((MainActivity) getActivity()).getModel();
+        webSocketService = ((MainActivity) getActivity()).getWebSocketService();
         backend = ((MainActivity) getActivity()).getBackend();;
 
         new Thread(new Runnable() {
@@ -171,7 +156,7 @@ public class SearchFragment extends Fragment {
                                 throw new RuntimeException(e);
                             }
 
-                            if (isServiceBound && webSocketService != null) {
+                            if (webSocketService != null) {
                                 Log.d("SearchFragment", "add friend:" + messageToSend);
                                 webSocketService.sendMessage(messageToSend.toString());
                             }

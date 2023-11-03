@@ -333,14 +333,24 @@ public class WebSocketClient {
                 String currentSong = body.optString("currentSong", null);
                 String currentSource = body.optString("currentSource", null);
 
-                // TODO: Update the Redux store with the new friend request or new friend
+                Log.d("WebSocketClient", "Add friend: "+username);
                 SearchUser newRequest = new SearchUser(username, userId, profilePic);
-                model.addFriendRequest(newRequest);
+                List<SearchUser> requestList = model.getFriendsRequest().getValue();
+                if (requestList == null) {
+                    requestList = new ArrayList<SearchUser>();
+                }
+                requestList.add(newRequest);
+                model.getFriendsRequest().postValue(requestList);
 
                 Friend newFriend = new Friend(userId, username, profilePic);
                 newFriend.setCurrentSong(currentSong);
                 newFriend.setCurrentSource(new JSONObject(currentSource));
-                model.addFriend(newFriend);
+                List<Friend> friendList = model.getFriendsList().getValue();
+                if (friendList == null) {
+                    friendList = new ArrayList<Friend>();
+                }
+                friendList.add(newFriend);
+                model.getFriendsList().postValue(friendList);
             }
 
             // Handling the remove action
