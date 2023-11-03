@@ -23,7 +23,6 @@ public class CustomListAdapter extends BaseAdapter {
     private Context context;
     private Activity parentView;
     private String listType;
-
     ReduxStore model= ReduxStore.getInstance();
     private List<String> itemList;
     private WebSocketService webSocketService;
@@ -151,6 +150,7 @@ public class CustomListAdapter extends BaseAdapter {
                     }
 
                     if (webSocketService != null) {
+                        Log.d("ProfileFragment", "Remove friend: "+id);
                         webSocketService.sendMessage(messageToSend.toString());
                     }
                 }

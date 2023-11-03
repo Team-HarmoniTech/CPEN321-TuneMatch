@@ -60,7 +60,7 @@ public class ListFragment extends Fragment{
         // Create an ArrayAdapter to populate the ListView
         if (listTitle.equals("Friends List")) {
             // Updated the CustomListAdapter instantiation to pass `this` as the SessionJoinListener
-            CustomListAdapter adapter = new CustomListAdapter(getContext(), getActivity(), "EditFriendsList", listItems, webSocketService);
+            CustomListAdapter adapter = new CustomListAdapter(getContext(), getActivity(), "EditFriendsList", listItems, ((MainActivity) getActivity()).getWebSocketService());
             listView.setAdapter(adapter);
 
             listView.setAdapter(adapter);
@@ -80,17 +80,5 @@ public class ListFragment extends Fragment{
 
         return view;
     }
-
-    // ChatGPT Usage: No
-    public WebSocketService getWebSocketService() {
-        return webSocketService;
-    }
-
-    // ChatGPT Usage: No
-    public boolean isServiceBound() {
-        return isServiceBound;
-    }
-
-
 }
 
