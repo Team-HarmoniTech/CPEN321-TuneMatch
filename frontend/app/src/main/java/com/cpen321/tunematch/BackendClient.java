@@ -98,7 +98,7 @@ public class BackendClient extends ApiClient<BackendInterface> {
 
             String name = jsonObject.get("username").getAsString();
             String id = jsonObject.get("userId").getAsString();
-            String match_score = jsonObject.get("match_percent").getAsString();
+            String match_score = jsonObject.get("match").getAsString();
             String profilePic = jsonObject.get("profilePic").getAsString();
 
             SearchUser user = new SearchUser(name, id, profilePic);
@@ -150,7 +150,7 @@ public class BackendClient extends ApiClient<BackendInterface> {
 
             String name = jsonObject.get("username").getAsString();
             String id = jsonObject.get("userId").getAsString();
-            String match_score = jsonObject.get("match_percent").getAsString();
+            String match_score = jsonObject.get("match").getAsString();
             String profilePic = jsonObject.get("profilePic").getAsString();
 
             SearchUser user = new SearchUser(name, id, profilePic);
