@@ -32,7 +32,7 @@ public class ProfileFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         model = ReduxStore.getInstance();
-        apiClient = ((MainActivity) getActivity()).getApiClient();;
+        apiClient = ((MainActivity) getActivity()).getBackend();;
         fm = getActivity().getSupportFragmentManager();
     }
 

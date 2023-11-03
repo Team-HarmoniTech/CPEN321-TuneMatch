@@ -1,118 +1,70 @@
 package com.cpen321.tunematch;
 
-import android.util.Log;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 
-import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
-import okhttp3.Headers;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 
-public class ApiClient {
-    private OkHttpClient client;
-    private String baseUrl;
-    private Headers customHeader;
+public abstract class ApiClient<T> {
+    protected abstract String getBaseUrl();
+    private Retrofit retrofit;
+    protected T api;
 
-    // Partially written by ChatGPT
-    public ApiClient(String baseUrl, Headers customHeader) {
-        this.baseUrl = baseUrl;
-        this.client = new OkHttpClient();
-        this.customHeader = customHeader;
+    public ApiClient(Class<T> serviceClass) {
+        retrofit = new Retrofit.Builder()
+                .baseUrl(getBaseUrl())
+                .addConverterFactory(ScalarsConverterFactory.create())
+                .build();
+
+        api = retrofit.create(serviceClass);
     }
 
-    // Fully written by ChatGPT
-    public String doGetRequest(String endpoint, Boolean customHeaders) throws IOException {
-
-        String fullUrl = baseUrl + endpoint;
-        Log.d("ApiClient", "doGetRequest: " + fullUrl);
-        Request.Builder requestBuilder = new Request.Builder()
-                .url(fullUrl)
-                .get();
-
-        if (customHeaders) {
-            requestBuilder.headers(customHeader);
-        }
-
-        Request request = requestBuilder.build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("Unexpected code " + response);
-            }
-            return response.body().string();
-        }
+    public interface ApiResponseCallback {
+        void onSuccess(JsonElement result);
+        void onError(ApiException exception);
     }
 
-    // Fully written by ChatGPT
-    public String doPostRequest(String endpoint, String jsonRequestBody, Boolean customHeaders) throws IOException {
-        String fullUrl = baseUrl + endpoint;
-
-        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonRequestBody);
-
-        Request.Builder requestBuilder = new Request.Builder()
-                .url(fullUrl)
-                .post(body);
-
-        if (customHeaders) {
-            requestBuilder.headers(customHeader);
-        }
-
-        Request request = requestBuilder.build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("Unexpected code " + response);
-            }
-            return response.body().string();
-        }
+    private JsonElement parseJsonObject(String json) {
+        JsonParser parser = new JsonParser();
+        return parser.parse(json);
     }
 
-    // Fully written by ChatGPT
-    public String doPutRequest(String endpoint, String jsonRequestBody, Boolean customHeaders) throws IOException {
-        String fullUrl = baseUrl + endpoint;
-
-        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonRequestBody);
-
-        Request.Builder requestBuilder = new Request.Builder()
-                .url(fullUrl)
-                .put(body);
-
-        if (customHeaders) {
-            requestBuilder.headers(customHeader);
+    protected ArrayList<String> getAsStringList(JsonArray arr) {
+        ArrayList<String> stringList = new ArrayList<String>();
+        for (int i = 0; i < arr.size(); i++) {
+            JsonElement jsonElement = arr.get(i);
+            stringList.add(jsonElement.getAsString());
         }
-
-        Request request = requestBuilder.build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("Unexpected code " + response);
-            }
-            return response.body().string();
-        }
+        return stringList;
     }
 
-    // Fully written by ChatGPT
-    public String doDeleteRequest(String endpoint, Boolean customHeaders) throws IOException {
-        String fullUrl = baseUrl + endpoint;
-
-        Request.Builder requestBuilder = new Request.Builder()
-                .url(fullUrl)
-                .delete();
-
-        if (customHeaders) {
-            requestBuilder.headers(customHeader);
-        }
-
-        Request request = requestBuilder.build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("Unexpected code " + response);
+    protected JsonElement call(Call<String> call) throws ApiException {
+        try {
+            Response<String> response = call.execute();
+            if (response.isSuccessful()) {
+                if (response.body() != null && !response.body().isEmpty()) {
+                    return parseJsonObject(response.body());
+                } else {
+                    return null;
+                }
+            } else {
+                throw new ApiException(response.code(), response.message());
             }
-            return response.body().string();
+        } catch (Exception e) {
+            throw new ApiException(-1, e.getMessage());
         }
     }
 }
+

@@ -17,6 +17,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.gson.JsonObject;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private RoomFragment roomFrag;
     private SearchFragment searchFrag;
     private ProfileFragment profileFrag;
-    private ApiClient apiClient;
+    private BackendClient backend;
     private WebSocketClient webSocketClient;
     private ReduxStore model;
 
@@ -131,26 +132,13 @@ public class MainActivity extends AppCompatActivity {
         if (intent != null && intent.hasExtra("spotifyUserId")) {
             String spotifyUserId = intent.getStringExtra("spotifyUserId");
 
-            apiClient = new ApiClient("https://zphy19my7b.execute-api.us-west-2.amazonaws.com/v1",
-                    new Headers.Builder().add("user-id", spotifyUserId).build());
+            backend = new BackendClient(spotifyUserId);
 
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        String response = apiClient.doGetRequest("/me?fullProfile=true", true);
-                        JSONObject resJson = new JSONObject(response);
-
-                        String name = resJson.getString("username");
-                        String id = resJson.getString("userId");
-                        String profileUrl = resJson.getString("profilePic");
-                        ArrayList<String> topArtists = parseList(response, "topArtists");
-                        ArrayList<String> topGenres = parseList(response, "topGenres");
-
-                        User currUser = new User(id, name, profileUrl);
-                        currUser.setTopArtists(topArtists);
-                        currUser.setTopGenres(topGenres);
-
+                        User currUser = backend.getMe(true);
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                             @Override
                             public void run() {
@@ -158,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
 
-                    } catch (IOException | JSONException e) {
+                    } catch (ApiException e) {
                         e.printStackTrace();
                     }
                 }
@@ -224,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // ChatGPT Usage: No
-    public ApiClient getApiClient() {return apiClient;}
+    public BackendClient getBackend() {return backend;}
 
     // ChatGPT Usage: No
     public WebSocketClient getWebSocketClient() {return webSocketClient;}
