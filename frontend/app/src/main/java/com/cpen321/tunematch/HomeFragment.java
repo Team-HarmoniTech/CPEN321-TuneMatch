@@ -1,11 +1,6 @@
 package com.cpen321.tunematch;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,13 +22,11 @@ import java.util.List;
 public class HomeFragment extends Fragment {
     private View view;
     ReduxStore model;
-
     Button createSessionButton;
     MainActivity mainActivity;
     BottomNavigationView bottomNavigationView;
     private WebSocketService webSocketService;
 
-    // ChatGPT Usage: Partial
 
     // ChatGPT Usage: Partial
     @Override

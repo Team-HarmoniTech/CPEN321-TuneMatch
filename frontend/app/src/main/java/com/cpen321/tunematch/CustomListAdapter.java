@@ -23,13 +23,12 @@ public class CustomListAdapter extends BaseAdapter {
     private Context context;
     private Activity parentView;
     private String listType;
-    ;
+
     ReduxStore model= ReduxStore.getInstance();
     private List<String> itemList;
     private WebSocketService webSocketService;
 
     // ChatGPT Usage: Partial
-
     public CustomListAdapter(Context context, Activity parentView, String listType, List<String> itemList, WebSocketService webSocketService){
         this.context = context;
         this.parentView = parentView;
@@ -165,7 +164,6 @@ public class CustomListAdapter extends BaseAdapter {
         this.itemList = data;
         notifyDataSetChanged();
     }
-
 
 }
 

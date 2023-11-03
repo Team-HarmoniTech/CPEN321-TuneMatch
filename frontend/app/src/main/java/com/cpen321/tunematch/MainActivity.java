@@ -1,7 +1,14 @@
 package com.cpen321.tunematch;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
+import android.util.Log;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
@@ -9,24 +16,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
-import android.os.Bundle;
-import android.os.IBinder;
-import android.support.annotation.Nullable;
-import android.util.Log;
-import android.view.MenuItem;
-
-
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import okhttp3.Headers;
 
@@ -138,18 +134,36 @@ public class MainActivity extends AppCompatActivity {
             apiClient = new ApiClient("https://zphy19my7b.execute-api.us-west-2.amazonaws.com/v1",
                     new Headers.Builder().add("user-id", spotifyUserId).build());
 
-            try {
-                String response = apiClient.doGetRequest("/me", true);
-                JSONObject resJson = new JSONObject(response);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        String response = apiClient.doGetRequest("/me?fullProfile=true", true);
+                        JSONObject resJson = new JSONObject(response);
 
-                String name = resJson.getString("username");
-                String id = resJson.getString("userId");
-                String profileUrl = resJson.getString("profilePic");
+                        String name = resJson.getString("username");
+                        String id = resJson.getString("userId");
+                        String profileUrl = resJson.getString("profilePic");
+                        ArrayList<String> topArtists = parseList(response, "topArtists");
+                        ArrayList<String> topGenres = parseList(response, "topGenres");
 
-                model.setCurrentUser(new User(id, name, profileUrl));
-            } catch (IOException | JSONException e) {
-                e.printStackTrace();
-            }
+                        User currUser = new User(id, name, profileUrl);
+                        currUser.setTopArtists(topArtists);
+                        currUser.setTopGenres(topGenres);
+
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                model.setCurrentUser(currUser);
+                            }
+                        });
+
+                    } catch (IOException | JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+
         }
 
         bottomNavigationView = findViewById(R.id.bottomNavi);
@@ -217,11 +231,32 @@ public class MainActivity extends AppCompatActivity {
 
     // ChatGPT Usage: No
     public ReduxStore getModel() {return model;}
+
+    // ChatGPT Usage: No
     public WebSocketService getWebSocketService() {
         if (isServiceBound && webSocketService != null) {
             return webSocketService;
         }
         return null;
+    }
+
+    // ChatGPT Usage: No
+    public ArrayList<String> parseList(String response, String key) {
+        Log.d("MainActivity", "parseList: "+key);
+
+        ArrayList<String> parsedList = new ArrayList<>();
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            String tempList = jsonObject.getString(key).replace("[", "").replace("]","").trim();
+            Log.d("MainActivity", "tempList:"+tempList);
+
+            for (String item : tempList.split(",")) {
+                parsedList.add(item.replace("\"", ""));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return parsedList;
     }
 }
 
