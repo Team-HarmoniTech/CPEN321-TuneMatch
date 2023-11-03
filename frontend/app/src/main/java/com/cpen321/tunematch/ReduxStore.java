@@ -5,6 +5,7 @@ import android.util.Log;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ReduxStore extends ViewModel {
@@ -109,6 +110,9 @@ public class ReduxStore extends ViewModel {
     // ChatGPT Usage: No
     public void addMessage(Message message) {
         List<Message> currentMessages = chatMessages.getValue();
+        if (currentMessages == null) {
+            currentMessages = new ArrayList<Message>();
+        }
         currentMessages.add(message);
         chatMessages.setValue(currentMessages);
     }
@@ -121,6 +125,9 @@ public class ReduxStore extends ViewModel {
     // ChatGPT Usage: No
     public void addSongToQueue(Song song) {
         List<Song> currentQueue = songQueue.getValue();
+        if (currentQueue == null) {
+            currentQueue = new ArrayList<Song>();
+        }
         currentQueue.add(song);
         songQueue.setValue(currentQueue);
     }
@@ -145,13 +152,6 @@ public class ReduxStore extends ViewModel {
     }
 
     // ChatGPT Usage: No
-    public void addFriend(Friend friendToAdd) {
-        List<Friend> currFriendList = friendsList.getValue();
-        currFriendList.add(friendToAdd);
-        friendsList.setValue(currFriendList);
-    }
-
-    // ChatGPT Usage: No
     public void removeFriend(Friend friendToRemove) {
         List<Friend> currFriendList = friendsList.getValue();
 
@@ -164,13 +164,6 @@ public class ReduxStore extends ViewModel {
         }
 
         setFriendsList(currFriendList);
-    }
-
-    // ChatGPT Usage: No
-    public void addFriendRequest(SearchUser userToAdd) {
-        List<SearchUser> currRequestList = friendRequests.getValue();
-        currRequestList.add(userToAdd);
-        setFriendsRequestList(currRequestList);
     }
 
     // ChatGPT Usage: No
