@@ -62,13 +62,15 @@ export class SessionController {
     message: SessionMessage,
     currentUserId: number,
   ) {
-    const { uri, durationMs, index } = message.body;
+    const { uri, durationMs, index, title, artist } = message.body;
     const session = await sessionService.getSession(currentUserId);
     await sessionService.queueAdd(
       session.id,
       uri,
       durationMs,
-      index,
+      title,
+      artist,
+      index
     );
     await sessionService.messageSession(
       session.id,

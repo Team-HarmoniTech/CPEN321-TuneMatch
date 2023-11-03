@@ -4,11 +4,16 @@ export class Song {
   leftMs: number;
   timeStarted: Date;
 
-  constructor(uri: string, durationMs: number) {
+  title: string;
+  artist: string;
+
+  constructor(uri: string, durationMs: number, title: string, artist: string) {
     this.uri = uri;
     this.durationMs = durationMs;
     this.leftMs = durationMs;
     this.timeStarted = null;
+    this.title = title;
+    this.artist = artist;
   }
 }
 
