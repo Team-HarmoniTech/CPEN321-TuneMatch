@@ -2,11 +2,13 @@ package com.cpen321.tunematch;
 
 import android.util.Log;
 
+import com.google.gson.JsonElement;
+
 import org.json.JSONObject;
 
 public class Friend extends User {
     private String currentSong;
-    private JSONObject currentSource;
+    private JsonElement currentSource;
 
     // ChatGPT Usage: No
     public Friend(String userId, String userName, String profileImageUrl) {
@@ -30,7 +32,7 @@ public class Friend extends User {
     public String getCurrentSong() { return currentSong; }
 
     // ChatGPT Usage: No
-    public JSONObject getCurrentSource() { return currentSource; }
+    public JsonElement getCurrentSource() { return currentSource; }
 
     // ChatGPT Usage: No
     public boolean getIsListening() {
@@ -45,5 +47,5 @@ public class Friend extends User {
     public void setCurrentSong(String currentSong) { this.currentSong = currentSong; }
 
     // ChatGPT Usage: No
-    public void setCurrentSource(JSONObject currentSource) { this.currentSource = currentSource; }
+    public void setCurrentSource(JsonElement currentSource) { this.currentSource = currentSource; }
 }

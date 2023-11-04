@@ -188,14 +188,14 @@ public class ReduxStore extends ViewModel {
     }
 
     // ChatGPT Usage: No
-    public void removeFriend(Friend friendToRemove) {
+    public void removeFriend(String friendIdToRemove) {
         List<Friend> currFriendList = friendsList.getValue();
 
         for (int i = 0; i < currFriendList.size(); i++) {
             Friend f = currFriendList.get(i);
-            if (f.getId().equals(friendToRemove.getId())) {
+            if (f.getId().equals(friendIdToRemove)) {
                 currFriendList.remove(i);
-                Log.d("ReduxStore", "Removed "+friendToRemove.getName());
+                Log.d("ReduxStore", "Removed "+friendIdToRemove);
                 break;
             }
         }
@@ -203,14 +203,14 @@ public class ReduxStore extends ViewModel {
     }
 
     // ChatGPT Usage: No
-    public void removeRequest(MutableLiveData<List<SearchUser>> requestList, SearchUser userToRemove) {
+    public void removeRequest(MutableLiveData<List<SearchUser>> requestList, String userIdToRemove) {
         List<SearchUser> currRequestList = requestList.getValue();
         if (currRequestList != null) {
             for (int i = 0; i < currRequestList.size(); i++) {
                 SearchUser f = currRequestList.get(i);
-                if (f.getId().equals(userToRemove.getId())) {
+                if (f.getId().equals(userIdToRemove)) {
                     currRequestList.remove(i);
-                    Log.d("ReduxStore", "Removed request of:" + userToRemove.getName());
+                    Log.d("ReduxStore", "Removed request of:" + userIdToRemove);
                     break;
                 }
             }

@@ -1,6 +1,7 @@
 package com.cpen321.tunematch;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,10 +62,7 @@ public class HomeFragment extends Fragment {
         model.getFriendsList().observe(getViewLifecycleOwner(), friends -> {
             ArrayList<String> friendsListItems = new ArrayList<>();
             for (Friend f : friends) {
-                if(f.getIsListening() == false){
-                    f.setCurrentSong("Not Listening");
-                }
-                friendsListItems.add(f.getName()+";"+f.getCurrentSong());
+                friendsListItems.add(f.getName()+";"+ (f.getIsListening() ? f.getCurrentSong() : "Not Listening"));
             }
             friendsAdapter.setData(friendsListItems);
             friendsAdapter.notifyDataSetChanged();

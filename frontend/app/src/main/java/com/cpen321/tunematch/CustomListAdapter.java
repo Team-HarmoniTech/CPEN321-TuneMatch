@@ -152,7 +152,7 @@ public class CustomListAdapter extends BaseAdapter {
                     if (webSocketService != null) {
                         Log.d("ProfileFragment", "Remove friend: "+id);
                         webSocketService.sendMessage(messageToSend.toString());
-                        model.removeFriend(new Friend(id, nameText, profilePicUrl));
+                        model.removeFriend(id);
                     }
                 }
             });

@@ -70,7 +70,7 @@ public class RequestListAdapter extends ArrayAdapter<SearchUser> {
                 if (webSocketService != null) {
                     Log.d("RequestList", "Accept friend:" + currentItem.getName());
                     webSocketService.sendMessage(messageToSend.toString());
-                    model.removeRequest(model.getReceivedRequests(), currentItem);
+                    model.removeRequest(model.getReceivedRequests(), currentItem.getId());
                     model.addFriend(new Friend(currentItem.getId(), currentItem.getName(), currentItem.getProfilePic()));
                 }
             }
@@ -94,7 +94,7 @@ public class RequestListAdapter extends ArrayAdapter<SearchUser> {
                 if (webSocketService != null) {
                     Log.d("RequestList", "Decline friend: " + currentItem.getName());
                     webSocketService.sendMessage(messageToSend.toString());
-                    model.removeRequest(model.getReceivedRequests(), currentItem);
+                    model.removeRequest(model.getReceivedRequests(), currentItem.getId());
                 }
             }
         });

@@ -18,6 +18,11 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -73,12 +78,13 @@ public class WebSocketClient {
             public void onMessage(WebSocket webSocket, String text) {
                 Log.d("WebSocketClient", "Received message: " + text);
                 try {
-                    JSONObject json = new JSONObject(text);
-                    String method = json.getString("method");
+                    JsonParser parser = new JsonParser();
+                    JsonObject json = parser.parse(text).getAsJsonObject();
+                    String method = json.get("method").getAsString();
                     if (method.equals("FRIENDS")) {
                         handleFriends(json);
                     } else if (method.equals("SESSION")) {
-                        handleSession(json);
+                        handleSession(new JSONObject(text));
                     } else if (method.equals("REQUESTS")) {
                         handleRequests(json);
                     }
@@ -122,31 +128,34 @@ public class WebSocketClient {
         }
     }
 
-    private void handleFriends(JSONObject json) {
+    private void handleFriends(JsonObject json) {
         try {
-            String action = json.getString("action");
+            String action = json.get("action").getAsString();
             if (action.equals("refresh")) {
-                JSONArray body = json.getJSONArray("body");
+                JsonArray body = json.get("body").getAsJsonArray();
                 List<Friend> friends = new ArrayList<>();
                 List<Session> sessions = new ArrayList<>();
-                for (int i = 0; i < body.length(); i++) {
-                    JSONObject friendJson = body.getJSONObject(i);
-                    String id = friendJson.getString("userId");
-                    String username = friendJson.getString("username");
-                    String profilePic = friendJson.optString("profilePic", null);
-                    String currentSong = friendJson.optString("currentSong", null);
-                    JSONObject currentSource = friendJson.optJSONObject("currentSource");  // Using optJSONObject to avoid null values  // Using optString to avoid null values
+                for (int i = 0; i < body.size(); i++) {
+                    JsonObject friendJson = body.get(i).getAsJsonObject();
+                    String id = friendJson.get("userId").getAsString();
+                    String username = friendJson.get("username").getAsString();
+                    String profilePic = getStringOrNull(friendJson.get("profilePic"));
+                    String currentSong = getStringOrNull(friendJson.get("currentSong"));
+                    JsonElement currentSource = friendJson.get("currentSource");
+
                     Friend friend = new Friend(id, username, profilePic);
                     friend.setCurrentSong(currentSong);
                     friend.setCurrentSource(currentSource);
                     friends.add(friend);
-                    if (currentSource != null) {
-                        String sourceType = currentSource.optString("type");
+
+                    if (!currentSource.isJsonNull()) {
+                        String sourceType = getStringOrNull(currentSource.getAsJsonObject().get("type"));
                         if (sourceType.equals("session")) {
                             sessions.add(new Session(friend.getId(), friend.getName() + "'s Room"));
                         }
                     }
                 }
+
                 // Update the Redux store.
                 List<Friend> oldFriends;
                 if ((oldFriends = model.getFriendsList().getValue()) != null)
@@ -157,53 +166,52 @@ public class WebSocketClient {
                 if ((oldSessions = model.getSessionList().getValue()) != null)
                     sessions.addAll(oldSessions);
                 model.getSessionList().postValue(sessions);
+
             } else if (action.equals("update")) {
 //                check if from exists in the message
-                String from = json.optString("from");
-                if (from != null) {
-                    List<Friend> existingFriendList = model.getFriendsList().getValue();
-                    List<Session> existingSessionList = model.getSessionList().getValue();
-                    for (Friend f : existingFriendList) {
-                        if (f.getId().equals(from)) {
-                            JSONObject body = json.getJSONObject("body");
-                            String currentSong = body.optString("currentSong", null);
-                            JSONObject currentSource = body.optJSONObject("currentSource");
-                            f.setCurrentSong(currentSong);
-                            f.setCurrentSource(currentSource);
-                            if (currentSource != null) {
-                                String sourceType = currentSource.optString("type");
-                                if (sourceType.equals("session")) {
-                                    boolean sessionExists = false;
-                                    for (Session s : existingSessionList) {
-                                        if (s.getSessionId().equals(from)) {
-                                            sessionExists = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!sessionExists) {
-                                        existingSessionList.add(new Session(f.getId(), f.getName() + "'s Room"));
-                                    }
-                                }
-                            } else {
+                String from = json.get("from").getAsString();
+                List<Friend> existingFriendList = model.getFriendsList().getValue();
+                List<Session> existingSessionList = model.getSessionList().getValue();
+                for (Friend f : existingFriendList) {
+                    if (f.getId().equals(from)) {
+                        JsonObject body = json.get("body").getAsJsonObject();
+                        String currentSong = getStringOrNull(body.get("currentSong"));
+                        JsonElement currentSource = body.get("currentSource");
+                        f.setCurrentSong(currentSong);
+                        f.setCurrentSource(currentSource);
+                        if (!currentSource.isJsonNull()) {
+                            String sourceType = getStringOrNull(currentSource.getAsJsonObject().get("type"));
+                            if (sourceType.equals("session")) {
+                                boolean sessionExists = false;
                                 for (Session s : existingSessionList) {
                                     if (s.getSessionId().equals(from)) {
-                                        existingSessionList.remove(s);
+                                        sessionExists = true;
                                         break;
                                     }
+                                }
+                                if (!sessionExists) {
+                                    existingSessionList.add(new Session(f.getId(), f.getName() + "'s Room"));
+                                }
+                            }
+                        } else {
+                            for (Session s : existingSessionList) {
+                                if (s.getSessionId().equals(from)) {
+                                    existingSessionList.remove(s);
+                                    break;
                                 }
                             }
                         }
                     }
-                    model.getFriendsList().postValue(existingFriendList);
-                    model.getSessionList().postValue(existingSessionList);
                 }
+                model.getFriendsList().postValue(existingFriendList);
+                model.getSessionList().postValue(existingSessionList);
             }
             // Handling any other unexpected actions
             else {
                 Log.w("WebSocketClient", "Unknown friend action: " + action);
             }
 
-        } catch (JSONException e) {
+        } catch (IllegalStateException e) {
             Log.e("WebSocketClient", "Error processing friend message", e);
         }
     }
@@ -386,25 +394,25 @@ public class WebSocketClient {
     }
 
     // ChatGPT Usage: No
-    private void handleRequests(JSONObject json){
+    private void handleRequests(JsonObject json){
         try {
-            String action = json.getString("action");
+            String action = json.get("action").getAsString();
+            JsonObject body = json.get("body").getAsJsonObject();
 
             // Handling the refresh action
             if (action.equals("refresh")) {
-                JSONObject body = json.getJSONObject("body");
-                JSONArray requesting = body.getJSONArray("requesting");
-                JSONArray requested = body.getJSONArray("requested");
+                JsonArray requesting = body.get("requesting").getAsJsonArray();
+                JsonArray requested = body.get("requested").getAsJsonArray();
                 // TODO: Update the Redux store with the refreshed lists of requesting and requested users
                 List<SearchUser> newRequests = model.getReceivedRequests().getValue();
                 if (newRequests == null) {
                     newRequests = new ArrayList<SearchUser>();
                 }
-                for (int i = 0; i < requesting.length(); i++) {
-                    JSONObject request = requesting.getJSONObject(i);
-                    String userId = request.getString("userId");
-                    String userName = request.getString("username");
-                    String profilePic = request.getString("profilePic");
+                for (int i = 0; i < requesting.size(); i++) {
+                    JsonObject request = requesting.get(i).getAsJsonObject();
+                    String userId = request.get("userId").getAsString();
+                    String userName = request.get("username").getAsString();
+                    String profilePic = getStringOrNull(request.get("profilePic"));
                     SearchUser requestingUser = new SearchUser(userName, userId, profilePic);
                     newRequests.add(requestingUser);
                 }
@@ -414,11 +422,11 @@ public class WebSocketClient {
                 if (sentRequests == null) {
                     sentRequests = new ArrayList<SearchUser>();
                 }
-                for (int i = 0; i < requested.length(); i++) {
-                    JSONObject request = requested.getJSONObject(i);
-                    String userId = request.getString("userId");
-                    String userName = request.getString("username");
-                    String profilePic = request.getString("profilePic");
+                for (int i = 0; i < requested.size(); i++) {
+                    JsonObject request = requested.get(i).getAsJsonObject();
+                    String userId = request.get("userId").getAsString();
+                    String userName = request.get("username").getAsString();
+                    String profilePic = getStringOrNull(request.get("profilePic"));
                     SearchUser requestedUser = new SearchUser(userName, userId, profilePic);
                     sentRequests.add(requestedUser);
                 }
@@ -427,12 +435,11 @@ public class WebSocketClient {
 
             // Handling the add action
             else if (action.equals("add")) {
-                JSONObject body = json.getJSONObject("body");
-                String userId = body.getString("userId");
-                String username = body.optString("username", null);
-                String profilePic = body.optString("profilePic", null);
-                String currentSong = body.optString("currentSong", null);
-                String currentSource = body.optString("currentSource", null);
+                String userId = body.get("userId").getAsString();
+                String username = body.get("username").getAsString();
+                String profilePic = getStringOrNull(body.get("profilePic"));
+                String currentSong = getStringOrNull(body.get("currentSong"));
+                JsonElement currentSource = body.get("currentSource");
 
                 Log.d("WebSocketClient", "Add friend: "+username);
                 SearchUser newRequest = new SearchUser(username, userId, profilePic);
@@ -452,8 +459,8 @@ public class WebSocketClient {
 
                         Friend newFriend = new Friend(userId, username, profilePic);
                         newFriend.setCurrentSong(currentSong);
-                        if (currentSource != "null") {
-                            newFriend.setCurrentSource(new JSONObject(currentSource));
+                        if (!currentSource.isJsonNull()) {
+                            newFriend.setCurrentSource(currentSource);
                         }
                         List<Friend> friendList = model.getFriendsList().getValue();
                         if (friendList == null) {
@@ -520,17 +527,11 @@ public class WebSocketClient {
 
             // Handling the remove action
             else if (action.equals("remove")) {
-                JSONObject body = json.getJSONObject("body");
-                String userId = body.getString("userId");
-                String username = body.optString("username", null);
-                String profilePic = body.optString("profilePic", null);
+                String userId = body.get("userId").getAsString();
 
-                SearchUser rmvRequest = new SearchUser(username, userId, profilePic);
-                model.removeRequest(model.getSentRequests(), rmvRequest);
-                model.removeRequest(model.getReceivedRequests(), rmvRequest);
-
-                Friend friendToRemove = new Friend(userId, username, profilePic);
-                model.removeFriend(friendToRemove);
+                model.removeRequest(model.getSentRequests(), userId);
+                model.removeRequest(model.getReceivedRequests(), userId);
+                model.removeFriend(userId);
             }
 
             // Handling any other unexpected actions
@@ -538,7 +539,7 @@ public class WebSocketClient {
                 Log.w("WebSocketClient", "Unknown request action: " + action);
             }
 
-        } catch (JSONException e) {
+        } catch (IllegalStateException e) {
             Log.e("WebSocketClient", "Error processing request message", e);
         }
     }
@@ -552,5 +553,15 @@ public class WebSocketClient {
                 handler.postDelayed(this, PING_INTERVAL);
             }
         }, PING_INTERVAL);
+    }
+
+    public static String getStringOrNull(JsonElement jsonElement) {
+        if (jsonElement != null && !jsonElement.isJsonNull() && jsonElement.isJsonPrimitive()) {
+            JsonPrimitive jsonPrimitive = jsonElement.getAsJsonPrimitive();
+            if (jsonPrimitive.isString()) {
+                return jsonPrimitive.getAsString();
+            }
+        }
+        return null;
     }
 }
