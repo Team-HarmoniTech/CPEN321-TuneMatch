@@ -1,6 +1,8 @@
 package com.cpen321.tunematch;
 
 
+import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -467,7 +469,7 @@ public class RoomFragment extends Fragment {
                     for (int i = 0; i < songItems.size(); i++) {
                         JsonObject song = songItems.get(i).getAsJsonObject();
                         JsonArray artists = song.get("artists").getAsJsonArray();
-                        filteredSuggestions.add(song.get("name").toString() + " - " + artists.get(0).getAsJsonObject().get("name").toString());
+                        filteredSuggestions.add(new Song(song.get("id").getAsString(), song.get("name").getAsString(), artists.get(0).getAsJsonObject().get("name").getAsString(), String.valueOf(song.get("duration_ms").getAsInt())));
                         Log.d("RoomFragment", "name of song: "+song.get("name"));
                     }
 

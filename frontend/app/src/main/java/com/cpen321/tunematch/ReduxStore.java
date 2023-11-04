@@ -63,10 +63,6 @@ public class ReduxStore extends ViewModel {
     }
 
 
-    public MutableLiveData<List<SearchUser>> getSearchList() {return searchList;}
-    public MutableLiveData<CurrentSession> getCurrentSession() {
-        return currentSession;
-    }
     public MutableLiveData<List<Session>> getSessionList() {
         return sessionList;
     }
@@ -75,7 +71,7 @@ public class ReduxStore extends ViewModel {
     }
     public MutableLiveData<Song> getCurrentSong() {
         return currentSong;
-
+    }
 
     // ChatGPT Usage: No
     public void addFriend(Friend friendToAdd) {
@@ -122,7 +118,7 @@ public class ReduxStore extends ViewModel {
         return currentSession;
     }
 
-    }
+
 
     // Additional methods in ReduxStore for easier management of state
     // ChatGPT Usage: No
@@ -169,9 +165,6 @@ public class ReduxStore extends ViewModel {
         List<Song> currentQueue = songQueue.getValue();
         currentQueue.remove(song);
         songQueue.setValue(currentQueue);
-    }
-    public void setFriendsRequestList(List<SearchUser> newRequests) {
-        friendRequests.setValue(newRequests);
     }
     public String getFriendName(String id) {
         String name = "";

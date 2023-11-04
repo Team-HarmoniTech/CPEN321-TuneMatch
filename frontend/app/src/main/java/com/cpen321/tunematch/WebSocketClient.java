@@ -249,7 +249,6 @@ public class WebSocketClient {
                     }
                     currentSession.setSessionMembers(sessionMembers);
                     model.getCurrentSession().postValue(currentSession);
-                }else{
                     model.checkSessionActive().postValue(false);
                 }
             }
