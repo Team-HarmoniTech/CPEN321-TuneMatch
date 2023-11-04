@@ -4,12 +4,12 @@ import { body, header, param, query } from "express-validator";
 export const UserRoutes = [
   {
     method: "get",
-    route: "/users/search/:search_term",
+    route: "/users/search",
     controller: UserController,
     action: "searchUsers",
     validation: [
       header("user-id").isAlphanumeric(),
-      param("search_term").isString(),
+      query("q").isString(),
       query("max").optional().isInt(),
     ],
   },

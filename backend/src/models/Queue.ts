@@ -4,11 +4,16 @@ export class Song {
   leftMs: number;
   timeStarted: Date;
 
-  constructor(uri: string, durationMs: number) {
+  title: string;
+  artist: string;
+
+  constructor(uri: string, durationMs: number, title: string, artist: string) {
     this.uri = uri;
     this.durationMs = durationMs;
     this.leftMs = durationMs;
     this.timeStarted = null;
+    this.title = title;
+    this.artist = artist;
   }
 }
 
@@ -43,6 +48,7 @@ export class Queue {
         this.playNext();
       }, this.currentlyPlaying.leftMs);
     } else {
+      this.running = false;
       this.currentlyPlaying = null;
     }
   }
@@ -77,7 +83,6 @@ export class Queue {
     this.songs = songs;
     this.running = false;
     this.currentlyPlaying = null;
-    this.start();
   }
 
   /**
@@ -124,16 +129,26 @@ export class Queue {
    * @param seekPosition position to seek to
    */
   seek(seekPosition: number) {
-    clearTimeout(this.runQueue);
-    /* Round to greater than 0 but less than endPosition */
-    this.currentlyPlaying.leftMs = Math.max(
-      0,
-      this.currentlyPlaying.durationMs -
-        Math.min(seekPosition, this.currentlyPlaying.durationMs),
-    );
-    if (this.currentlyPlaying.leftMs > 0) {
+    if (this.currentlyPlaying) {
+      clearTimeout(this.runQueue);
       this.songs.unshift(this.currentlyPlaying);
+      this.currentlyPlaying = null;
     }
+
+    const song = this.songs[0];
+    if (song) {
+      /* Round to greater than 0 but less than endPosition */
+      song.leftMs = Math.max(
+        0,
+        song.durationMs -
+          Math.min(seekPosition, song.durationMs),
+      );
+      if (song.leftMs <= 0) {
+        this.songs.shift();
+      }
+    }
+
+    this.running = true;
     this.playNext();
   }
 }

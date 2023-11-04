@@ -1,27 +1,33 @@
 package com.cpen321.tunematch;
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.MenuItem;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
-import android.support.annotation.Nullable;
+import android.os.Looper;
 import android.util.Log;
 import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.gson.JsonObject;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 import okhttp3.Headers;
 
@@ -34,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private RoomFragment roomFrag;
     private SearchFragment searchFrag;
     private ProfileFragment profileFrag;
-    private ApiClient apiClient;
+    private BackendClient backend;
     private WebSocketClient webSocketClient;
     private ReduxStore model;
 
@@ -117,8 +123,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     // ChatGPT Usage: No
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         model = ReduxStore.getInstance();
@@ -130,8 +137,34 @@ public class MainActivity extends AppCompatActivity {
         if (intent != null && intent.hasExtra("spotifyUserId")) {
             String spotifyUserId = intent.getStringExtra("spotifyUserId");
 
-            apiClient = new ApiClient("https://zphy19my7b.execute-api.us-west-2.amazonaws.com/v1",
-                    new Headers.Builder().add("user-id", spotifyUserId).build());
+            backend = new BackendClient(spotifyUserId);
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        User currUser = backend.getMe(true);
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                model.setCurrentUser(currUser);
+                            }
+                        });
+
+                    } catch (ApiException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+        }
+
+        // Check if notification permission is granted
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // If permission is not granted, request it
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.POST_NOTIFICATIONS},0);
         }
 
         bottomNavigationView = findViewById(R.id.bottomNavi);
@@ -155,7 +188,6 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-
     }
 
     // ChatGPT Usage: No
@@ -192,18 +224,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // ChatGPT Usage: No
-    public ApiClient getApiClient() {return apiClient;}
+    public BackendClient getBackend() {return backend;}
 
     // ChatGPT Usage: No
     public WebSocketClient getWebSocketClient() {return webSocketClient;}
 
     // ChatGPT Usage: No
     public ReduxStore getModel() {return model;}
+
+    // ChatGPT Usage: No
     public WebSocketService getWebSocketService() {
         if (isServiceBound && webSocketService != null) {
             return webSocketService;
         }
         return null;
+    }
+
+    // ChatGPT Usage: No
+    public ArrayList<String> parseList(String response, String key) {
+        Log.d("MainActivity", "parseList: "+key);
+
+        ArrayList<String> parsedList = new ArrayList<>();
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            String tempList = jsonObject.getString(key).replace("[", "").replace("]","").trim();
+            Log.d("MainActivity", "tempList:"+tempList);
+
+            for (String item : tempList.split(",")) {
+                parsedList.add(item.replace("\"", ""));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return parsedList;
     }
 }
 

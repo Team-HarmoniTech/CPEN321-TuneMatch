@@ -23,13 +23,11 @@ public class CustomListAdapter extends BaseAdapter {
     private Context context;
     private Activity parentView;
     private String listType;
-    ;
     ReduxStore model= ReduxStore.getInstance();
     private List<String> itemList;
     private WebSocketService webSocketService;
 
     // ChatGPT Usage: Partial
-
     public CustomListAdapter(Context context, Activity parentView, String listType, List<String> itemList, WebSocketService webSocketService){
         this.context = context;
         this.parentView = parentView;
@@ -75,7 +73,7 @@ public class CustomListAdapter extends BaseAdapter {
             String[] item = itemList.get(position).split(";");                        // items = "name;song"
 
             // Set friend name
-            TextView friendNameText = view.findViewById(R.id.friendNameText);
+            TextView friendNameText = view.findViewById(R.id.requestNameText);
             friendNameText.setText(item[0]);
 
             // Set name of the song the friend is listening
@@ -119,11 +117,11 @@ public class CustomListAdapter extends BaseAdapter {
             String profilePicUrl = item[2];
 
             // Set name
-            TextView friendNameText = view.findViewById(R.id.friendNameText);
+            TextView friendNameText = view.findViewById(R.id.requestNameText);
             friendNameText.setText(nameText);
 
             // Set profile pic
-            ImageView profilePic = view.findViewById(R.id.profileImageView);
+            ImageView profilePic = view.findViewById(R.id.requestPfpImgView);
             Picasso.get()
                     .load(profilePicUrl)
                     .placeholder(R.drawable.default_profile_image)      // Set the default image
@@ -147,7 +145,9 @@ public class CustomListAdapter extends BaseAdapter {
                     }
 
                     if (webSocketService != null) {
+                        Log.d("ProfileFragment", "Remove friend: "+id);
                         webSocketService.sendMessage(messageToSend.toString());
+                        model.removeFriend(id);
                     }
                 }
             });
@@ -160,7 +160,6 @@ public class CustomListAdapter extends BaseAdapter {
         this.itemList = data;
         notifyDataSetChanged();
     }
-
 
 }
 

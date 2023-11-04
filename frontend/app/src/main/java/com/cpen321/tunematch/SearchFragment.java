@@ -44,24 +44,8 @@ public class SearchFragment extends Fragment {
     private ArrayAdapter<String> listAdapter;
     private AlertDialog profileDialog;
     ReduxStore model;
-    ApiClient apiClient;
+    BackendClient backend;
     private WebSocketService webSocketService;
-    private boolean isServiceBound = false;
-
-    // ChatGPT Usage: No
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            WebSocketService.LocalBinder binder = (WebSocketService.LocalBinder) service;
-            webSocketService = binder.getService();
-            isServiceBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            isServiceBound = false;
-        }
-    };
 
     // ChatGPT Usage: No
     @Override
@@ -70,19 +54,18 @@ public class SearchFragment extends Fragment {
 
         // Initialize ViewModel and ApiClient here.
         model = ((MainActivity) getActivity()).getModel();
-        apiClient = ((MainActivity) getActivity()).getApiClient();;
+        webSocketService = ((MainActivity) getActivity()).getWebSocketService();
+        backend = ((MainActivity) getActivity()).getBackend();
 
         new Thread(new Runnable() {
             @Override
             public void run() {
                 String response;
                 try {
-                    response = apiClient.doGetRequest("/me/matches", true);
-                    // Parse the response.
-                    List<SearchUser> newSearchList = parseResponse(response);
+                    List<SearchUser> newSearchList = backend.getMatches();
                     // Update LiveData.
                     model.getSearchList().postValue(newSearchList);
-                } catch (IOException e) {
+                } catch (ApiException e) {
                     e.printStackTrace();
                 }
             }
@@ -116,23 +99,20 @@ public class SearchFragment extends Fragment {
                 String selectedUserWithScore = (String) parent.getItemAtPosition(position);
                 nameText.setText(selectedUserWithScore);
                 String username = selectedUserWithScore.split(" \\(")[0];
-                String encodedName = encodeUsername(username);
 
-                String[] friendId = new String[1];
+                SearchUser[] friend = new SearchUser[1];
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            String response = apiClient.doGetRequest("/users/search/"+encodedName, true);
-                            JSONArray resJson = new JSONArray(response);
-                            JSONObject userInfo = resJson.getJSONObject(0);         // only one user has to be returned
-                            Log.d("SearchFragment", "selected user info: " + userInfo.toString());
+                            // only one user has to be returned
+                            SearchUser user = backend.searchUser(username).get(0);
+                            Log.d("SearchFragment", "selected user info: " + user);
 
-                            String profileUrl = userInfo.getString("profilePic");
-                            friendId[0] = userInfo.getString("userId");
-                            if (!profileUrl.equals("profile.com/url")) {
-                                Handler mainHandler = new Handler(Looper.getMainLooper());
-                                mainHandler.post(new Runnable() {
+                            String profileUrl = user.getProfilePic();
+                            friend[0] = user;
+                            if (profileUrl != null) {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
                                     @Override
                                     public void run() {
                                         // Update your UI components here
@@ -146,7 +126,7 @@ public class SearchFragment extends Fragment {
                                 });
                             }
 
-                        } catch (IOException | JSONException e) {
+                        } catch (ApiException | RuntimeException e) {
                             e.printStackTrace();
                         }
                     }
@@ -161,7 +141,7 @@ public class SearchFragment extends Fragment {
                 addButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (friendId[0] != null) {
+                        if (friend[0] != null) {
                             Log.d("Profile dialog addButton", "Send friend request");
                             JSONObject messageToSend = new JSONObject();
                             JSONObject body = new JSONObject();
@@ -169,15 +149,16 @@ public class SearchFragment extends Fragment {
                                 messageToSend.put("method", "REQUESTS");
                                 messageToSend.put("action", "add");
 
-                                body.put("userId", friendId[0]);
+                                body.put("userId", friend[0].getId());
                                 messageToSend.put("body", body);
                             } catch (JSONException e) {
                                 throw new RuntimeException(e);
                             }
 
-                            if (isServiceBound && webSocketService != null) {
-                                Log.d("SearchFragment", "add friend:" + messageToSend);
+                            if (webSocketService != null) {
+                                Log.d("SearchFragment", "Send friend request to:" + friend[0].getName());
                                 webSocketService.sendMessage(messageToSend.toString());
+                                model.addSentRequest(friend[0]);
                             }
                             profileDialog.dismiss();
                         } else {
@@ -191,69 +172,11 @@ public class SearchFragment extends Fragment {
         searchFriend.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
             @Override
             public boolean onQueryTextSubmit(String query) {
-                String encodedQuery;
-                try {
-                     encodedQuery = URLEncoder.encode(query, Charsets.UTF_8.toString());
-                    Log.d("SearchFragment", "onQueryTextSubmit: " + encodedQuery);
-                } catch (UnsupportedEncodingException e) {
-                    throw new RuntimeException(e);
-                }
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        String response;
-                        try {
-
-                            if(query.isEmpty()){
-                                response = apiClient.doGetRequest("/me/matches", true);
-                            }
-                            else{
-                                response = apiClient.doGetRequest("/users/search/" + encodedQuery, true);
-                            }
-                            List<SearchUser> newSearchList = parseResponse(response);
-                            model.getSearchList().postValue(newSearchList);
-
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).start();
-
-                return true;
-
+                return updateQuery(query);
             }
-
             @Override
             public boolean onQueryTextChange(String newText) {
-
-                String encoded_newText;
-                try {
-                    encoded_newText = URLEncoder.encode(newText, Charsets.UTF_8.toString());
-                } catch (UnsupportedEncodingException e) {
-                    throw new RuntimeException(e);
-                }
-
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        String response;
-                        try {
-                            if(newText.isEmpty()){
-                                response = apiClient.doGetRequest("/me/matches", true);
-                            }
-                            else{
-                                response = apiClient.doGetRequest("/users/search/" + encoded_newText, true);
-                            }
-                          
-                            List<SearchUser> newSearchList = parseResponse(response);
-                            model.getSearchList().postValue(newSearchList);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).start();
-                return true;
-
+                return updateQuery(newText);
             }
         });
 
@@ -270,40 +193,33 @@ public class SearchFragment extends Fragment {
         return view;
     }
 
-    // ChatGPT Usage: Partial
-    public List<SearchUser> parseResponse(String response) {
-        Log.d("SearchFragment", "parseResponse: " + response);
-        List<SearchUser> searchedUser = new ArrayList<>();
+    private boolean updateQuery(String query) {
+        String encodedQuery;
         try {
-            JSONArray jsonArray = new JSONArray(response);
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                String name = jsonObject.getString("username");
-                String id = jsonObject.getString("userId");
-
-                String match_score = jsonObject.getString("match_percent");
-                String profilePic = jsonObject.getString("profilePic");
-                SearchUser user = new SearchUser(name, id, profilePic);
-                user.setMatchPercent(match_score);
-                searchedUser.add(user);
-
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return searchedUser;
-    }
-
-    // ChatGPT Usage: Partial
-    private String encodeUsername(String username) {
-        String encodedName;
-        try {
-            encodedName = URLEncoder.encode(username, Charsets.UTF_8.toString());
-            Log.d("SearchFragment", "encodeUsername: " + encodedName);
+            encodedQuery = URLEncoder.encode(query, Charsets.UTF_8.toString());
+            Log.d("SearchFragment", "onQueryTextSubmit: " + encodedQuery);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                List<SearchUser> newSearchList;
+                try {
+                    if(query.isEmpty()){
+                        newSearchList = backend.getMatches();
+                    }
+                    else{
+                        newSearchList = backend.searchUser(encodedQuery);
+                    }
 
-        return encodedName;
+                    model.getSearchList().postValue(newSearchList);
+                } catch (ApiException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+        return true;
     }
 }

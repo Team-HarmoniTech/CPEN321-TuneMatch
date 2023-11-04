@@ -1,6 +1,6 @@
 package com.cpen321.tunematch;
 
-import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +27,9 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.spotify.protocol.types.Track;
 import org.json.JSONArray;
@@ -39,12 +43,8 @@ import java.util.List;
 import java.util.Locale;
 import jp.wasabeef.blurry.Blurry;
 import kotlin.text.Charsets;
-import okhttp3.Headers;
 
 public class RoomFragment extends Fragment {
-    // Constants
-    private static final String SPOTIFY_BASE_URL = "https://api.spotify.com/v1/";
-
     // Views
     private View view;
     private Button playpauseButton, nextButton, prevButton, chatBtn, queueBtn, exitBtn;
@@ -60,7 +60,7 @@ public class RoomFragment extends Fragment {
     private QueueFragment queueFrag;
     private ArrayAdapter<Song> searchAdapter;
     private String authToken;
-    private ApiClient spotifyApiClient;
+    private SpotifyClient spotifyClient;
     private MainActivity mainActivity;
     private ReduxStore model;
     private ApiClient apiClient;
@@ -92,7 +92,9 @@ public class RoomFragment extends Fragment {
     private void initServices() {
         // Initialize ViewModel and ApiClient
         model = ReduxStore.getInstance();
-        apiClient = ((MainActivity) getActivity()).getApiClient();
+
+        apiClient = ((MainActivity) getActivity()).getBackend();
+
         // Get instances of MainActivity, WebSocketService, and SpotifyService
         mainActivity = (MainActivity) getActivity();
         webSocketService = mainActivity.getWebSocketService();
@@ -136,12 +138,9 @@ public class RoomFragment extends Fragment {
         // Retrieve the authentication token
         SharedPreferences preferences = getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
         authToken = preferences.getString("auth_token", null);
-        Headers headers = new Headers.Builder()
-                .add("Authorization", "Bearer " + authToken)
-                .build();
 
         // Initialize the Spotify API client with the base URL and custom headers
-        spotifyApiClient = new ApiClient(SPOTIFY_BASE_URL, headers);
+        spotifyClient = new SpotifyClient(authToken);
     }
     private void initializeEventListeners() {
         chatBtn.setOnClickListener(new View.OnClickListener(){
@@ -254,7 +253,6 @@ public class RoomFragment extends Fragment {
                             songBanner.setImageBitmap(blurryBitmap);
                         });
 
-
                         songTitle.setText(track.name);
                         songArtist.setText(track.artist.name);
                         seekBar.setMax(100); // Set max to 100 for percentage
@@ -341,6 +339,7 @@ public class RoomFragment extends Fragment {
                     if (playerState.isPaused) {
                         model.setCurrentSongPlaying(true);
                         mSpotifyAppRemote.getPlayerApi().resume();
+
                         playpauseButton.setText("Pause");
                         if(webSocketService!=null && model.checkSessionActive().getValue()){
                             JSONObject messageToSend = new JSONObject();
@@ -352,6 +351,8 @@ public class RoomFragment extends Fragment {
                             }
                             webSocketService.sendMessage(messageToSend.toString());
                         }
+                        playpauseButton.setBackgroundResource(R.drawable.pause_btn);
+
                     } else {
                         model.setCurrentSongPlaying(false);
                         mSpotifyAppRemote.getPlayerApi().pause();
@@ -366,6 +367,7 @@ public class RoomFragment extends Fragment {
                             }
                             webSocketService.sendMessage(messageToSend.toString());
                         }
+                        playpauseButton.setBackgroundResource(R.drawable.play_btn);
                     }
                 });
             }
@@ -399,9 +401,9 @@ public class RoomFragment extends Fragment {
 
         mSpotifyAppRemote.getPlayerApi().getPlayerState().setResultCallback(playerState -> {
             if (playerState.isPaused) {
-                playpauseButton.setText("Play");
+                playpauseButton.setBackgroundResource(R.drawable.play_btn);
             } else {
-                playpauseButton.setText("Pause");
+                playpauseButton.setBackgroundResource(R.drawable.pause_btn);
             }
         });
     }
@@ -453,21 +455,20 @@ public class RoomFragment extends Fragment {
     private void filterSuggestions(String newText) {
         ArrayList<Song> filteredSuggestions = new ArrayList<>();
 
-        String endpoint = "search/?q=track:"+encodeSongTitle(newText)+"&type=track";
+        String query = "track:" + encodeSongTitle(newText);
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    String songListJson = spotifyApiClient.doGetRequest(endpoint, true);
-                    JSONObject rawResponse = new JSONObject(songListJson);
-                    JSONArray songItems = rawResponse.getJSONObject("tracks").getJSONArray("items");
-                    Song songToAdd;
-                    for (int i = 0; i < songItems.length(); i++) {
-                        JSONObject song = songItems.getJSONObject(i);
-                        JSONArray artists = song.getJSONArray("artists");
-                        songToAdd = new Song(song.getString("id"),song.getString("name"), artists.getJSONObject(0).getString("name"), song.getString("duration_ms"));
-                        filteredSuggestions.add(songToAdd);
-                        Log.d("RoomFragment", "name of song: "+songToAdd.getSongName());
+
+                    JsonObject rawResponse = spotifyClient.getSong(query);
+                    JsonArray songItems = rawResponse.get("tracks").getAsJsonObject().get("items").getAsJsonArray();
+
+                    for (int i = 0; i < songItems.size(); i++) {
+                        JsonObject song = songItems.get(i).getAsJsonObject();
+                        JsonArray artists = song.get("artists").getAsJsonArray();
+                        filteredSuggestions.add(song.get("name").toString() + " - " + artists.get(0).getAsJsonObject().get("name").toString());
+                        Log.d("RoomFragment", "name of song: "+song.get("name"));
                     }
 
                     Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -489,7 +490,7 @@ public class RoomFragment extends Fragment {
                         }
                     });
 
-                } catch (IOException | JSONException e) {
+                } catch (ApiException e) {
                     e.printStackTrace();
                 }
             }

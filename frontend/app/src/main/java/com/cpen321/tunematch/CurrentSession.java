@@ -1,12 +1,14 @@
 package com.cpen321.tunematch;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class CurrentSession {
     private String sessionId;
     private String sessionName;
-    private List<SessionUser> sessionMembers;
+    private List<Message> messages;
+    private List<User> sessionMembers;
     private List<Song> sessionQueue;
     private Song currentSong;
     public CurrentSession(String name, String id) {
@@ -14,6 +16,7 @@ public class CurrentSession {
         sessionId = id;
         sessionMembers = new ArrayList<>();
         sessionQueue = new ArrayList<>();
+        messages = new ArrayList<>();
     }
 
     public String getSessionId() {
@@ -24,7 +27,7 @@ public class CurrentSession {
         this.sessionId = sessionId;
     }
 
-    public void setSessionMembers(List<SessionUser> sessionMembers) {
+    public void setSessionMembers(List<User> sessionMembers) {
         this.sessionMembers = sessionMembers;
     }
 
@@ -32,7 +35,7 @@ public class CurrentSession {
         this.sessionQueue = sessionQueue;
     }
 
-    public List<SessionUser> getSessionMembers() {
+    public List<User> getSessionMembers() {
         return sessionMembers;
     }
 
@@ -44,6 +47,14 @@ public class CurrentSession {
         this.currentSong = currentSong;
     }
 
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    public void addMessage(Message message) {
+        messages.add(message);
+        Collections.sort(messages);
+    }
 
     // ... (Other Getters, Setters, and methods to manage sessionMembers and sessionQueue)
 }

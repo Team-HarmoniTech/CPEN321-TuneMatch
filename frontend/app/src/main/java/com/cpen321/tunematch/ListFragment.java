@@ -1,12 +1,7 @@
 // Wrote by team member following online tutorial regarding BottomNavigationView usage
 package com.cpen321.tunematch;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,28 +9,18 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-
-import org.json.JSONObject;
-
 import androidx.fragment.app.Fragment;
 
-
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ListFragment extends Fragment{
 
     ReduxStore model;
     private String listTitle;
     private ArrayList<String> listItems;
-
     private WebSocketService webSocketService;
-    private boolean isServiceBound = false;
-
-    // ChatGPT Usage: Partial
-
-
-    // ChatGPT Usage: No
-    public ListFragment() {}
 
     // ChatGPT Usage: Yes
     public static ListFragment newInstance(ArrayList<String> listItem, String listTitle) {
@@ -58,6 +43,7 @@ public class ListFragment extends Fragment{
         }
 
         model = ((MainActivity) getActivity()).getModel();
+        webSocketService = ((MainActivity) getActivity()).getWebSocketService();
     }
 
     // ChatGPT Usage: Partial
@@ -77,6 +63,22 @@ public class ListFragment extends Fragment{
             // Updated the CustomListAdapter instantiation to pass `this` as the SessionJoinListener
             CustomListAdapter adapter = new CustomListAdapter(getContext(), getActivity(), "EditFriendsList", listItems, webSocketService);
             listView.setAdapter(adapter);
+
+            model.getFriendsList().observe(getViewLifecycleOwner(), friends -> {
+                ArrayList<String> friendsListItems = new ArrayList<>();
+                for (Friend f : friends) {
+                    friendsListItems.add(f.getName()+";"+f.getId()+";"+f.getProfilePic());
+                }
+                adapter.setData(friendsListItems);
+                adapter.notifyDataSetChanged();
+            });
+        } else if (listTitle.equals("Request List")) {
+            RequestListAdapter adapter = new RequestListAdapter(getContext(), model.getReceivedRequests().getValue(), webSocketService);
+            listView.setAdapter(adapter);
+            model.getReceivedRequests().observe(getViewLifecycleOwner(), request -> {
+                adapter.setData(request);
+                adapter.notifyDataSetChanged();
+            });
         } else {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, listItems);
             listView.setAdapter(adapter);
@@ -84,19 +86,5 @@ public class ListFragment extends Fragment{
 
         return view;
     }
-
-
-
-    // ChatGPT Usage: No
-    public WebSocketService getWebSocketService() {
-        return webSocketService;
-    }
-
-    // ChatGPT Usage: No
-    public boolean isServiceBound() {
-        return isServiceBound;
-    }
-
-
 }
 

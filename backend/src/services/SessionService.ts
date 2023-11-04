@@ -1,6 +1,7 @@
 import { Queue, Song } from "@models/Queue";
 import { SessionMessage, SessionQueue, SessionWithMembers } from "@models/SessionModels";
 import { transformUser } from "@models/UserModels";
+import { Session } from "@prisma/client";
 import { database, socketService, userService } from "@src/services";
 import { Mutex } from "async-mutex";
 
@@ -108,6 +109,15 @@ export class SessionService {
   }
 
   // ChatGPT Usage: No
+  async getSession(userId: number): Promise<Session> {
+    const user = await userService.getUserById(userId);
+    if (!user.session) {
+      throw { message: `User is not in a session.`, statusCode: 400 };
+    }
+    return user.session;
+  }
+
+  // ChatGPT Usage: No
   async messageSession(sessionId: number, senderId: number, message: any) {
     const session = await this.sessionDB.findUnique({
       where: { id: sessionId },
@@ -127,12 +137,12 @@ export class SessionService {
   // ChatGPT Usage: No
   async queueReplace(
     sessionId: number,
-    newQueue: { uri: string; durationMs: number }[],
+    newQueue: { uri: string; durationMs: number, title: string, artist: string }[],
   ) {
     const queueData = this.sessionQueues.get(sessionId);
     await queueData.lock.runExclusive(() => {
       queueData.queue.replace(
-        newQueue.map((s) => new Song(s.uri, s.durationMs)),
+        newQueue.map((s) => new Song(s.uri, s.durationMs, s.title, s.artist)),
       );
     });
   }
@@ -142,11 +152,13 @@ export class SessionService {
     sessionId: number,
     songUri: string,
     durationMs: number,
+    title: string, 
+    artist: string,
     posAfter?: number,
   ) {
     const queueData = this.sessionQueues.get(sessionId);
     await queueData.lock.runExclusive(() => {
-      queueData.queue.addAfter(new Song(songUri, durationMs), posAfter);
+      queueData.queue.addAfter(new Song(songUri, durationMs, title, artist), posAfter);
     });
   }
 
@@ -190,6 +202,7 @@ export class SessionService {
     });
   }
 
+  // ChatGPT Usage: No
   async getQueue(sessionId: number): Promise<any> {
     const queueData = this.sessionQueues.get(sessionId);
     return await queueData.lock.runExclusive(() => {
@@ -200,10 +213,12 @@ export class SessionService {
               uri: q.currentlyPlaying.uri,
               durationMs: q.currentlyPlaying.durationMs,
               timeStarted: q.currentlyPlaying.timeStarted.toISOString(),
+              title: q.currentlyPlaying.title,
+              artist: q.currentlyPlaying.artist
             }
           : null,
         queue: [...q.songs].map((val) => {
-          return { uri: val.uri, durationMs: val.durationMs };
+          return { uri: val.uri, durationMs: val.durationMs, title: val.title, artist: val.artist };
         }),
       };
     });

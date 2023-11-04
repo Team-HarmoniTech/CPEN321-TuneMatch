@@ -1,6 +1,8 @@
 package com.cpen321.tunematch;
 
+import android.app.NotificationManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
@@ -28,7 +30,8 @@ public class WebSocketService extends Service {
         // Assuming you get your ReduxStore instance from MainActivity or another source:
         if (intent != null) {
             ReduxStore model = ReduxStore.getInstance();
-            webSocketClient = new WebSocketClient(model);
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            webSocketClient = new WebSocketClient(model, this, notificationManager);
             Headers customheaders = new Headers.Builder().add("user-id", intent.getStringExtra("spotifyUserId")).build();
             webSocketClient.start(customheaders); // You can provide custom headers if needed
         }

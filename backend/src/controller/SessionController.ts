@@ -33,9 +33,9 @@ export class SessionController {
   // WebSocket Routes
   // ChatGPT Usage: No
   async message(ws: WebSocket, message: SessionMessage, currentUserId: number) {
-    const currentUser = await userService.getUserById(currentUserId);
+    const session = await sessionService.getSession(currentUserId);
     await sessionService.messageSession(
-      currentUser.session.id,
+      session.id,
       currentUserId,
       message,
     );
@@ -47,10 +47,10 @@ export class SessionController {
     message: SessionMessage,
     currentUserId: number,
   ) {
-    const currentUser = await userService.getUserById(currentUserId);
-    await sessionService.queueReplace(currentUser.session.id, message.body);
+    const session = await sessionService.getSession(currentUserId);
+    await sessionService.queueReplace(session.id, message.body);
     await sessionService.messageSession(
-      currentUser.session.id,
+      session.id,
       currentUserId,
       message,
     );
@@ -62,16 +62,18 @@ export class SessionController {
     message: SessionMessage,
     currentUserId: number,
   ) {
-    const { uri, durationMs, index } = message.body;
-    const currentUser = await userService.getUserById(currentUserId);
+    const { uri, durationMs, index, title, artist } = message.body;
+    const session = await sessionService.getSession(currentUserId);
     await sessionService.queueAdd(
-      currentUser.session.id,
+      session.id,
       uri,
       durationMs,
-      index,
+      title,
+      artist,
+      index
     );
     await sessionService.messageSession(
-      currentUser.session.id,
+      session.id,
       currentUserId,
       message,
     );
@@ -83,10 +85,10 @@ export class SessionController {
     message: SessionMessage,
     currentUserId: number,
   ) {
-    const currentUser = await userService.getUserById(currentUserId);
-    await sessionService.queueSkip(currentUser.session.id);
+    const session = await sessionService.getSession(currentUserId);
+    await sessionService.queueSkip(session.id);
     await sessionService.messageSession(
-      currentUser.session.id,
+      session.id,
       currentUserId,
       message,
     );
@@ -98,15 +100,15 @@ export class SessionController {
     message: SessionMessage,
     currentUserId: number,
   ) {
-    const currentUser = await userService.getUserById(currentUserId);
+    const session = await sessionService.getSession(currentUserId);
     const { startIndex, endIndex } = message.body;
     await sessionService.queueDrag(
-      currentUser.session.id,
+      session.id,
       startIndex,
       endIndex,
     );
     await sessionService.messageSession(
-      currentUser.session.id,
+      session.id,
       currentUserId,
       message,
     );
@@ -118,10 +120,10 @@ export class SessionController {
     message: SessionMessage,
     currentUserId: number,
   ) {
-    const currentUser = await userService.getUserById(currentUserId);
-    await sessionService.queuePause(currentUser.session.id);
+    const session = await sessionService.getSession(currentUserId);
+    await sessionService.queuePause(session.id);
     await sessionService.messageSession(
-      currentUser.session.id,
+      session.id,
       currentUserId,
       message,
     );
@@ -133,10 +135,10 @@ export class SessionController {
     message: SessionMessage,
     currentUserId: number,
   ) {
-    const currentUser = await userService.getUserById(currentUserId);
-    await sessionService.queuePlay(currentUser.session.id);
+    const session = await sessionService.getSession(currentUserId);
+    await sessionService.queuePlay(session.id);
     await sessionService.messageSession(
-      currentUser.session.id,
+      session.id,
       currentUserId,
       message,
     );
@@ -148,11 +150,11 @@ export class SessionController {
     message: SessionMessage,
     currentUserId: number,
   ) {
-    const currentUser = await userService.getUserById(currentUserId);
+    const session = await sessionService.getSession(currentUserId);
     const { seekPosition } = message.body;
-    await sessionService.queueSeek(currentUser.session.id, seekPosition);
+    await sessionService.queueSeek(session.id, seekPosition);
     await sessionService.messageSession(
-      currentUser.session.id,
+      session.id,
       currentUserId,
       message,
     );
@@ -180,7 +182,7 @@ export class SessionController {
 
   // ChatGPT Usage: No
   async leave(ws: WebSocket, message: SessionMessage, currentUserId: number) {
-    const session = await sessionService.leaveSession(currentUserId);
+    await sessionService.leaveSession(currentUserId);
     const user = await userService.getUserById(currentUserId);
     ws.send(
       JSON.stringify(new SessionMessage("leave", await transformUser(user))),

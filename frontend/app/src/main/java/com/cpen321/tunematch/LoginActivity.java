@@ -13,6 +13,7 @@ import android.widget.Button;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.gson.JsonObject;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.spotify.sdk.android.auth.AuthorizationClient;
 import com.spotify.sdk.android.auth.AuthorizationRequest;
@@ -134,15 +135,9 @@ public class LoginActivity extends AppCompatActivity {
     // ChatGPT Usage: Partial
     private void fetchSpotifyUserId(String authToken) {
         Log.d("fetchSpotifyUserId", "Inside function");
-        // Set up your custom headers (including the Authorization header with the access token)
-        Headers headers = new Headers.Builder()
-                .add("Authorization", "Bearer "+authToken)
-                .build();
-        Log.d(TAG, "in fetchSpotifyUserId, authToken="+authToken);
 
         // Initialize your ApiClient with the base URL and custom headers
-        String spotifyBaseUrl = "https://api.spotify.com/v1/";
-        ApiClient spotifyApiClient = new ApiClient(spotifyBaseUrl, headers);
+        SpotifyClient spotifyApiClient = new SpotifyClient(authToken);
 
         // Define the endpoint to retrieve the user details
         String userEndpoint = "me";
@@ -153,20 +148,18 @@ public class LoginActivity extends AppCompatActivity {
                 try {
                     Log.d("fetchSpotifyUserId","inside thread");
                     // Make the GET request to retrieve user details
-                    String userResponse = spotifyApiClient.doGetRequest(userEndpoint, true);
+                    JsonObject userResponse = spotifyApiClient.getMe();
 
                     // Example using JSONObject (make sure to handle exceptions and null checks)
-                    JSONObject jsonResponse = new JSONObject(userResponse);
-                    Log.d(TAG, "Spotify my info: "+jsonResponse);
-                    spotifyUserId = jsonResponse.getString("id");
+                    Log.d(TAG, "Spotify my info: "+userResponse);
+                    spotifyUserId = userResponse.get("id").getAsString();
                     Log.d(TAG, "Spotify User ID: " + spotifyUserId);
 
                     // Use the Spotify User ID to check if user already have an account
-                    ApiClient apiClient = new ApiClient("https://zphy19my7b.execute-api.us-west-2.amazonaws.com/v1",
-                                                        null);
+                    BackendClient backend = new BackendClient();
 
                     try {
-                        apiClient.doGetRequest("/users/" + spotifyUserId, false);
+                        backend.getUser(spotifyUserId, true);
 
                         // If didn't fail start MainActivity with the Spotify User ID; user already exist
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -183,51 +176,10 @@ public class LoginActivity extends AppCompatActivity {
                                 startActivity(intent);
                             }
                         });
-                    } catch (IOException e) {
+                    } catch (ApiException e) {
                         try {
                             // account does not exist need to create
-                            String spotifyUserName = jsonResponse.getString("display_name");
-                            JSONArray spotifyImage = jsonResponse.getJSONArray("images");
-                            String spotifyImageUrl = "";
-                            for (int i = 0; i < spotifyImage.length(); i++) {
-                                JSONObject imageObject = spotifyImage.getJSONObject(i);
-                                spotifyImageUrl = imageObject.getString("url");
-                            }
-
-                            if (spotifyImageUrl.length() > MAX_PROFILE_URL) {
-                                spotifyImageUrl = "profile.com/url";
-                            }
-
-                            // get top artists
-                            String topArtistsRes = spotifyApiClient.doGetRequest("me/top/artists?limit=50&time_range=long_term", true);
-
-                            // Parse the top artists response
-                            JSONObject topArtistsObject = new JSONObject(topArtistsRes);
-                            JSONArray topArtistsArray = topArtistsObject.getJSONArray("items");
-                            ArrayList<String> topArtistList = new ArrayList<>();
-                            Set<String> genreSet = new HashSet<>();
-                            for (int i = 0; i < topArtistsArray.length(); i++) {
-                                JSONObject artist = topArtistsArray.getJSONObject(i);
-                                topArtistList.add(artist.getString("name"));
-
-                                String genres = artist.getString("genres").replace("[", "").replace("]", "").trim();
-                                for (String g : genres.split(",")) {
-                                    genreSet.add(g.replace("\"", ""));
-                                }
-                            }
-
-                            JSONObject createUserBody = new JSONObject();
-                            JSONObject userInfo = new JSONObject();
-                            userInfo.put("spotify_id", spotifyUserId);
-                            userInfo.put("username", spotifyUserName);
-                            userInfo.put("top_artists", new JSONArray(topArtistList));
-                            userInfo.put("top_genres", new JSONArray(new ArrayList<>(genreSet)));
-                            userInfo.put("pfp_url", spotifyImageUrl);
-                            createUserBody.put("userData", userInfo);
-
-                            Log.d(TAG, createUserBody.toString());
-
-                            apiClient.doPostRequest("/users/create", createUserBody.toString(), false);
+                            backend.createUser(spotifyApiClient);
 
                             // Start MainActivity with the Spotify User ID
                             new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -238,14 +190,14 @@ public class LoginActivity extends AppCompatActivity {
                                     startActivity(intent);
                                 }
                             });
-                        } catch (IOException e1) {
+                        } catch (ApiException e1) {
                             e.printStackTrace();
                             Log.e(TAG, "Error creating user account: " + e1.getMessage());
 
                             handleError("Failed to create user account for TuneMatch. Please try again.");
                         }
                     }
-                } catch (IOException | JSONException e) {
+                } catch (ApiException | JSONException e) {
                     e.printStackTrace();
                     Log.e(TAG, "Error fetching Spotify User ID: " + e.getMessage());
 

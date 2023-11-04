@@ -13,13 +13,14 @@
         app:backgroundTint="@color/darkGray"
         app:itemIconTint="@color/lightGray"
         app:itemTextColor="@color/lightGray"
+        app:layout_constraintTop_toBottomOf="@id/mainFrame"
         app:layout_constraintBottom_toBottomOf="parent"
         app:menu="@menu/bottom_menu" />
 
     <FrameLayout
         android:id="@+id/mainFrame"
-        android:layout_width="409dp"
-        android:layout_height="673dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:layout_marginStart="1dp"
         android:layout_marginTop="1dp"
         android:layout_marginEnd="1dp"
