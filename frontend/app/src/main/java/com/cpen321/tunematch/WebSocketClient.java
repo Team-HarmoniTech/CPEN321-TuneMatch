@@ -471,42 +471,36 @@ public class WebSocketClient {
                 }
 
                 // If request is from new user, add it to received request list
-                if (!friendAdded) {
-                    Log.d("WebSocketClient", "Friends Requested from "+username);
-                    if (!model.inReceivedRequest(newRequest)) {
-                        List<SearchUser> requestList = model.getReceivedRequests().getValue();
-                        if (requestList == null) {
-                            requestList = new ArrayList<SearchUser>();
-                        }
-                        requestList.add(newRequest);
-                        model.getReceivedRequests().postValue(requestList);
-
-                        // Check permission
-                        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-                            CharSequence name = "New Friend";
-                            int importance = NotificationManager.IMPORTANCE_DEFAULT;
-                            NotificationChannel channel = new NotificationChannel("friend_request_channel", name, importance);
-                            notification.createNotificationChannel(channel);
-
-                            // Build the notification
-                            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel.getId())
-                                    .setSmallIcon(R.drawable.default_profile_image)
-                                    .setContentTitle("New Friend")
-                                    .setContentText("You have received new request from " + username)
-                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                                    .setAutoCancel(true); // Automatically removes the notification when the user taps it
-
-                            // Show the notification
-                            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-                            notificationManager.notify(1, builder.build());
-                        }
-                    }
+                if (!friendAdded && !model.inReceivedRequest(newRequest)) {
+                    Log.d("WebSocketClient", "Friends Requested from " + username);
                     List<SearchUser> requestList = model.getReceivedRequests().getValue();
                     if (requestList == null) {
-                        requestList = new ArrayList<>();
+                        requestList = new ArrayList<SearchUser>();
                     }
                     requestList.add(newRequest);
                     model.getReceivedRequests().postValue(requestList);
+
+                    // Check permission
+                    if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                        return;
+                    }
+
+                    CharSequence name = "New Friend";
+                    int importance = NotificationManager.IMPORTANCE_DEFAULT;
+                    NotificationChannel channel = new NotificationChannel("friend_request_channel", name, importance);
+                    notification.createNotificationChannel(channel);
+
+                    // Build the notification
+                    NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel.getId())
+                            .setSmallIcon(R.drawable.default_profile_image)
+                            .setContentTitle("New Friend")
+                            .setContentText("You have received new request from " + username)
+                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                            .setAutoCancel(true); // Automatically removes the notification when the user taps it
+
+                    // Show the notification
+                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+                    notificationManager.notify(1, builder.build());
                 }
             }
 
