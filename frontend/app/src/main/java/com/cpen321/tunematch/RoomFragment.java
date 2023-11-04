@@ -399,6 +399,9 @@ public class RoomFragment extends Fragment {
             seekBar.setProgress(progress);
             currentDuration.setText(formatDuration(Long.parseLong(currentSong.getCurrentPosition())));
             totalDuration.setText(formatDuration(Long.parseLong(currentSong.getDuration())));
+            if(webSocketService!=null){
+                sendCurrentSongToFriends(currentSong.getSongName());
+            }
 //                mSpotifyAppRemote.getPlayerApi().play("spotify:track:" + currentSong.getSongID());
 //                mSpotifyAppRemote.getPlayerApi().seekTo(Long.parseLong(currentSong.getCurrentPosition()));
 //                if(currentSong.getIsPLaying()){

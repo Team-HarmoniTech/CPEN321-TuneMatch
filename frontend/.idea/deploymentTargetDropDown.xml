@@ -12,15 +12,6 @@
           </Key>
         </deviceKey>
       </Target>
-      <Target>
-        <type value="RUNNING_DEVICE_TARGET" />
-        <deviceKey>
-          <Key>
-            <type value="SERIAL_NUMBER" />
-            <value value="RZCN8019DZF" />
-          </Key>
-        </deviceKey>
-      </Target>
     </runningDeviceTargetsSelectedWithDialog>
   </component>
 </project>
