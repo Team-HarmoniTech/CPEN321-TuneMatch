@@ -3,11 +3,13 @@ package com.cpen321.tunematch;
 
 import static com.cpen321.tunematch.Message.timestampFormat;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 
@@ -446,6 +448,26 @@ public class WebSocketClient {
                             model.removeRequest(model.getSentRequests(), u);
 
                             friendsAdded = true;
+
+                            // Check permission
+                            if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                                CharSequence name = "New Request";
+                                int importance = NotificationManager.IMPORTANCE_DEFAULT;
+                                NotificationChannel channel = new NotificationChannel("friend_request_channel", name, importance);
+                                notification.createNotificationChannel(channel);
+
+                                // Build the notification
+                                NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel.getId())
+                                        .setSmallIcon(R.drawable.default_profile_image)
+                                        .setContentTitle("New Request")
+                                        .setContentText("You have got a new friend request from " + username)
+                                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                        .setAutoCancel(true); // Automatically removes the notification when the user taps it
+
+                                // Show the notification
+                                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+                                notificationManager.notify(1, builder.build());
+                            }
                         }
                     }
                 }
@@ -453,12 +475,14 @@ public class WebSocketClient {
                 // If request is from new user, add it to received request list
                 if (!friendsAdded) {
                     Log.d("WebSocketClient", "Friends Requested from "+username);
-                    List<SearchUser> requestList = model.getReceivedRequests().getValue();
-                    if (requestList == null) {
-                        requestList = new ArrayList<SearchUser>();
+                    if (!model.inReceivedRequest(newRequest)) {
+                        List<SearchUser> requestList = model.getReceivedRequests().getValue();
+                        if (requestList == null) {
+                            requestList = new ArrayList<SearchUser>();
+                        }
+                        requestList.add(newRequest);
+                        model.getReceivedRequests().postValue(requestList);
                     }
-                    requestList.add(newRequest);
-                    model.getReceivedRequests().postValue(requestList);
                 }
 
             }
@@ -499,4 +523,5 @@ public class WebSocketClient {
             }
         }, PING_INTERVAL);
     }
+
 }
