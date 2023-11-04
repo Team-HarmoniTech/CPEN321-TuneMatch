@@ -1,5 +1,7 @@
 package com.cpen321.tunematch;
 
+import static com.cpen321.tunematch.Message.timestampFormat;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -19,12 +21,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
+import org.json.JSONException;
+
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import kotlin.collections.ArrayDeque;
 
 public class ChatFragment extends Fragment {
     private View view;
@@ -50,7 +55,6 @@ public class ChatFragment extends Fragment {
             isServiceBound = false;
         }
     };
-
     // ChatGPT Usage: No
     @Override
     public void onResume() {
@@ -97,24 +101,35 @@ public class ChatFragment extends Fragment {
             }
         });
 
-        chatWindow.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                return false;
-            }
-        });
-
         return view;
     }
 
     private void onSendMessage() {
         String messageText = chatInput.getText().toString();
+        chatInput.setText("");
         if (messageText == "") return;
 
         Log.d("ChatFragment", "Send: " + messageText);
         Message message = new Message(model.getCurrentUser().getValue(), messageText, new Date());
-        // TODO: SEND MESSAGE IN THE WEBSOCKET
-        model.addMessage(message);
+
+        Gson gson = new Gson();
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+        JsonObject socketMessage = new JsonObject();
+        socketMessage.add("method", gson.toJsonTree("SESSION"));
+        socketMessage.add("action", gson.toJsonTree("message"));
+
+        JsonObject body = new JsonObject();
+        body.add("message", gson.toJsonTree(message.getMessageText()));
+        body.add("timestamp", gson.toJsonTree(message.getTimestampString()));
+
+        socketMessage.add("body", body);
+
+        // Send the message via WebSocket
+        if (isServiceBound && webSocketService != null) {
+            webSocketService.sendMessage(socketMessage.toString());
+        }
+
+        model.addMessage(message, false);
     }
 
     private void initializeChat() {

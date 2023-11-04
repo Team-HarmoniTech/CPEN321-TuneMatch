@@ -108,13 +108,17 @@ public class ReduxStore extends ViewModel {
 
     // Additional methods in ReduxStore for easier management of state
     // ChatGPT Usage: No
-    public void addMessage(Message message) {
+    public void addMessage(Message message, boolean background) {
         List<Message> currentMessages = chatMessages.getValue();
         if (currentMessages == null) {
             currentMessages = new ArrayList<Message>();
         }
         currentMessages.add(message);
-        chatMessages.setValue(currentMessages);
+        if (background) {
+            chatMessages.postValue(currentMessages);
+        } else {
+            chatMessages.setValue(currentMessages);
+        }
     }
 
     // ChatGPT Usage: No

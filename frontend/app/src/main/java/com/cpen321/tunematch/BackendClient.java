@@ -78,7 +78,7 @@ public class BackendClient extends ApiClient<BackendInterface> {
                 response.get("userId").getAsString(),
                 response.get("username").getAsString(),
                 response.get("profilePic").getAsString(),
-                response.get("bio").getAsString(),
+                response.get("bio").isJsonNull() ? null : response.get("bio").getAsString(),
                 getAsStringList(response.getAsJsonArray("topArtists")),
                 getAsStringList(response.getAsJsonArray("topGenres"))
         );
@@ -186,7 +186,6 @@ public class BackendClient extends ApiClient<BackendInterface> {
         body.add("reason", gson.toJsonTree(reason));
         body.add("text", gson.toJsonTree(text));
         body.add("context", gson.toJsonTree(context));
-        Log.d("", body.toString());
 
         Call<String> call = api.createReport(body, this.currentUserId);
         call(call);

@@ -1,11 +1,13 @@
 package com.cpen321.tunematch;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Message implements Comparable<Message> {
     private User sender;
     private String messageText;
     private Date timestamp;
+    public static final SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");;
 
     // ChatGPT Usage: No
     public Message(User sender, String messageText, Date timestamp) {
@@ -16,8 +18,12 @@ public class Message implements Comparable<Message> {
 
     // Getters and Setters
     // ChatGPT Usage: No
-    public Date getTimeSent() {
+    public Date getTimestamp() {
         return timestamp;
+    }
+
+    public String getTimestampString() {
+        return timestampFormat.format(timestamp);
     }
 
     // ChatGPT Usage: No
@@ -43,7 +49,7 @@ public class Message implements Comparable<Message> {
     // ChatGPT Usage: No
     @Override
     public int compareTo(Message otherMessage) {
-        return otherMessage.getTimeSent().compareTo(this.getTimeSent());
+        return otherMessage.getTimestamp().compareTo(this.getTimestamp());
     }
 }
 

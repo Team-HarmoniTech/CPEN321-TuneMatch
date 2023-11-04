@@ -4,8 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:id="@+id/container"
-    android:paddingHorizontal="8dp"
-    android:paddingBottom="8dp">
+    android:paddingHorizontal="8dp">
 
     <com.cpen321.tunematch.TextMessageView
         android:id="@+id/textMessage"
