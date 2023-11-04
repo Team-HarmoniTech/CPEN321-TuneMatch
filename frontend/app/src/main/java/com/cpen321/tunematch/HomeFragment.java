@@ -1,12 +1,7 @@
 package com.cpen321.tunematch;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
+
 import android.os.Bundle;
-import android.os.IBinder;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,28 +14,19 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
-import kotlin.jvm.Synchronized;
 
 public class HomeFragment extends Fragment {
     private View view;
     ReduxStore model;
-
     Button createSessionButton;
     MainActivity mainActivity;
     BottomNavigationView bottomNavigationView;
     private WebSocketService webSocketService;
-
-    // ChatGPT Usage: Partial
-
-    // ChatGPT Usage: Partial
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,10 +34,8 @@ public class HomeFragment extends Fragment {
         mainActivity = (MainActivity) getActivity();
         webSocketService = mainActivity.getWebSocketService();
         bottomNavigationView = mainActivity.findViewById(R.id.bottomNavi);
-
     }
 
-    // ChatGPT Usage: Partial
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -63,9 +47,7 @@ public class HomeFragment extends Fragment {
     public void onStart() {
         super.onStart();
         createSessionButton = view.findViewById(R.id.createListeningSessionBtn);
-        // Add friends activity
         ListView friendsActivityList = view.findViewById(R.id.friendsList);
-
         CustomListAdapter friendsAdapter = new CustomListAdapter(getContext(), getActivity(), "FriendsList", new ArrayList<>(), webSocketService);
 
         friendsActivityList.setAdapter(friendsAdapter);
@@ -98,26 +80,19 @@ public class HomeFragment extends Fragment {
         createSessionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JSONObject messageToSend = new JSONObject();
+                JSONObject messageToCreateSession = new JSONObject();
                 try {
-                    messageToSend.put("method", "SESSION");
-                    messageToSend.put("action", "join");
+                    messageToCreateSession.put("method", "SESSION");
+                    messageToCreateSession.put("action", "join");
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
                 }
-
                 if (webSocketService != null) {
-                    webSocketService.sendMessage(messageToSend.toString());
+                    webSocketService.sendMessage(messageToCreateSession.toString());
                 }
-
-                model.getCurrentSession().postValue(new CurrentSession("session","My session"));
-
-                // send to room fragment
+                model.checkSessionActive().postValue(true);
                 bottomNavigationView.setSelectedItemId(R.id.navigation_room);
             }
         });
-
-
     }
-
 }

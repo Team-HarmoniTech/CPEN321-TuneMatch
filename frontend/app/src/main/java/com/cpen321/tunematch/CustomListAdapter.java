@@ -101,21 +101,16 @@ public class CustomListAdapter extends BaseAdapter {
                     } catch (JSONException e) {
                         throw new RuntimeException(e);
                     }
-                    Log.d("CustomListAdapter", "Sending message to server: " + messageToSend.toString());
-
-
                     if (webSocketService != null) {
                         webSocketService.sendMessage(messageToSend.toString());
                     }
-//                    CurrentSession currSession = model.getCurrentSession().getValue();
-//                    currSession.setSessionId(ownerId);
-//                    model.getCurrentSession().postValue(currSession);
+                    model.checkSessionActive().postValue(true);
+                    model.getSongQueue().postValue(null);
                     BottomNavigationView bottomNavigationView = parentView.findViewById(R.id.bottomNavi);
                     bottomNavigationView.setSelectedItemId(R.id.navigation_room);
                 }
             });
-        } else if (listType.equals("EditFriendsList")) {                                    // in the ProfileFragment
-            // Parse input                                                                  // items = "friendName;id;profilePicUrl"
+        } else if (listType.equals("EditFriendsList")) {                                    // in the
             String[] item = itemList.get(position).split(";");
             String nameText = item[0];
             String id = item[1];

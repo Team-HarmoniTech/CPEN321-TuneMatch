@@ -1,21 +1,16 @@
 package com.cpen321.tunematch;
 
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
@@ -29,27 +24,22 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-
+import android.widget.Toast;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.spotify.android.appremote.api.ConnectionParams;
-import com.spotify.android.appremote.api.Connector;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.spotify.protocol.types.Track;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
-
 import jp.wasabeef.blurry.Blurry;
 import kotlin.text.Charsets;
 import okhttp3.Headers;
-
 
 public class RoomFragment extends Fragment {
     // Constants
@@ -68,7 +58,7 @@ public class RoomFragment extends Fragment {
     private SpotifyAppRemote mSpotifyAppRemote;
     private ChatFragment chatFrag;
     private QueueFragment queueFrag;
-    private ArrayAdapter<String> searchAdapter;
+    private ArrayAdapter<Song> searchAdapter;
     private String authToken;
     private ApiClient spotifyApiClient;
     private MainActivity mainActivity;
@@ -90,6 +80,7 @@ public class RoomFragment extends Fragment {
         view = inflater.inflate(R.layout.frag_room, container, false);
         initializeViews();
         initializeEventListeners();
+        initializeObservers();
         return view;
     }
     @Override
@@ -102,7 +93,6 @@ public class RoomFragment extends Fragment {
         // Initialize ViewModel and ApiClient
         model = ReduxStore.getInstance();
         apiClient = ((MainActivity) getActivity()).getApiClient();
-
         // Get instances of MainActivity, WebSocketService, and SpotifyService
         mainActivity = (MainActivity) getActivity();
         webSocketService = mainActivity.getWebSocketService();
@@ -135,18 +125,6 @@ public class RoomFragment extends Fragment {
 
         // Get the current session
         CurrentSession currentSession = model.getCurrentSession().getValue();
-
-        // Observer to check if session is active and modify button visibility accordingly
-        model.checkSessionActive().observe(getViewLifecycleOwner(), isActive -> {
-            Log.d("RoomFragment", "Session is active: " + isActive);
-            if (isActive) {
-                chatBtn.setVisibility(View.VISIBLE);
-                exitBtn.setVisibility(View.VISIBLE);
-            } else {
-                chatBtn.setVisibility(View.GONE);
-                exitBtn.setVisibility(View.GONE);
-            }
-        });
 
         // Set the queue fragment to be the default fragment in the subFrame
         switchFragment(R.id.subFrame, queueFrag);
@@ -213,13 +191,23 @@ public class RoomFragment extends Fragment {
                     webSocketService.sendMessage(messageToSend.toString());
                     model.checkSessionActive().postValue(false);
                 }
-                model.getCurrentSession().postValue(new CurrentSession(null,null));
+//                model.getCurrentSession().postValue(new CurrentSession(null,null));
                 BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottomNavi);
                 bottomNavigationView.setSelectedItemId(R.id.navigation_home);
             }
         });
+
+        suggestionListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Song selectedSuggestion = searchAdapter.getItem(position);
+                addSongToQueue(selectedSuggestion);
+            }
+        });
+
+
     }
-    private void setUpPlayerControls() {
+    private void setUpPlayerControls(){
         final Handler handler = new Handler();
         final Runnable runnable = new Runnable() {
             @Override
@@ -228,6 +216,10 @@ public class RoomFragment extends Fragment {
                     currentDuration.setText(formatDuration(playerState.playbackPosition));
                     int progress = (int) ((float) playerState.playbackPosition / playerState.track.duration * 100);
                     seekBar.setProgress(progress);
+
+                    if(playerState.track.duration - playerState.playbackPosition < 1000){
+                        playNextSong();
+                    }
                     handler.postDelayed(this, 1000);
                 });
             }
@@ -269,6 +261,7 @@ public class RoomFragment extends Fragment {
                         int progress = (int) ((float) playerState.playbackPosition / track.duration * 100);
                         seekBar.setProgress(progress);
                         totalDuration.setText(formatDuration(track.duration));
+
                         handler.post(runnable);
                     }
                 });
@@ -283,26 +276,61 @@ public class RoomFragment extends Fragment {
                     }
                 });
 
+
+        mSpotifyAppRemote.getPlayerApi().getPlayerState().setResultCallback(playerState -> {
+            final Track track = playerState.track;
+            if (track != null) {
+                String trackId = track.uri.substring(track.uri.lastIndexOf(":") + 1);
+                // Set as current song only if the Redux store's current song is null
+                Song currentSong = model.getCurrentSong().getValue();
+                if (currentSong == null || !currentSong.getSongID().equals(trackId)) {
+                    Song curr = new Song(trackId, track.name, track.artist.name, String.valueOf(track.duration));
+                    curr.setCurrentTimestamp(String.valueOf(System.currentTimeMillis()));
+                    curr.setIsPLaying(!playerState.isPaused);
+                    model.getCurrentSong().postValue(curr);
+                }
+                if(webSocketService!=null){
+                    JSONObject messageToSend = new JSONObject();
+                    try {
+                        messageToSend.put("method", "FRIENDS");
+                        messageToSend.put("action", "update");
+                        messageToSend.put("body", new JSONObject().put("song", currentSong.getSongName()));
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                    webSocketService.sendMessage(messageToSend.toString());
+                }
+            }
+        });
+
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progressChangedValue = 0;
             long newProgress = 0;
-
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 progressChangedValue = progress;
                 newProgress = (long) (trackDuration[0] * (progress / 100.0));
                 currentDuration.setText(formatDuration(newProgress));
             }
-
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
                 handler.removeCallbacks(runnable);
             }
-
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 mSpotifyAppRemote.getPlayerApi().seekTo(newProgress);
                 handler.post(runnable);
+                if(webSocketService!=null && model.checkSessionActive().getValue()){
+                    JSONObject messageToSend = new JSONObject();
+                    try {
+                        messageToSend.put("method", "SESSION");
+                        messageToSend.put("action", "queueSeek");
+                        messageToSend.put("body", new JSONObject().put("seekPosition", newProgress));
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                    webSocketService.sendMessage(messageToSend.toString());
+                }
             }
         });
 
@@ -311,11 +339,33 @@ public class RoomFragment extends Fragment {
             public void onClick(View v) {
                 mSpotifyAppRemote.getPlayerApi().getPlayerState().setResultCallback(playerState -> {
                     if (playerState.isPaused) {
+                        model.setCurrentSongPlaying(true);
                         mSpotifyAppRemote.getPlayerApi().resume();
                         playpauseButton.setText("Pause");
+                        if(webSocketService!=null && model.checkSessionActive().getValue()){
+                            JSONObject messageToSend = new JSONObject();
+                            try {
+                                messageToSend.put("method", "SESSION");
+                                messageToSend.put("action", "queueResume");
+                            } catch (JSONException e) {
+                                throw new RuntimeException(e);
+                            }
+                            webSocketService.sendMessage(messageToSend.toString());
+                        }
                     } else {
+                        model.setCurrentSongPlaying(false);
                         mSpotifyAppRemote.getPlayerApi().pause();
                         playpauseButton.setText("Play");
+                        if(webSocketService!=null && model.checkSessionActive().getValue()){
+                            JSONObject messageToSend = new JSONObject();
+                            try {
+                                messageToSend.put("method", "SESSION");
+                                messageToSend.put("action", "queuePause");
+                            } catch (JSONException e) {
+                                throw new RuntimeException(e);
+                            }
+                            webSocketService.sendMessage(messageToSend.toString());
+                        }
                     }
                 });
             }
@@ -324,14 +374,26 @@ public class RoomFragment extends Fragment {
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mSpotifyAppRemote.getPlayerApi().skipNext();
+                playNextSong();
+                updateFriendsAboutSongChange();
             }
         });
 
         prevButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mSpotifyAppRemote.getPlayerApi().skipPrevious();
+                mSpotifyAppRemote.getPlayerApi().seekTo(0);
+                if(webSocketService!=null && model.checkSessionActive().getValue()){
+                    JSONObject messageToSend = new JSONObject();
+                    try {
+                        messageToSend.put("method", "SESSION");
+                        messageToSend.put("action", "queueSeek");
+                        messageToSend.put("body", new JSONObject().put("seekPosition", 0));
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                    webSocketService.sendMessage(messageToSend.toString());
+                }
             }
         });
 
@@ -343,18 +405,44 @@ public class RoomFragment extends Fragment {
             }
         });
     }
-
+    private void initializeObservers() {
+        model.getCurrentSong().observe(getViewLifecycleOwner(), currentSong -> {
+            if (currentSong != null && mSpotifyAppRemote != null) {
+                songTitle.setText(currentSong.getSongName());
+                songArtist.setText(currentSong.getSongArtist());
+                seekBar.setMax(currentSong.getCurrentTimestamp() == null ? 100 : (int) ((float) Long.parseLong(currentSong.getDuration()) / Long.parseLong(currentSong.getCurrentTimestamp()) * 100));
+                currentDuration.setText(formatDuration(Long.parseLong(currentSong.getCurrentTimestamp())));
+                totalDuration.setText(formatDuration(Long.parseLong(currentSong.getDuration())));
+            }
+        });
+        model.getSongQueue().observe(getViewLifecycleOwner(), songQueue -> {
+            if (songQueue != null && model.getCurrentSong()==null) {
+                if(songQueue.size()>0){
+                    model.getCurrentSong().postValue(new Song(songQueue.get(0).getSongID(),songQueue.get(0).getSongName() , songQueue.get(0).getDuration(),String.valueOf(System.currentTimeMillis())));
+                    songQueue.remove(0);
+                    model.getSongQueue().postValue(songQueue);
+                }
+            }
+        });
+        model.checkSessionActive().observe(getViewLifecycleOwner(), isActive -> {
+            Log.d("RoomFragment", "Session is active: " + isActive);
+            if (isActive) {
+                chatBtn.setVisibility(View.VISIBLE);
+                exitBtn.setVisibility(View.VISIBLE);
+            } else {
+                chatBtn.setVisibility(View.GONE);
+                exitBtn.setVisibility(View.GONE);
+            }
+        });
+    }
 
     // Utility Methods
-    // ChatGPT Usage: No
     private String formatDuration(long duration) {
         int seconds = (int) (duration / 1000) % 60;
         int minutes = (int) ((duration / (1000 * 60)) % 60);
 
         return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
     }
-
-    // ChatGPT Usage: No
     private void switchFragment(int frameId, Fragment frag) {
         getFragmentManager()
                 .beginTransaction()
@@ -362,11 +450,8 @@ public class RoomFragment extends Fragment {
                 .addToBackStack(null)
                 .commit();
     }
-  
-    // ChatGPT Usage: Partial
     private void filterSuggestions(String newText) {
-        // Filter the suggestions based on the newText and update the adapter
-        ArrayList<String> filteredSuggestions = new ArrayList<>();
+        ArrayList<Song> filteredSuggestions = new ArrayList<>();
 
         String endpoint = "search/?q=track:"+encodeSongTitle(newText)+"&type=track";
         new Thread(new Runnable() {
@@ -376,12 +461,13 @@ public class RoomFragment extends Fragment {
                     String songListJson = spotifyApiClient.doGetRequest(endpoint, true);
                     JSONObject rawResponse = new JSONObject(songListJson);
                     JSONArray songItems = rawResponse.getJSONObject("tracks").getJSONArray("items");
-
+                    Song songToAdd;
                     for (int i = 0; i < songItems.length(); i++) {
                         JSONObject song = songItems.getJSONObject(i);
                         JSONArray artists = song.getJSONArray("artists");
-                        filteredSuggestions.add(song.getString("name")+" - "+artists.getJSONObject(0).getString("name"));
-                        Log.d("RoomFragment", "name of song: "+song.getString("name"));
+                        songToAdd = new Song(song.getString("id"),song.getString("name"), artists.getJSONObject(0).getString("name"), song.getString("duration_ms"));
+                        filteredSuggestions.add(songToAdd);
+                        Log.d("RoomFragment", "name of song: "+songToAdd.getSongName());
                     }
 
                     Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -409,8 +495,6 @@ public class RoomFragment extends Fragment {
             }
         }).start();
     }
-
-    // ChatGPT Usage: Partial
     private String encodeSongTitle(String title) {
         String encoded;
         try {
@@ -421,12 +505,75 @@ public class RoomFragment extends Fragment {
         return encoded;
     }
     // ChatGPT Usage: No
+    private void addSongToQueue(Song suggestion) {
+        if (model.checkSessionActive().getValue()) {
+            JSONObject message = new JSONObject();
+            try {
+                message.put("method", "SESSION");
+                message.put("action", "queueAdd");
+                JSONObject body = new JSONObject();
+                body.put("uri", suggestion.getSongID());
+                body.put("durationMs", suggestion.getDuration());
+                body.put("title", suggestion.getSongName());
+                body.put("artist", suggestion.getSongArtist());
+                message.put("body", body);
+                if (webSocketService != null) {
+                    webSocketService.sendMessage(message.toString());
+                } else {
+                    Log.e(TAG, "WebSocketService is not available");
+                }
+            } catch (JSONException e) {
+                Log.e(TAG, "Failed to create JSON message for adding song to queue", e);
+            }
+        }
 
-    public WebSocketService getWebSocketService() {
-        return webSocketService;
+        List<Song> existingQueue = model.getSongQueue().getValue();
+        if (existingQueue == null) {
+            existingQueue = new ArrayList<>();
+        }
+        for (Song s : existingQueue) {
+            if (s.getSongID().equals(suggestion.getSongID())) {
+                return;
+            }
+        }
+        existingQueue.add(suggestion);
+        model.getSongQueue().postValue(existingQueue);
+        suggestionListView.setVisibility(View.GONE);
+        songSearchBar.setQuery("", false);
+        songSearchBar.clearFocus();
     }
-
-    public SpotifyService getSpotifyService() {
-        return mSpotifyService;
+    private void updateFriendsAboutSongChange() {
+        if (webSocketService != null && model.checkSessionActive().getValue()) {
+            JSONObject messageToSend = new JSONObject();
+            try {
+                messageToSend.put("method", "SESSION");
+                messageToSend.put("action", "queueSkip");
+                webSocketService.sendMessage(messageToSend.toString());
+            } catch (JSONException e) {
+                Log.e(TAG, "Failed to create JSON message for updating friends about song change", e);
+            }
+        } else {
+            Log.e(TAG, "WebSocketService is not available or session is not active");
+        }
+    }
+    private void playNextSong() {
+        List<Song> songQueue = model.getSongQueue().getValue();
+        if (songQueue == null || songQueue.isEmpty()) {
+            Toast.makeText(getContext(), "Queue is empty", Toast.LENGTH_SHORT).show();
+            Song currentSong = model.getCurrentSong().getValue();
+            mSpotifyAppRemote.getPlayerApi().seekTo(0);
+            mSpotifyAppRemote.getPlayerApi().pause();
+            currentSong.setIsPLaying(false);
+            model.getCurrentSong().postValue(currentSong);
+            return;
+        }
+        Song nextSong = songQueue.remove(0);
+        model.getSongQueue().postValue(songQueue);
+        nextSong.setCurrentTimestamp(String.valueOf(System.currentTimeMillis()));
+        nextSong.setIsPLaying(true);
+        model.getCurrentSong().postValue(nextSong);
+        mSpotifyAppRemote.getPlayerApi().play("spotify:track:" + nextSong.getSongID());
+        // Send WebSocket message to update friends
+        //  updateFriendsAboutSongChange(nextSong);
     }
 }
