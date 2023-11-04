@@ -61,7 +61,7 @@ public class HomeFragment extends Fragment {
         model.getFriendsList().observe(getViewLifecycleOwner(), friends -> {
             ArrayList<String> friendsListItems = new ArrayList<>();
             for (Friend f : friends) {
-                if(f.getIsListening()==false){
+                if(f.getIsListening() == false){
                     f.setCurrentSong("Not Listening");
                 }
                 friendsListItems.add(f.getName()+";"+f.getCurrentSong());

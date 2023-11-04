@@ -73,17 +73,12 @@ public class ListFragment extends Fragment{
                 adapter.notifyDataSetChanged();
             });
         } else if (listTitle.equals("Request List")) {
-            List<SearchUser> requestList = new ArrayList<SearchUser>();
-            RequestListAdapter adapter = new RequestListAdapter(getContext(), requestList, webSocketService);
+            RequestListAdapter adapter = new RequestListAdapter(getContext(), model.getReceivedRequests().getValue(), webSocketService);
             listView.setAdapter(adapter);
             model.getReceivedRequests().observe(getViewLifecycleOwner(), request -> {
-                for (SearchUser r: request) {
-                    requestList.add(r);
-                }
-                adapter.setData(requestList);
+                adapter.setData(request);
                 adapter.notifyDataSetChanged();
             });
-
         } else {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, listItems);
             listView.setAdapter(adapter);

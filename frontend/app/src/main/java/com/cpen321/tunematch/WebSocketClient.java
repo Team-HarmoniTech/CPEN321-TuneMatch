@@ -133,8 +133,8 @@ public class WebSocketClient {
                     JSONObject friendJson = body.getJSONObject(i);
                     String id = friendJson.getString("userId");
                     String username = friendJson.getString("username");
-                    String profilePic = friendJson.getString("profilePic");
-                    String currentSong = friendJson.optString("currentSong");  // Using optString to avoid null values
+                    String profilePic = friendJson.optString("profilePic", null);
+                    String currentSong = friendJson.optString("currentSong", null);
                     JSONObject currentSource = friendJson.optJSONObject("currentSource");  // Using optJSONObject to avoid null values  // Using optString to avoid null values
                     Friend friend = new Friend(id, username, profilePic);
                     friend.setCurrentSong(currentSong);
@@ -431,6 +431,8 @@ public class WebSocketClient {
                 String userId = body.getString("userId");
                 String username = body.optString("username", null);
                 String profilePic = body.optString("profilePic", null);
+                String currentSong = body.optString("currentSong", null);
+                String currentSource = body.optString("currentSource", null);
 
                 Log.d("WebSocketClient", "Add friend: "+username);
                 SearchUser newRequest = new SearchUser(username, userId, profilePic);
@@ -447,6 +449,18 @@ public class WebSocketClient {
                         Log.d("WebSocketClient", "Friend "+username+" added");
                         model.setSentRequestsList(updatedSent);
                         friendAdded = true;
+
+                        Friend newFriend = new Friend(userId, username, profilePic);
+                        newFriend.setCurrentSong(currentSong);
+                        if (currentSource != "null") {
+                            newFriend.setCurrentSource(new JSONObject(currentSource));
+                        }
+                        List<Friend> friendList = model.getFriendsList().getValue();
+                        if (friendList == null) {
+                            friendList = new ArrayList<Friend>();
+                        }
+                        friendList.add(newFriend);
+                        model.getFriendsList().postValue(friendList);
 
                         // Check permission
                         if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
