@@ -16,12 +16,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import okhttp3.internal.concurrent.TaskRunner;
 
 public class RequestListAdapter extends ArrayAdapter<SearchUser> {
     private List<SearchUser> dataList;
     private final Context context;
+    private final RequestListAdapter adapter;
     private final WebSocketService webSocketService;
     ReduxStore model = ReduxStore.getInstance();
 
@@ -30,6 +32,7 @@ public class RequestListAdapter extends ArrayAdapter<SearchUser> {
         this.context = context;
         this.webSocketService = webSocketService;
         this.dataList = dataList;
+        this.adapter = this;
     }
 
     @Override
@@ -71,6 +74,9 @@ public class RequestListAdapter extends ArrayAdapter<SearchUser> {
                     webSocketService.sendMessage(messageToSend.toString());
                     model.removeRequest(model.getReceivedRequests(), currentItem);
                     model.addFriend(new Friend(currentItem.getId(), currentItem.getName(), currentItem.getProfilePic()));
+
+                    dataList = dataList.stream().filter(u -> u.getId().equals(currentItem.getId())).collect(Collectors.toList());
+                    adapter.notifyDataSetChanged();
                 }
             }
         });
@@ -94,6 +100,9 @@ public class RequestListAdapter extends ArrayAdapter<SearchUser> {
                     Log.d("RequestList", "Decline friend: " + currentItem.getName());
                     webSocketService.sendMessage(messageToSend.toString());
                     model.removeRequest(model.getReceivedRequests(), currentItem);
+
+                    dataList = dataList.stream().filter(u -> u.getId().equals(currentItem.getId())).collect(Collectors.toList());
+                    adapter.notifyDataSetChanged();
                 }
             }
         });

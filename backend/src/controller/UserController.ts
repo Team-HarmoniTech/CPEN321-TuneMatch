@@ -95,7 +95,6 @@ export class UserController {
 
   // ChatGPT Usage: No
   async searchUsers(req: Request, res: Response, next: NextFunction) {
-    console.log(req.query.search)
     const users = await userService.searchUsers(
       req.currentUserId,
       req.query.q,
