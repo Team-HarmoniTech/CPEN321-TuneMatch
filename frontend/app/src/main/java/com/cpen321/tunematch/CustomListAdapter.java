@@ -10,6 +10,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.squareup.picasso.Picasso;
 
@@ -58,14 +59,15 @@ public class CustomListAdapter extends BaseAdapter {
     // ChatGPT Usage: No
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if (convertView == null) {
+        View view = convertView;
+        if (view == null) {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             if (listType.equals("FriendsList")) {
-                convertView = inflater.inflate(R.layout.friend_activity_custom, parent, false);
+                view = inflater.inflate(R.layout.friend_activity_custom, parent, false);
             } else if (listType.equals("SessionsList")) {
-                convertView = inflater.inflate(R.layout.listening_session_custom, parent, false);
+                view = inflater.inflate(R.layout.listening_session_custom, parent, false);
             } else if (listType.equals("EditFriendsList")) {
-                convertView = inflater.inflate(R.layout.friend_remove_custom, parent, false);
+                view = inflater.inflate(R.layout.friend_remove_custom, parent, false);
             }
         }
 
@@ -73,19 +75,19 @@ public class CustomListAdapter extends BaseAdapter {
             String[] item = itemList.get(position).split(";");                        // items = "name;song"
 
             // Set friend name
-            TextView friendNameText = convertView.findViewById(R.id.friendNameText);
+            TextView friendNameText = view.findViewById(R.id.friendNameText);
             friendNameText.setText(item[0]);
 
             // Set name of the song the friend is listening
-            TextView songText = convertView.findViewById(R.id.songTitleText);
+            TextView songText = view.findViewById(R.id.songTitleText);
             songText.setText(item[1]);
         } else if (listType.equals("SessionsList")) {                                       // in the HomeFragment
             // Set room name                                                                // items = "owner"
-            TextView roomNameText = convertView.findViewById(R.id.roomNameText);
+            TextView roomNameText = view.findViewById(R.id.roomNameText);
             String ownerId = itemList.get(position);
             String ownerText = model.getFriendName(ownerId);
             roomNameText.setText(String.format("%s's room", ownerText));
-            Button joinBtn = convertView.findViewById(R.id.joinBtn);
+            Button joinBtn = view.findViewById(R.id.joinBtn);
             // TODO: Whatever is required to join to existing listening session, need to send info through itemlist
 
             joinBtn.setOnClickListener(new View.OnClickListener() {
@@ -117,18 +119,18 @@ public class CustomListAdapter extends BaseAdapter {
             String profilePicUrl = item[2];
 
             // Set name
-            TextView friendNameText = convertView.findViewById(R.id.friendNameText);
+            TextView friendNameText = view.findViewById(R.id.friendNameText);
             friendNameText.setText(nameText);
 
             // Set profile pic
-            ImageView profilePic = convertView.findViewById(R.id.profileImageView);
+            ImageView profilePic = view.findViewById(R.id.profileImageView);
             Picasso.get()
                     .load(profilePicUrl)
                     .placeholder(R.drawable.default_profile_image)      // Set the default image
                     .error(R.drawable.default_profile_image)            // Use the default image in case of an error
                     .into(profilePic);
 
-            Button rmBtn = convertView.findViewById(R.id.removeBtn);
+            Button rmBtn = view.findViewById(R.id.removeBtn);
             rmBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -138,7 +140,7 @@ public class CustomListAdapter extends BaseAdapter {
                         messageToSend.put("method", "REQUESTS");
                         messageToSend.put("action", "remove");
 
-                        body.put("userId", "id");
+                        body.put("userId", id);
                         messageToSend.put("body", body);
                     } catch (JSONException e) {
                         throw new RuntimeException(e);
@@ -150,7 +152,7 @@ public class CustomListAdapter extends BaseAdapter {
                 }
             });
         }
-        return convertView;
+        return view;
     }
 
     // ChatGPT Usage: No

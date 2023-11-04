@@ -1,9 +1,14 @@
 package com.cpen321.tunematch;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.MenuItem;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -15,10 +20,8 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.MenuItem;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import com.spotify.android.appremote.api.ConnectionParams;
-import com.spotify.android.appremote.api.SpotifyAppRemote;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import okhttp3.Headers;
 
@@ -136,9 +139,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
-                    case R.id.navigation_home:
-                        setFragment(0);
-                        break;
                     case R.id.navigation_room:
                         setFragment(1);
                         break;
@@ -148,6 +148,9 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.navigation_profile:
                         setFragment(3);
                         break;
+                    default:
+                        setFragment(0);         // home fragment
+
                 }
                 return true;
             }
@@ -161,10 +164,6 @@ public class MainActivity extends AppCompatActivity {
         ft = fm.beginTransaction();
 
         switch (n) {
-            case 0:
-                ft.replace(R.id.mainFrame, homeFrag);
-                ft.commit();
-                break;
             case 1:
                 ft.replace(R.id.mainFrame, roomFrag);
                 ft.commit();
@@ -175,6 +174,10 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case 3:
                 ft.replace(R.id.mainFrame, profileFrag);
+                ft.commit();
+                break;
+            default:
+                ft.replace(R.id.mainFrame, homeFrag);
                 ft.commit();
                 break;
         }

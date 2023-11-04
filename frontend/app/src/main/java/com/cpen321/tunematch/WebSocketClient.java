@@ -4,10 +4,6 @@ package com.cpen321.tunematch;
 import android.os.Handler;
 import android.util.Log;
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModelProvider;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,7 +11,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import kotlin.jvm.Synchronized;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

@@ -2,10 +2,9 @@ package com.cpen321.tunematch;
 
 import android.util.Log;
 
-import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ReduxStore extends ViewModel {
@@ -90,7 +89,7 @@ public class ReduxStore extends ViewModel {
         friendRequests.setValue(newRequests);
     }
     public String getFriendName(String id) {
-        String name = new String();
+        String name = "";
         for (Friend f : friendsList.getValue()) {
             if ((f.getId()).equals(id)) {
                 name = f.getName();

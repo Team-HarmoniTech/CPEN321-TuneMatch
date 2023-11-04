@@ -1,5 +1,5 @@
 import { describe } from '@jest/globals';
-import { database, userService } from '../src/services';
+import { database, userService } from '@src/services';
 
 afterEach(async () => {
     await database.user.deleteMany();

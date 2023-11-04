@@ -1,7 +1,7 @@
 // ChatGPT Usage: Partial
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
@@ -11,16 +11,16 @@ datasource db {
 }
 
 model User {
-  id                  Int     @id @default(autoincrement())
-  spotify_id          String  @unique
-  username            String
-  top_artists         Json
-  top_genres          Json
-  current_song        String?
-  current_source      Json? //Could be album or playlist
-  is_banned           Boolean @default(false)
-  pfp_url             String? @db.VarChar(500)
-  bio                 String?
+  id             Int     @id @default(autoincrement())
+  spotify_id     String  @unique
+  username       String
+  top_artists    Json
+  top_genres     Json
+  current_song   String?
+  current_source Json? //Could be album or playlist
+  is_banned      Boolean @default(false)
+  pfp_url        String? @db.VarChar(500)
+  bio            String?
 
   // Sessions
   session   Session? @relation(fields: [sessionId], references: [id])
@@ -32,9 +32,9 @@ model User {
   requesting User[] @relation("friends")
 
   // Connections
-  connectionComputed Boolean @default(false)
-  connections1 Connection[] @relation("Connections 1")
-  connections2 Connection[] @relation("Connections 2")
+  connectionComputed Boolean      @default(false)
+  connections1       Connection[] @relation("Connections 1")
+  connections2       Connection[] @relation("Connections 2")
 
   // Reports
   reports_as_offender Report[] @relation("Offender Reports")
@@ -42,7 +42,7 @@ model User {
 }
 
 model Connection {
-  id            Int  @id @default(autoincrement())
+  id            Int @id @default(autoincrement())
   user_id_1     Int
   user_id_2     Int
   match_percent Int
@@ -66,7 +66,7 @@ model Report {
   reason            ReportReasons
   reason_text       String?
   report_context    Json
-  timestamp         DateTime @default(now())
+  timestamp         DateTime      @default(now())
 
   // Constraints
   offender User @relation("Offender Reports", fields: [offending_user_id], references: [id])
