@@ -5,7 +5,7 @@ public class Song {
     private String songID;
     private String duration;
     private String songArtist;
-    private String currentTimestamp;
+    private String currentPosition;
     private Boolean isPLaying;
 
     // ChatGPT Usage: No
@@ -15,10 +15,10 @@ public class Song {
         this.songArtist = Artist;
         this.duration = duration;
         this.isPLaying = false;
-        this.currentTimestamp = "0";
+        this.currentPosition = "0";
     }
-    public void setCurrentTimestamp(String timeStarted) {
-        this.currentTimestamp = timeStarted;
+    public void setCurrentPosition(String timeStarted) {
+        this.currentPosition = timeStarted;
     }
     public void setIsPLaying(Boolean isPLaying) {
         this.isPLaying = isPLaying;
@@ -35,8 +35,11 @@ public class Song {
     public String getSongArtist() {
         return songArtist;
     }
-    public String getCurrentTimestamp() {
-        return currentTimestamp;
+    public String getCurrentPosition() {
+        return currentPosition;
+    }
+    public Boolean getIsPLaying() {
+        return isPLaying;
     }
     @Override
     public String toString() {

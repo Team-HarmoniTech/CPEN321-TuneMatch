@@ -1,6 +1,7 @@
 package com.cpen321.tunematch;
 
 
+import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 import static com.cpen321.tunematch.Message.timestampFormat;
 
 import android.app.Notification;
@@ -32,6 +33,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -276,26 +278,22 @@ public class WebSocketClient {
                     sessionMembers.add(user);
                 }
 
-                if(currentlyPlaying != null){
-
-                    String songId = currentlyPlaying.getString("uri");
-                    String songName = currentlyPlaying.getString("title");
-                    String songArtist = currentlyPlaying.getString("artist");
-                    String duration = currentlyPlaying.getString("durationMs");
-                    String Timestamp = currentlyPlaying.getString("timeStarted");
-                    Song currentSong = new Song(songId, songName, songArtist, duration);
-                    currentSong.setCurrentTimestamp(Timestamp);
-                    currentSong.setIsPLaying(true);
-                    currentSession.setCurrentSong(currentSong);
-                }
 
                 if(members.length() == 0){
+                    Log.d(TAG, "handleSession: you created a session instead of joining one");
                     List<Song> ExisitngSongQueue = model.getSongQueue().getValue();
                     if(ExisitngSongQueue==null){
                         ExisitngSongQueue = new ArrayList<>();
                     }
                     JSONArray songQueue = new JSONArray();
                     try {
+                        Song currentSong = model.getCurrentSong().getValue();
+                        JSONObject currSong = new JSONObject();
+                        currSong.put("uri", currentSong.getSongID());
+                        currSong.put("durationMs", currentSong.getDuration());
+                        currSong.put("title", currentSong.getSongName());
+                        currSong.put("artist", currentSong.getSongArtist());
+                        songQueue.put(currSong);
                         for (Song s : ExisitngSongQueue) {
                             JSONObject song = new JSONObject();
                             song.put("uri", s.getSongID());
@@ -308,15 +306,34 @@ public class WebSocketClient {
                         messageToReplaceQueue.put("method", "SESSION");
                         messageToReplaceQueue.put("action", "queueReplace");
                         messageToReplaceQueue.put("body", songQueue);
+                        JSONObject messageToResume = new JSONObject();
+                        messageToResume.put("method", "SESSION");
+                        messageToResume.put("action", "queueResume");
                         if (webSocket != null) {
                             webSocket.send(messageToReplaceQueue.toString());
+                            webSocket.send(messageToResume.toString());
                             currentSession.setSessionQueue(ExisitngSongQueue);
+
                         }
                     } catch (JSONException e) {
                         throw new RuntimeException(e);
                     }
                 }
                 else{
+                    if(currentlyPlaying != null){
+                        Log.d(TAG, "handleSession: you joined a session instead of creating one");
+                        String songId = currentlyPlaying.getString("uri");
+                        String songName = currentlyPlaying.getString("title");
+                        String songArtist = currentlyPlaying.getString("artist");
+                        String duration = currentlyPlaying.getString("durationMs");
+                        Date timeStarted = timestampFormat.parse(currentlyPlaying.getString("timeStarted"));
+                        long elapsedMs = System.currentTimeMillis() - timeStarted.getTime();
+                        Song currentSong = new Song(songId, songName, songArtist, duration);
+                        currentSong.setCurrentPosition(elapsedMs+"");
+                        currentSong.setIsPLaying(true);
+                        currentSession.setCurrentSong(currentSong);
+                        model.getCurrentSong().postValue(currentSong);
+                    }
                     for (int i = 0; i < queue.length(); i++) {
                         JSONObject song = queue.getJSONObject(i);
                         String songId = song.getString("uri");
@@ -354,14 +371,17 @@ public class WebSocketClient {
                 currentSession.setSessionQueue(sessionQueue);
             }
             else if (action.equals("queueSkip")) {
+                Log.d(TAG, "handleSession: queueSkip has been initiated");
+                Log.d(TAG, "handleSession: queueSkip: " + model.getCurrentSong().getValue().getSongName()+" :: "+model.getSongQueue().getValue().get(0).getSongName());
                 CurrentSession currentSession = model.getCurrentSession().getValue();
-                List<Song> sessionQueue = currentSession.getSessionQueue();
+                List<Song> sessionQueue = model.getSongQueue().getValue();
                 Song currentSong = sessionQueue.get(0);
                 sessionQueue.remove(0);
                 currentSession.setSessionQueue(sessionQueue);
                 currentSession.setCurrentSong(currentSong);
                 model.getCurrentSession().postValue(currentSession);
                 model.getCurrentSong().postValue(currentSong);
+                model.getSongQueue().postValue(sessionQueue);
             }
             else if (action.equals("queueDrag")) {
                 JSONObject body = json.getJSONObject("body");
@@ -389,9 +409,10 @@ public class WebSocketClient {
             else if (action.equals("queueSeek")) {
                 JSONObject body = json.getJSONObject("body");
                 int seekPosition = body.getInt("seekPosition");
+                Log.d(TAG, "handleSession: seekPosition: " + seekPosition);
                 seekPosition = seekPosition / 1000;
                 Song currentSong = model.getCurrentSong().getValue();
-                currentSong.setCurrentTimestamp(seekPosition+"");
+                currentSong.setCurrentPosition(seekPosition+"");
                 model.getCurrentSong().postValue(currentSong);
             }
             else if (action.equals("message")) {

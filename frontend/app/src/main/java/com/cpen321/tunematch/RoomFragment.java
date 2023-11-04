@@ -217,19 +217,21 @@ public class RoomFragment extends Fragment {
                     currentDuration.setText(formatDuration(playerState.playbackPosition));
                     int progress = (int) ((float) playerState.playbackPosition / playerState.track.duration * 100);
                     seekBar.setProgress(progress);
-
-                    if(playerState.track.duration - playerState.playbackPosition < 1000){
+                    if(playerState.track.duration - playerState.playbackPosition < 3000){
                         playNextSong();
                     }
                     handler.postDelayed(this, 1000);
                 });
             }
         };
-
+        final long[] trackDuration = {0};
+        Log.d(TAG, "setUpPlayerControls: is it triggered on load??");
         mSpotifyAppRemote.getPlayerApi()
                 .subscribeToPlayerState()
                 .setEventCallback(playerState -> {
+
                     final Track track = playerState.track;
+                    trackDuration[0] = track.duration;
                     if (track != null) {
                         mSpotifyAppRemote.getImagesApi().getImage(track.imageUri).setResultCallback(bitmap -> {
                             // Create a new ImageView to hold the bitmap
@@ -262,46 +264,22 @@ public class RoomFragment extends Fragment {
                         seekBar.setProgress(progress);
                         totalDuration.setText(formatDuration(track.duration));
 
+                        String trackId = track.uri.substring(track.uri.lastIndexOf(":") + 1);
+                        // Set as current song only if the Redux store's current song is null
+                        Song currentSong = model.getCurrentSong().getValue();
+                        if (currentSong == null || !currentSong.getSongID().equals(trackId)) {
+                            Log.d(TAG, "setUpPlayerControls: is it triggered on load version 2 ??" + track);
+                            Song curr = new Song(trackId, track.name, track.artist.name, String.valueOf(track.duration));
+                            curr.setCurrentPosition(String.valueOf(playerState.playbackPosition));
+                            curr.setIsPLaying(!playerState.isPaused);
+                            model.getCurrentSong().postValue(curr);
+                            if (webSocketService != null) {
+                                sendCurrentSongToFriends(track.name);
+                            }
+                        }
                         handler.post(runnable);
                     }
                 });
-
-        final long[] trackDuration = {0};
-        mSpotifyAppRemote.getPlayerApi()
-                .subscribeToPlayerState()
-                .setEventCallback(playerState -> {
-                    final Track track = playerState.track;
-                    if (track != null) {
-                        trackDuration[0] = track.duration;
-                    }
-                });
-
-
-        mSpotifyAppRemote.getPlayerApi().getPlayerState().setResultCallback(playerState -> {
-            final Track track = playerState.track;
-            if (track != null) {
-                String trackId = track.uri.substring(track.uri.lastIndexOf(":") + 1);
-                // Set as current song only if the Redux store's current song is null
-                Song currentSong = model.getCurrentSong().getValue();
-                if (currentSong == null || !currentSong.getSongID().equals(trackId)) {
-                    Song curr = new Song(trackId, track.name, track.artist.name, String.valueOf(track.duration));
-                    curr.setCurrentTimestamp(String.valueOf(System.currentTimeMillis()));
-                    curr.setIsPLaying(!playerState.isPaused);
-                    model.getCurrentSong().postValue(curr);
-                }
-                if(webSocketService!=null){
-                    JSONObject messageToSend = new JSONObject();
-                    try {
-                        messageToSend.put("method", "FRIENDS");
-                        messageToSend.put("action", "update");
-                        messageToSend.put("body", new JSONObject().put("song", currentSong.getSongName()));
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
-                    webSocketService.sendMessage(messageToSend.toString());
-                }
-            }
-        });
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progressChangedValue = 0;
@@ -319,6 +297,10 @@ public class RoomFragment extends Fragment {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 mSpotifyAppRemote.getPlayerApi().seekTo(newProgress);
+                Song currSong = model.getCurrentSong().getValue();
+                currSong.setCurrentPosition(String.valueOf(newProgress));
+                model.getCurrentSong().postValue(currSong);
+
                 handler.post(runnable);
                 if(webSocketService!=null && model.checkSessionActive().getValue()){
                     JSONObject messageToSend = new JSONObject();
@@ -341,8 +323,6 @@ public class RoomFragment extends Fragment {
                     if (playerState.isPaused) {
                         model.setCurrentSongPlaying(true);
                         mSpotifyAppRemote.getPlayerApi().resume();
-
-                        playpauseButton.setText("Pause");
                         if(webSocketService!=null && model.checkSessionActive().getValue()){
                             JSONObject messageToSend = new JSONObject();
                             try {
@@ -358,7 +338,6 @@ public class RoomFragment extends Fragment {
                     } else {
                         model.setCurrentSongPlaying(false);
                         mSpotifyAppRemote.getPlayerApi().pause();
-                        playpauseButton.setText("Play");
                         if(webSocketService!=null && model.checkSessionActive().getValue()){
                             JSONObject messageToSend = new JSONObject();
                             try {
@@ -411,14 +390,26 @@ public class RoomFragment extends Fragment {
     }
     private void initializeObservers() {
         model.getCurrentSong().observe(getViewLifecycleOwner(), currentSong -> {
+            Log.d(TAG, "updateCurrentSongUI: name:: " + currentSong.getSongName() + " artist:: " + currentSong.getSongArtist() + " duration:: " + currentSong.getDuration() + " currentPos:: " + currentSong.getCurrentPosition() + " isPlaying:: " + currentSong.getIsPLaying());
             if (currentSong != null && mSpotifyAppRemote != null) {
-                songTitle.setText(currentSong.getSongName());
-                songArtist.setText(currentSong.getSongArtist());
-                seekBar.setMax(currentSong.getCurrentTimestamp() == null ? 100 : (int) ((float) Long.parseLong(currentSong.getDuration()) / Long.parseLong(currentSong.getCurrentTimestamp()) * 100));
-                currentDuration.setText(formatDuration(Long.parseLong(currentSong.getCurrentTimestamp())));
-                totalDuration.setText(formatDuration(Long.parseLong(currentSong.getDuration())));
+//            songTitle.setText(currentSong.getSongName());
+//            songArtist.setText(currentSong.getSongArtist());
+//            getCurrentPosition is in milliseconds
+            int progress = (int) ((float) Long.parseLong(currentSong.getCurrentPosition()) / Long.parseLong(currentSong.getDuration()) * 100);
+            seekBar.setProgress(progress);
+            currentDuration.setText(formatDuration(Long.parseLong(currentSong.getCurrentPosition())));
+            totalDuration.setText(formatDuration(Long.parseLong(currentSong.getDuration())));
+//                mSpotifyAppRemote.getPlayerApi().play("spotify:track:" + currentSong.getSongID());
+//                mSpotifyAppRemote.getPlayerApi().seekTo(Long.parseLong(currentSong.getCurrentPosition()));
+//                if(currentSong.getIsPLaying()){
+//                    mSpotifyAppRemote.getPlayerApi().resume();
+//                }else{
+//                    mSpotifyAppRemote.getPlayerApi().pause();
+//                }
             }
         });
+
+        // Observe the song queue LiveData
         model.getSongQueue().observe(getViewLifecycleOwner(), songQueue -> {
             if (songQueue != null && model.getCurrentSong()==null) {
                 if(songQueue.size()>0){
@@ -428,17 +419,18 @@ public class RoomFragment extends Fragment {
                 }
             }
         });
-        model.checkSessionActive().observe(getViewLifecycleOwner(), isActive -> {
-            Log.d("RoomFragment", "Session is active: " + isActive);
-            if (isActive) {
-                chatBtn.setVisibility(View.VISIBLE);
-                exitBtn.setVisibility(View.VISIBLE);
-            } else {
-                chatBtn.setVisibility(View.GONE);
-                exitBtn.setVisibility(View.GONE);
-            }
-        });
+
+        // Observe the session active LiveData
+        model.checkSessionActive().observe(getViewLifecycleOwner(), this::updateSessionUI);
     }
+
+
+    // Update UI components related to the session active state
+    private void updateSessionUI(Boolean isActive) {
+        chatBtn.setVisibility(isActive ? View.VISIBLE : View.GONE);
+        exitBtn.setVisibility(isActive ? View.VISIBLE : View.GONE);
+    }
+
 
     // Utility Methods
     private String formatDuration(long duration) {
@@ -559,7 +551,27 @@ public class RoomFragment extends Fragment {
             Log.e(TAG, "WebSocketService is not available or session is not active");
         }
     }
+
+    private void sendCurrentSongToFriends(String songName) {
+        if (webSocketService != null) {
+            JSONObject messageToSend = new JSONObject();
+            try {
+                messageToSend.put("method", "FRIENDS");
+                messageToSend.put("action", "update");
+                JSONObject body = new JSONObject();
+                body.put("song", songName);
+                messageToSend.put("body", body);
+                webSocketService.sendMessage(messageToSend.toString());
+            } catch (JSONException e) {
+                Log.e(TAG, "Failed to create JSON message for updating friends about song change", e);
+            }
+        } else {
+            Log.e(TAG, "WebSocketService is not available or session is not active");
+        }
+    }
+
     private void playNextSong() {
+        Log.d(TAG, "playNextSong: is it triggered?");
         List<Song> songQueue = model.getSongQueue().getValue();
         if (songQueue == null || songQueue.isEmpty()) {
             Toast.makeText(getContext(), "Queue is empty", Toast.LENGTH_SHORT).show();
@@ -572,11 +584,31 @@ public class RoomFragment extends Fragment {
         }
         Song nextSong = songQueue.remove(0);
         model.getSongQueue().postValue(songQueue);
-        nextSong.setCurrentTimestamp(String.valueOf(System.currentTimeMillis()));
+        nextSong.setCurrentPosition("0");
         nextSong.setIsPLaying(true);
         model.getCurrentSong().postValue(nextSong);
         mSpotifyAppRemote.getPlayerApi().play("spotify:track:" + nextSong.getSongID());
         // Send WebSocket message to update friends
         //  updateFriendsAboutSongChange(nextSong);
     }
+//    private void playNextSong() {
+//        List<Song> songQueue = model.getSongQueue().getValue();
+//        if (songQueue == null || songQueue.isEmpty()) {
+//            Toast.makeText(getContext(), "Queue is empty", Toast.LENGTH_SHORT).show();
+//            Song currentSong = model.getCurrentSong().getValue();
+//            mSpotifyAppRemote.getPlayerApi().seekTo(0);
+//            mSpotifyAppRemote.getPlayerApi().pause();
+//            if (currentSong != null) {
+//                currentSong.setIsPLaying(false);
+//                model.getCurrentSong().postValue(currentSong);
+//            }
+//            return;
+//        }
+//        Song nextSong = songQueue.remove(0);
+//        model.getSongQueue().postValue(songQueue);
+//        nextSong.setCurrentTimestamp(String.valueOf(System.currentTimeMillis()));
+//        nextSong.setIsPLaying(true);
+//        model.getCurrentSong().postValue(nextSong);
+//        mSpotifyAppRemote.getPlayerApi().play("spotify:track:" + nextSong.getSongID());
+//    }
 }
