@@ -11,7 +11,8 @@ import java.util.List;
 public class ReduxStore extends ViewModel {
     private static ReduxStore instance;
     private final MutableLiveData<List<Friend>> friendsList;
-    private final MutableLiveData<List<SearchUser>> friendRequests;
+    private final MutableLiveData<List<SearchUser>> sentRequests;
+    private final MutableLiveData<List<SearchUser>> receivedRequests;
     private final MutableLiveData<List<Session>> sessionList;
     private final MutableLiveData<List<Song>> songQueue;
     private final MutableLiveData<List<SearchUser>> searchList;
@@ -22,7 +23,8 @@ public class ReduxStore extends ViewModel {
     private final MutableLiveData<User> currentUser;
     public ReduxStore() {
         friendsList = new MutableLiveData<>();
-        friendRequests = new MutableLiveData<>();
+        sentRequests = new MutableLiveData<>();
+        receivedRequests = new MutableLiveData<>();
         sessionList = new MutableLiveData<>();
         songQueue = new MutableLiveData<>();
         searchList = new MutableLiveData<>();
@@ -55,21 +57,51 @@ public class ReduxStore extends ViewModel {
     }
 
     // ChatGPT Usage: No
-    public MutableLiveData<List<SearchUser>> getFriendsRequest() {return friendRequests;}
+    public void addFriend(Friend friendToAdd) {
+        List<Friend> currFriendList = friendsList.getValue();
+        if (currFriendList == null) {
+            currFriendList = new ArrayList<Friend>();
+        }
+        currFriendList.add(friendToAdd);
+        friendsList.postValue(currFriendList);
+    }
 
+    // ChatGPT Usage: No
+    public MutableLiveData<List<SearchUser>> getSentRequests() { return sentRequests; }
+
+    // ChatGPT Usage: No
+    public MutableLiveData<List<SearchUser>> getReceivedRequests() { return receivedRequests; }
+
+    // ChatGPT Usage: No
+    public void setSentRequestsList(List<SearchUser> newRequests) { sentRequests.postValue(newRequests); }
+
+    // ChatGPT Usage: No
+    public void addSentRequest(SearchUser userToAdd) {
+        List<SearchUser> sentRequestList = sentRequests.getValue();
+        if (sentRequestList == null) {
+            sentRequestList = new ArrayList<SearchUser>();
+        }
+        sentRequestList.add(userToAdd);
+        sentRequests.postValue(sentRequestList);
+    }
+
+    // ChatGPT Usage: No
+    public void setReceivedRequestsList(List<SearchUser> newRequests) { receivedRequests.postValue(newRequests); }
+
+    // ChatGPT Usage: No
     public MutableLiveData<Boolean> checkSessionActive() {
         return sessionActive;
     }
-    // ChatGPT Usage: No
-    public void setFriendsRequestList(List<SearchUser> newRequests) {friendRequests.setValue(newRequests);}
 
     // ChatGPT Usage: No
     public MutableLiveData<List<SearchUser>> getSearchList() {return searchList;}
 
+    // ChatGPT Usage: No
     public MutableLiveData<CurrentSession> getCurrentSession() {
         return currentSession;
     }
 
+    // ChatGPT Usage: No
     public boolean checkCurrentSessionActive() {
         CurrentSession session = currentSession.getValue();
         if (session != null) {
@@ -157,30 +189,30 @@ public class ReduxStore extends ViewModel {
 
         for (int i = 0; i < currFriendList.size(); i++) {
             Friend f = currFriendList.get(i);
-            if (f.getId().equals(friendToRemove.getId()) & f.getName().equals(friendToRemove.getName())) {
+            if (f.getId().equals(friendToRemove.getId())) {
                 currFriendList.remove(i);
+                Log.d("ReduxStore", "Removed "+friendToRemove.getName());
                 break;
             }
         }
-
         friendsList.postValue(currFriendList);
     }
 
     // ChatGPT Usage: No
-    public void removeFriendRequest(SearchUser userToRemove) {
-        List<SearchUser> currRequestList = friendRequests.getValue();
+    public void removeRequest(MutableLiveData<List<SearchUser>> requestList, SearchUser userToRemove) {
+        List<SearchUser> currRequestList = requestList.getValue();
         if (currRequestList != null) {
             for (int i = 0; i < currRequestList.size(); i++) {
                 SearchUser f = currRequestList.get(i);
-                if (f.getId().equals(userToRemove.getId()) & f.getName().equals(userToRemove.getName())) {
+                if (f.getId().equals(userToRemove.getId())) {
                     currRequestList.remove(i);
+                    Log.d("ReduxStore", "Removed request of:" + userToRemove.getName());
                     break;
                 }
             }
-            friendRequests.postValue(currRequestList);
+            requestList.postValue(currRequestList);
         }
     }
-
 
 //    Handle sessions
 

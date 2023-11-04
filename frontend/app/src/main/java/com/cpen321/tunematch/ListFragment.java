@@ -11,16 +11,16 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ListFragment extends Fragment{
 
     ReduxStore model;
     private String listTitle;
     private ArrayList<String> listItems;
-
     private WebSocketService webSocketService;
-    private boolean isServiceBound = false;
 
     // ChatGPT Usage: Yes
     public static ListFragment newInstance(ArrayList<String> listItem, String listTitle) {
@@ -43,6 +43,7 @@ public class ListFragment extends Fragment{
         }
 
         model = ((MainActivity) getActivity()).getModel();
+        webSocketService = ((MainActivity) getActivity()).getWebSocketService();
     }
 
     // ChatGPT Usage: Partial
@@ -60,9 +61,7 @@ public class ListFragment extends Fragment{
         // Create an ArrayAdapter to populate the ListView
         if (listTitle.equals("Friends List")) {
             // Updated the CustomListAdapter instantiation to pass `this` as the SessionJoinListener
-            CustomListAdapter adapter = new CustomListAdapter(getContext(), getActivity(), "EditFriendsList", listItems, ((MainActivity) getActivity()).getWebSocketService());
-            listView.setAdapter(adapter);
-
+            CustomListAdapter adapter = new CustomListAdapter(getContext(), getActivity(), "EditFriendsList", listItems, webSocketService);
             listView.setAdapter(adapter);
 
             model.getFriendsList().observe(getViewLifecycleOwner(), friends -> {
@@ -73,6 +72,18 @@ public class ListFragment extends Fragment{
                 adapter.setData(friendsListItems);
                 adapter.notifyDataSetChanged();
             });
+        } else if (listTitle.equals("Request List")) {
+            List<SearchUser> requestList = new ArrayList<SearchUser>();
+            RequestListAdapter adapter = new RequestListAdapter(getContext(), requestList, webSocketService);
+            listView.setAdapter(adapter);
+            model.getReceivedRequests().observe(getViewLifecycleOwner(), request -> {
+                for (SearchUser r: request) {
+                    requestList.add(r);
+                }
+                adapter.setData(requestList);
+                adapter.notifyDataSetChanged();
+            });
+
         } else {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, listItems);
             listView.setAdapter(adapter);
