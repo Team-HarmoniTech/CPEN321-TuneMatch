@@ -28,11 +28,9 @@ import java.util.Date;
 import java.util.List;
 
 public class ChatFragment extends Fragment {
-    private View view;
     private RecyclerView chatWindow;
     private MessageAdapter chatAdapter;
     private TextInputEditText chatInput;
-    private FloatingActionButton sendChat;
     private WebSocketService webSocketService;
     private boolean isServiceBound = false;
     ReduxStore model;
@@ -71,10 +69,10 @@ public class ChatFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.frag_chat, container, false);
+        View view = inflater.inflate(R.layout.frag_chat, container, false);
         chatWindow = view.findViewById(R.id.chatWindow);
         chatInput = view.findViewById(R.id.chatInput);
-        sendChat = view.findViewById(R.id.sendChatButton);
+        FloatingActionButton sendChat = view.findViewById(R.id.sendChatButton);
 
         model = ReduxStore.getInstance();
         initializeChat();
@@ -103,7 +101,7 @@ public class ChatFragment extends Fragment {
     private void onSendMessage() {
         String messageText = chatInput.getText().toString();
         chatInput.setText("");
-        if (messageText == "") return;
+        if (messageText.equals("")) return;
 
         Log.d("ChatFragment", "Send: " + messageText);
         Message message = new Message(model.getCurrentUser().getValue(), messageText, new Date());

@@ -28,10 +28,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-
-    private BottomNavigationView bottomNavigationView;
-    private FragmentManager fm;
-    private FragmentTransaction ft;
     private HomeFragment homeFrag;
     private RoomFragment roomFrag;
     private SearchFragment searchFrag;
@@ -45,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private SpotifyService mSpotifyService;
     private boolean mSpotifyBound = false;
 
+    // ChatGPT Usage: Partial
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -66,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-
+    // ChatGPT Usage: Partial
     @Override
     protected void onStart() {
         super.onStart();
@@ -76,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         bindService(spotifyIntent, mSpotifyConnection, Context.BIND_AUTO_CREATE);
     }
 
+    // ChatGPT Usage: Partial
     @Override
     protected void onStop() {
         super.onStop();
@@ -89,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // ChatGPT Usage: Partial
     private ServiceConnection mSpotifyConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
@@ -103,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    // ChatGPT Usage: Partial
     public SpotifyService getSpotifyService() {
         if (mSpotifyBound) {
             return mSpotifyService;
@@ -111,12 +111,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // ChatGPT Usage: Partial
     public void sendMessageViaWebSocket(String message) {
         if (isServiceBound && webSocketService != null) {
             webSocketService.sendMessage(message);
         }
     }
-
 
     // ChatGPT Usage: No
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
@@ -125,8 +125,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         model = ReduxStore.getInstance();
-
-
 
         // Retrieve the Spotify User ID from the Intent
         Intent intent = getIntent();
@@ -163,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
                     new String[]{android.Manifest.permission.POST_NOTIFICATIONS},0);
         }
 
-        bottomNavigationView = findViewById(R.id.bottomNavi);
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavi);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener(){
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -188,8 +186,8 @@ public class MainActivity extends AppCompatActivity {
 
     // ChatGPT Usage: No
     private void setFragment(int n) {
-        fm = getSupportFragmentManager();
-        ft = fm.beginTransaction();
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
 
         switch (n) {
             case 1:

@@ -65,9 +65,7 @@ public class RoomFragment extends Fragment {
     private ChatFragment chatFrag;
     private QueueFragment queueFrag;
     private ArrayAdapter<Song> searchAdapter;
-    private String authToken;
     private SpotifyClient spotifyClient;
-    private MainActivity mainActivity;
     private ReduxStore model;
     private CurrentSession currentSession;
     private WebSocketService webSocketService;
@@ -99,7 +97,7 @@ public class RoomFragment extends Fragment {
         model = ReduxStore.getInstance();
 
         // Get instances of MainActivity, WebSocketService, and SpotifyService
-        mainActivity = (MainActivity) getActivity();
+        MainActivity mainActivity = (MainActivity) getActivity();
         webSocketService = mainActivity.getWebSocketService();
         mSpotifyService = mainActivity.getSpotifyService();
         mSpotifyAppRemote = mSpotifyService.getSpotifyAppRemote();
@@ -140,7 +138,7 @@ public class RoomFragment extends Fragment {
 
         // Retrieve the authentication token
         SharedPreferences preferences = getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
-        authToken = preferences.getString("auth_token", null);
+        String authToken = preferences.getString("auth_token", null);
 
         // Initialize the Spotify API client with the base URL and custom headers
         spotifyClient = new SpotifyClient(authToken);

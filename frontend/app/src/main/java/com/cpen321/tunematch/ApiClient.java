@@ -15,12 +15,11 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public abstract class ApiClient<T> {
-    private Retrofit retrofit;
     protected T api;
     protected abstract String getBaseUrl();
 
     public ApiClient(Class<T> serviceClass) {
-        retrofit = new Retrofit.Builder()
+        Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(getBaseUrl())
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())

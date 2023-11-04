@@ -33,8 +33,6 @@ import java.util.List;
 import kotlin.text.Charsets;
 
 public class SearchFragment extends Fragment {
-
-    private View view;
     private ArrayAdapter<String> listAdapter;
     private AlertDialog profileDialog;
     ReduxStore model;
@@ -69,7 +67,7 @@ public class SearchFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.frag_search, container, false);
+        View view = inflater.inflate(R.layout.frag_search, container, false);
         SearchView searchFriend = view.findViewById(R.id.searchFriend);
         ListView recommendedList = view.findViewById(R.id.recommendedList);
 
