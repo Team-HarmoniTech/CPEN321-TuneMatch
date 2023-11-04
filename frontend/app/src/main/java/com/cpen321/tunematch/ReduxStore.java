@@ -57,15 +57,38 @@ public class ReduxStore extends ViewModel {
     }
 
     // ChatGPT Usage: No
+    public void addFriend(Friend friendToAdd) {
+        List<Friend> currFriendList = friendsList.getValue();
+        if (currFriendList == null) {
+            currFriendList = new ArrayList<Friend>();
+        }
+        currFriendList.add(friendToAdd);
+        friendsList.postValue(currFriendList);
+    }
+
+    // ChatGPT Usage: No
     public MutableLiveData<List<SearchUser>> getSentRequests() { return sentRequests; }
+
+    // ChatGPT Usage: No
     public MutableLiveData<List<SearchUser>> getReceivedRequests() { return receivedRequests; }
 
     // ChatGPT Usage: No
     public void setSentRequestsList(List<SearchUser> newRequests) { sentRequests.postValue(newRequests); }
 
     // ChatGPT Usage: No
+    public void addSentRequest(SearchUser userToAdd) {
+        List<SearchUser> sentRequestList = sentRequests.getValue();
+        if (sentRequestList == null) {
+            sentRequestList = new ArrayList<SearchUser>();
+        }
+        sentRequestList.add(userToAdd);
+        sentRequests.postValue(sentRequestList);
+    }
+
+    // ChatGPT Usage: No
     public void setReceivedRequestsList(List<SearchUser> newRequests) { receivedRequests.postValue(newRequests); }
 
+    // ChatGPT Usage: No
     public MutableLiveData<Boolean> checkSessionActive() {
         return sessionActive;
     }
@@ -73,10 +96,12 @@ public class ReduxStore extends ViewModel {
     // ChatGPT Usage: No
     public MutableLiveData<List<SearchUser>> getSearchList() {return searchList;}
 
+    // ChatGPT Usage: No
     public MutableLiveData<CurrentSession> getCurrentSession() {
         return currentSession;
     }
 
+    // ChatGPT Usage: No
     public boolean checkCurrentSessionActive() {
         CurrentSession session = currentSession.getValue();
         if (session != null) {
@@ -164,8 +189,9 @@ public class ReduxStore extends ViewModel {
 
         for (int i = 0; i < currFriendList.size(); i++) {
             Friend f = currFriendList.get(i);
-            if (f.getId().equals(friendToRemove.getId()) & f.getName().equals(friendToRemove.getName())) {
+            if (f.getId().equals(friendToRemove.getId())) {
                 currFriendList.remove(i);
+                Log.d("ReduxStore", "Removed "+friendToRemove.getName());
                 break;
             }
         }
@@ -178,8 +204,9 @@ public class ReduxStore extends ViewModel {
         if (currRequestList != null) {
             for (int i = 0; i < currRequestList.size(); i++) {
                 SearchUser f = currRequestList.get(i);
-                if (f.getId().equals(userToRemove.getId()) & f.getName().equals(userToRemove.getName())) {
+                if (f.getId().equals(userToRemove.getId())) {
                     currRequestList.remove(i);
+                    Log.d("ReduxStore", "Removed request of:" + userToRemove.getName());
                     break;
                 }
             }

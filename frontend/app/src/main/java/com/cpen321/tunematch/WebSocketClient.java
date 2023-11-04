@@ -371,17 +371,13 @@ public class WebSocketClient {
                     for (SearchUser u : sentRequestList) {
                         if (u.getId().equals(userId)) {
                             // Add to friend
+                            Log.d("WebSocketClient", "Friend "+username+" added");
                             Friend newFriend = new Friend(userId, username, profilePic);
                             newFriend.setCurrentSong(currentSong);
                             if (currentSource != "null") {
                                 newFriend.setCurrentSource(new JSONObject(currentSource));
                             }
-                            List<Friend> friendList = model.getFriendsList().getValue();
-                            if (friendList == null) {
-                                friendList = new ArrayList<Friend>();
-                            }
-                            friendList.add(newFriend);
-                            model.getFriendsList().postValue(friendList);
+                            model.addFriend(newFriend);
 
                             // Remove added user from sent request list
                             model.removeRequest(model.getSentRequests(), u);
@@ -393,6 +389,7 @@ public class WebSocketClient {
 
                 // If request is from new user, add it to received request list
                 if (!friendsAdded) {
+                    Log.d("WebSocketClient", "Friends Requested from "+username);
                     List<SearchUser> requestList = model.getReceivedRequests().getValue();
                     if (requestList == null) {
                         requestList = new ArrayList<SearchUser>();

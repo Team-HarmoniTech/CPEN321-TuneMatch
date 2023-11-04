@@ -20,9 +20,7 @@ public class ListFragment extends Fragment{
     ReduxStore model;
     private String listTitle;
     private ArrayList<String> listItems;
-
     private WebSocketService webSocketService;
-    private boolean isServiceBound = false;
 
     // ChatGPT Usage: Yes
     public static ListFragment newInstance(ArrayList<String> listItem, String listTitle) {
@@ -45,6 +43,7 @@ public class ListFragment extends Fragment{
         }
 
         model = ((MainActivity) getActivity()).getModel();
+        webSocketService = ((MainActivity) getActivity()).getWebSocketService();
     }
 
     // ChatGPT Usage: Partial
@@ -62,7 +61,7 @@ public class ListFragment extends Fragment{
         // Create an ArrayAdapter to populate the ListView
         if (listTitle.equals("Friends List")) {
             // Updated the CustomListAdapter instantiation to pass `this` as the SessionJoinListener
-            CustomListAdapter adapter = new CustomListAdapter(getContext(), getActivity(), "EditFriendsList", listItems, ((MainActivity) getActivity()).getWebSocketService());
+            CustomListAdapter adapter = new CustomListAdapter(getContext(), getActivity(), "EditFriendsList", listItems, webSocketService);
             listView.setAdapter(adapter);
 
             model.getFriendsList().observe(getViewLifecycleOwner(), friends -> {
@@ -75,7 +74,7 @@ public class ListFragment extends Fragment{
             });
         } else if (listTitle.equals("Request List")) {
             List<SearchUser> requestList = new ArrayList<SearchUser>();
-            RequestListAdapter adapter = new RequestListAdapter(getContext(), requestList, ((MainActivity) getActivity()).getWebSocketService());
+            RequestListAdapter adapter = new RequestListAdapter(getContext(), requestList, webSocketService);
             listView.setAdapter(adapter);
             model.getReceivedRequests().observe(getViewLifecycleOwner(), request -> {
                 for (SearchUser r: request) {

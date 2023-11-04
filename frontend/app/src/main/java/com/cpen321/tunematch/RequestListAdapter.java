@@ -17,11 +17,13 @@ import org.json.JSONObject;
 
 import java.util.List;
 
+import okhttp3.internal.concurrent.TaskRunner;
+
 public class RequestListAdapter extends ArrayAdapter<SearchUser> {
     private List<SearchUser> dataList;
     private final Context context;
     private final WebSocketService webSocketService;
-    ReduxStore model= ReduxStore.getInstance();
+    ReduxStore model = ReduxStore.getInstance();
 
     public RequestListAdapter(Context context, List<SearchUser> dataList, WebSocketService webSocketService) {
         super(context, R.layout.request_list_item, dataList);
@@ -52,7 +54,6 @@ public class RequestListAdapter extends ArrayAdapter<SearchUser> {
         acceptBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("Profile dialog addButton", "Send friend request");
                 JSONObject messageToSend = new JSONObject();
                 JSONObject body = new JSONObject();
                 try {
@@ -66,11 +67,11 @@ public class RequestListAdapter extends ArrayAdapter<SearchUser> {
                 }
 
                 if (webSocketService != null) {
-                    Log.d("SearchFragment", "add friend:" + messageToSend);
+                    Log.d("RequestList", "Accept friend:" + currentItem.getName());
                     webSocketService.sendMessage(messageToSend.toString());
+                    model.removeRequest(model.getReceivedRequests(), currentItem);
+                    model.addFriend(new Friend(currentItem.getId(), currentItem.getName(), currentItem.getProfilePic()));
                 }
-
-                model.removeRequest(model.getReceivedRequests(), currentItem);
             }
         });
 
@@ -90,10 +91,10 @@ public class RequestListAdapter extends ArrayAdapter<SearchUser> {
                 }
 
                 if (webSocketService != null) {
-                    Log.d("ProfileFragment", "Remove friend: "+currentItem.getId());
+                    Log.d("RequestList", "Decline friend: " + currentItem.getName());
                     webSocketService.sendMessage(messageToSend.toString());
+                    model.removeRequest(model.getReceivedRequests(), currentItem);
                 }
-                model.removeRequest(model.getReceivedRequests(), currentItem);
             }
         });
 
