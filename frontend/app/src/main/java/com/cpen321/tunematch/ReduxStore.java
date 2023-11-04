@@ -218,6 +218,19 @@ public class ReduxStore extends ViewModel {
         }
     }
 
+    // ChatGPT Usage: No
+    public Boolean inReceivedRequest(SearchUser user) {
+        List<SearchUser> currRequestList = receivedRequests.getValue();
+        if (currRequestList != null) {
+            for (SearchUser u : currRequestList) {
+                if (u.getId().equals(user.getId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 //    Handle sessions
 
 }
