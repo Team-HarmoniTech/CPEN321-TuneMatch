@@ -19,16 +19,7 @@ import com.spotify.sdk.android.auth.AuthorizationClient;
 import com.spotify.sdk.android.auth.AuthorizationRequest;
 import com.spotify.sdk.android.auth.AuthorizationResponse;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-
-import okhttp3.Headers;
 
 public class LoginActivity extends AppCompatActivity {
     // Request code will be used to verify if result comes from the login activity. Can be set to any integer.

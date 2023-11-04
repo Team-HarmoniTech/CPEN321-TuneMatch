@@ -1,7 +1,6 @@
 package com.cpen321.tunematch;
 
 import java.util.ArrayList;
-import java.util.List;
 
 // ChatGPT Usage: No
 public class User {

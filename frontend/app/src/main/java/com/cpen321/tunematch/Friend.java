@@ -4,8 +4,6 @@ import android.util.Log;
 
 import com.google.gson.JsonElement;
 
-import org.json.JSONObject;
-
 public class Friend extends User {
     private String currentSong;
     private JsonElement currentSource;

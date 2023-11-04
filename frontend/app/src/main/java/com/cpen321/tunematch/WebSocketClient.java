@@ -4,13 +4,10 @@ package com.cpen321.tunematch;
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 import static com.cpen321.tunematch.Message.timestampFormat;
 
-import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 
