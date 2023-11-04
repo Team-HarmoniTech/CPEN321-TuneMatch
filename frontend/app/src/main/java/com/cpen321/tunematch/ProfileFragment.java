@@ -58,6 +58,19 @@ public class ProfileFragment extends Fragment {
 
         });
 
+        Button requestListBtn = view.findViewById(R.id.requestListBtn);
+        requestListBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ListFragment requestListFragment = ListFragment.newInstance(new ArrayList<>(), "Request List");
+
+                ft = fm.beginTransaction();
+                ft.replace(R.id.mainFrame, requestListFragment);
+                ft.addToBackStack(null);
+                ft.commit();
+            }
+        });
+
         Button topArtistBtn = view.findViewById(R.id.topArtistsBtn);
         topArtistBtn.setOnClickListener(new View.OnClickListener(){
             @Override

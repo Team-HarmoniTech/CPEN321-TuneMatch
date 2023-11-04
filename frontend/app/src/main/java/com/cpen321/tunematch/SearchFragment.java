@@ -55,7 +55,7 @@ public class SearchFragment extends Fragment {
         // Initialize ViewModel and ApiClient here.
         model = ((MainActivity) getActivity()).getModel();
         webSocketService = ((MainActivity) getActivity()).getWebSocketService();
-        backend = ((MainActivity) getActivity()).getBackend();;
+        backend = ((MainActivity) getActivity()).getBackend();
 
         new Thread(new Runnable() {
             @Override
@@ -101,7 +101,7 @@ public class SearchFragment extends Fragment {
                 String username = selectedUserWithScore.split(" \\(")[0];
                 String encodedName = encodeUsername(username);
 
-                String[] friendId = new String[1];
+                SearchUser[] friend = new SearchUser[1];
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -111,7 +111,7 @@ public class SearchFragment extends Fragment {
                             Log.d("SearchFragment", "selected user info: " + user);
 
                             String profileUrl = user.getProfilePic();
-                            friendId[0] = user.getId();
+                            friend[0] = user;
                             if (profileUrl != null) {
                                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                                     @Override
@@ -142,7 +142,7 @@ public class SearchFragment extends Fragment {
                 addButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (friendId[0] != null) {
+                        if (friend[0] != null) {
                             Log.d("Profile dialog addButton", "Send friend request");
                             JSONObject messageToSend = new JSONObject();
                             JSONObject body = new JSONObject();
@@ -150,15 +150,16 @@ public class SearchFragment extends Fragment {
                                 messageToSend.put("method", "REQUESTS");
                                 messageToSend.put("action", "add");
 
-                                body.put("userId", friendId[0]);
+                                body.put("userId", friend[0].getId());
                                 messageToSend.put("body", body);
                             } catch (JSONException e) {
                                 throw new RuntimeException(e);
                             }
 
                             if (webSocketService != null) {
-                                Log.d("SearchFragment", "add friend:" + messageToSend);
+                                Log.d("SearchFragment", "Send friend request to:" + friend[0].getName());
                                 webSocketService.sendMessage(messageToSend.toString());
+                                model.addSentRequest(friend[0]);
                             }
                             profileDialog.dismiss();
                         } else {
