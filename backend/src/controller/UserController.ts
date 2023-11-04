@@ -95,10 +95,10 @@ export class UserController {
 
   // ChatGPT Usage: No
   async searchUsers(req: Request, res: Response, next: NextFunction) {
-    const decodedSearchTerm = req.params?.search_term.replace("+", " ");
+    console.log(req.query.search)
     const users = await userService.searchUsers(
       req.currentUserId,
-      decodedSearchTerm,
+      req.query.q,
       Number(req.query.max),
     );
     res.send(

@@ -17,7 +17,7 @@ public interface BackendInterface {
     @POST("/v1/users/create")
     Call<String> createUser(@Body JsonObject body);
     @GET("/v1/users/search/{searchTerm}")
-    Call<String> searchUser(@Path("searchTerm") String searchTerm, @Header("user-id") String currentUserId);
+    Call<String> searchUser(@Query("q") String searchTerm, @Header("user-id") String currentUserId);
     @GET("/v1/me")
     Call<String> getMe(@Header("user-id") String currentUserId, @Query("fullProfile") boolean full);
     @GET("/v1/me/matches")

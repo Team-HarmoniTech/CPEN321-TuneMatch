@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.spotify.android.appremote.api.ConnectionParams;
 import com.spotify.android.appremote.api.Connector;
@@ -40,17 +41,16 @@ public class SpotifyService extends Service {
     private void connectToSpotify() {
         SpotifyAppRemote.connect(this, new ConnectionParams.Builder(CLIENT_ID)
                         .setRedirectUri(REDIRECT_URI)
+                        .showAuthView(true)
                         .build(),
-                new Connector.ConnectionListener() {
-                    public void onConnected(SpotifyAppRemote spotifyAppRemote) {
-                        mSpotifyAppRemote = spotifyAppRemote;
-                        // Here you can notify any listeners or broadcast receivers that you're connected
-                    }
-
-                    public void onFailure(Throwable throwable) {
-                        // Handle connection error here
-                    }
-                });
+                        new Connector.ConnectionListener() {
+                            public void onConnected(SpotifyAppRemote spotifyAppRemote) {
+                                mSpotifyAppRemote = spotifyAppRemote;
+                            }
+                            public void onFailure(Throwable throwable) {
+                                Log.e("SpotifyService", throwable.getMessage());
+                            }
+                        });
     }
 
     @Override

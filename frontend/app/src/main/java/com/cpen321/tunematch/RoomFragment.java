@@ -250,7 +250,6 @@ public class RoomFragment extends Fragment {
                             songBanner.setImageBitmap(blurryBitmap);
                         });
 
-
                         songTitle.setText(track.name);
                         songArtist.setText(track.artist.name);
                         seekBar.setMax(100); // Set max to 100 for percentage
