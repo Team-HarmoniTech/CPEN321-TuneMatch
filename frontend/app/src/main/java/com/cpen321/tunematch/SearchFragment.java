@@ -1,11 +1,8 @@
 package com.cpen321.tunematch;
 
 import android.app.AlertDialog;
-import android.content.ComponentName;
-import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,14 +23,11 @@ import androidx.lifecycle.Observer;
 
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.List;
 
 import kotlin.text.Charsets;
@@ -60,7 +54,6 @@ public class SearchFragment extends Fragment {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                String response;
                 try {
                     List<SearchUser> newSearchList = backend.getMatches();
                     // Update LiveData.

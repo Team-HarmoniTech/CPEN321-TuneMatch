@@ -17,8 +17,6 @@ import org.json.JSONObject;
 
 import java.util.List;
 
-import okhttp3.internal.concurrent.TaskRunner;
-
 public class RequestListAdapter extends ArrayAdapter<SearchUser> {
     private List<SearchUser> dataList;
     private final Context context;

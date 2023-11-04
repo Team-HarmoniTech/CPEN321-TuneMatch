@@ -1,6 +1,5 @@
 package com.cpen321.tunematch;
 
-import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.ImageView;

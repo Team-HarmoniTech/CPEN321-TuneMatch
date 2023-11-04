@@ -25,17 +25,14 @@ import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.spotify.protocol.types.Track;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -48,10 +45,18 @@ import kotlin.text.Charsets;
 public class RoomFragment extends Fragment {
     // Views
     private View view;
-    private Button playpauseButton, nextButton, prevButton, chatBtn, queueBtn, exitBtn;
+    private Button playpauseButton;
+    private Button nextButton;
+    private Button prevButton;
+    private Button chatBtn;
+    private Button queueBtn;
+    private Button exitBtn;
     private SeekBar seekBar;
     private ImageView songBanner;
-    private TextView songTitle, songArtist, currentDuration, totalDuration;
+    private TextView songTitle;
+    private TextView songArtist;
+    private TextView currentDuration;
+    private TextView totalDuration;
     private SearchView songSearchBar;
     private ListView suggestionListView;
 
@@ -64,7 +69,6 @@ public class RoomFragment extends Fragment {
     private SpotifyClient spotifyClient;
     private MainActivity mainActivity;
     private ReduxStore model;
-    private ApiClient apiClient;
     private CurrentSession currentSession;
     private WebSocketService webSocketService;
     private SpotifyService mSpotifyService;
@@ -92,7 +96,6 @@ public class RoomFragment extends Fragment {
     private void initServices() {
         // Initialize ViewModel and ApiClient
         model = ReduxStore.getInstance();
-        apiClient = ((MainActivity) getActivity()).getBackend();
 
         // Get instances of MainActivity, WebSocketService, and SpotifyService
         mainActivity = (MainActivity) getActivity();

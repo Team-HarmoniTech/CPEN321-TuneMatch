@@ -19,16 +19,7 @@ import com.spotify.sdk.android.auth.AuthorizationClient;
 import com.spotify.sdk.android.auth.AuthorizationRequest;
 import com.spotify.sdk.android.auth.AuthorizationResponse;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-
-import okhttp3.Headers;
 
 public class LoginActivity extends AppCompatActivity {
     // Request code will be used to verify if result comes from the login activity. Can be set to any integer.
@@ -36,7 +27,6 @@ public class LoginActivity extends AppCompatActivity {
     private static final String REDIRECT_URI = "cpen321tunematch://callback";
     private static final String TAG = "LoginActivity";
     private static final String CLIENT_ID = "0dcb406f508a4845b32a1342a91a71af";
-    private static final int MAX_PROFILE_URL = 500;
 
     private String spotifyUserId;
 
@@ -138,9 +128,6 @@ public class LoginActivity extends AppCompatActivity {
 
         // Initialize your ApiClient with the base URL and custom headers
         SpotifyClient spotifyApiClient = new SpotifyClient(authToken);
-
-        // Define the endpoint to retrieve the user details
-        String userEndpoint = "me";
 
         new Thread(new Runnable() {
             @Override
