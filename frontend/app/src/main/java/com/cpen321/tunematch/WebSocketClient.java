@@ -460,7 +460,7 @@ public class WebSocketClient {
                                 NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel.getId())
                                         .setSmallIcon(R.drawable.default_profile_image)
                                         .setContentTitle("New Friend")
-                                        .setContentText(username+" accepted your invitation")
+                                        .setContentText(username+" accepted your friend request")
                                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                                         .setAutoCancel(true); // Automatically removes the notification when the user taps it
 
