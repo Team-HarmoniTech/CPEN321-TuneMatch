@@ -4,8 +4,7 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingHorizontal="8dp"
-    android:paddingBottom="8dp">
+    android:paddingHorizontal="8dp">
     <ImageView
         android:id="@+id/profileImage"
         android:layout_width="32dp"

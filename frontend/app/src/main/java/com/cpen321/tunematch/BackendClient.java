@@ -78,7 +78,7 @@ public class BackendClient extends ApiClient<BackendInterface> {
                 response.get("userId").getAsString(),
                 response.get("username").getAsString(),
                 response.get("profilePic").getAsString(),
-                response.get("bio").getAsString(),
+                response.get("bio").isJsonNull() ? null : response.get("bio").getAsString(),
                 getAsStringList(response.getAsJsonArray("topArtists")),
                 getAsStringList(response.getAsJsonArray("topGenres"))
         );

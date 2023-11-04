@@ -1,13 +1,29 @@
 package com.cpen321.tunematch;
 
 
+import static com.cpen321.tunematch.Message.timestampFormat;
+
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.util.Log;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+
+import com.google.gson.Gson;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,12 +40,18 @@ public class WebSocketClient {
     private WebSocket webSocket;
     ReduxStore model;
     private Handler handler;
+    private Context context;
+    private NotificationManager notification;
     private static final int PING_INTERVAL = 20000;  // 30 seconds
-    public WebSocketClient(ReduxStore model) {
-        client = new OkHttpClient();
+
+    public WebSocketClient(ReduxStore model, Context context, NotificationManager notification) {
+        this.context = context;
+        this.client = new OkHttpClient();
         this.model = model;
-        handler = new Handler();
+        this.handler = new Handler();
+        this.notification = notification;
     }
+
     public void start(Headers customHeader) {
         String url = "wss://tunematch-api.bhairawaryan.com/socket";
         Request request = new Request.Builder().url(url).build();
@@ -54,7 +76,7 @@ public class WebSocketClient {
                         handleFriends(json);
                     } else if (method.equals("SESSION")) {
                         handleSession(json);
-                    } else if (method.equals("REQUESTS")){
+                    } else if (method.equals("REQUESTS")) {
                         handleRequests(json);
                     }
                 } catch (JSONException e) {
@@ -82,7 +104,6 @@ public class WebSocketClient {
             }
         });
     }
-
 
 
     public void stop() {
@@ -167,7 +188,7 @@ public class WebSocketClient {
                     model.getSessionList().postValue(existingSessionList);
                 }
             }
-        // Handling any other unexpected actions
+            // Handling any other unexpected actions
             else {
                 Log.w("WebSocketClient", "Unknown friend action: " + action);
             }
@@ -177,7 +198,7 @@ public class WebSocketClient {
         }
     }
 
-    private void handleSession(JSONObject json){
+    private void handleSession(JSONObject json) {
         try {
             String action = json.getString("action");
             // Handling the join action
@@ -220,7 +241,7 @@ public class WebSocketClient {
                 JSONArray queue = body.getJSONArray("queue");
                 // TODO: Update the Redux store with the refreshed data
                 CurrentSession currentSession = model.getCurrentSession().getValue();
-                if(currentSession == null){
+                if (currentSession == null) {
                     currentSession = new CurrentSession("session", "My Session");
                 }
                 List<User> sessionMembers = new ArrayList<>();
@@ -240,7 +261,7 @@ public class WebSocketClient {
                     Song songToAdd = new Song(songId, duration);
                     sessionQueue.add(songToAdd);
                 }
-                if(currentlyPlaying != null){
+                if (currentlyPlaying != null) {
                     String songId = currentlyPlaying.getString("uri");
                     String duration = currentlyPlaying.getString("durationMs");
                     String timeStarted = currentlyPlaying.getString("timeStarted");
@@ -299,7 +320,49 @@ public class WebSocketClient {
             else if (action.equals("message")) {
                 JSONObject messageDetails = json.getJSONObject("body");
                 String from = json.getString("from");
-                // TODO: Add the new message to the Redux store's chat messages
+                User sender = model.getCurrentSession().getValue().getSessionMembers().stream()
+                        .filter(member -> member.getUserId().equals(from))
+                        .findFirst()
+                        .orElse(null);
+                Gson gson = new Gson();
+
+                Message message = new Message(sender,
+                        messageDetails.getString("message"),
+                        timestampFormat.parse(messageDetails.getString("timestamp")));
+                Log.d("WS", message.toString());
+
+                // Add to redux
+                model.addMessage(message, true);
+
+                // Check permission
+                if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                    return;
+                }
+
+                CharSequence name = "Messaging";
+                int importance = NotificationManager.IMPORTANCE_DEFAULT;
+                NotificationChannel channel = new NotificationChannel("messaging_channel", name, importance);
+
+                notification.createNotificationChannel(channel);
+
+                // Build the notification
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel.getId())
+                        .setSmallIcon(R.drawable.default_profile_image)
+                        .setContentTitle(message.getSenderUserId())
+                        .setContentText(message.getMessageText())
+                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                        .setAutoCancel(true); // Automatically removes the notification when the user taps it
+
+                try {
+                    builder.setLargeIcon(Picasso.get()
+                            .load(message.getSenderProfileImageUrl())
+                            .error(R.drawable.default_profile_image)
+                            .get());
+                } catch(IllegalStateException ignored)  { }
+
+                // Show the notification
+                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+                notificationManager.notify(1, builder.build());
             }
 
             // Handling any other unexpected actions
@@ -307,7 +370,7 @@ public class WebSocketClient {
                 Log.w("WebSocketClient", "Unknown session action: " + action);
             }
 
-        } catch (JSONException e) {
+        } catch (JSONException | ParseException | IOException e) {
             Log.e("WebSocketClient", "Error processing session message", e);
         }
     }

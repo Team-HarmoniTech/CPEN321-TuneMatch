@@ -68,6 +68,7 @@ public abstract class ApiClient<T> {
                 throw new ApiException(response.code(), response.message());
             }
         } catch (Exception e) {
+            Log.d("ApiClient", e.getMessage());
             throw new ApiException(-1, e.getMessage());
         }
     }

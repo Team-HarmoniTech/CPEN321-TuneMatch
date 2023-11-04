@@ -55,9 +55,9 @@ public class SpotifyClient extends ApiClient<SpotifyInterface> {
             JsonObject artist = topArtistsArray.get(i).getAsJsonObject();
             artistList.add(artist.get("name").getAsString());
 
-            String genres = artist.get("genres").getAsString().replace("[", "").replace("]", "").trim();
-            for (String g : genres.split(",")) {
-                genreSet.add(g.replace("\"", ""));
+            JsonArray genres = artist.get("genres").getAsJsonArray();
+            for (int j = 0; j < genres.size(); j++) {
+                genreSet.add(genres.get(j).getAsString());
             }
         }
         List<String> genreList = new ArrayList<>(genreSet);

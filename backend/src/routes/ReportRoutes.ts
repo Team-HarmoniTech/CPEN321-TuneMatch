@@ -12,7 +12,7 @@ export const ReportRoutes = [
       body("offenderId").isAlphanumeric(),
       body("reason").isString(),
       body("text").isString(),
-      body("context").isJSON(),
+      body("context").exists(),
     ],
   },
   {
