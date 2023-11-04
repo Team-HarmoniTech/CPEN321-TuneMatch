@@ -19,8 +19,12 @@ public class ReduxStore extends ViewModel {
     private final MutableLiveData<CurrentSession> currentSession;
     private final MutableLiveData<MediaControllerState> mediaControllerState;
     private final MutableLiveData<List<Message>> chatMessages;
+
+    private final MutableLiveData<Song> currentSong;
+
     private final MutableLiveData<Boolean> sessionActive;
     private final MutableLiveData<User> currentUser;
+
     public ReduxStore() {
         friendsList = new MutableLiveData<>();
         sentRequests = new MutableLiveData<>();
@@ -31,8 +35,10 @@ public class ReduxStore extends ViewModel {
         currentSession = new MutableLiveData<>();
         mediaControllerState = new MutableLiveData<>();
         chatMessages = new MutableLiveData<>();
+        currentSong = new MutableLiveData<>();
         sessionActive = new MutableLiveData<>(false);
         currentUser = new MutableLiveData<>(null);
+
     }
     public static synchronized ReduxStore getInstance() {
         if (instance == null) {
@@ -55,6 +61,21 @@ public class ReduxStore extends ViewModel {
     public MutableLiveData<List<Friend>> getFriendsList() {
         return friendsList;
     }
+
+
+    public MutableLiveData<List<SearchUser>> getSearchList() {return searchList;}
+    public MutableLiveData<CurrentSession> getCurrentSession() {
+        return currentSession;
+    }
+    public MutableLiveData<List<Session>> getSessionList() {
+        return sessionList;
+    }
+    public MutableLiveData<List<Song>> getSongQueue() {
+        return songQueue;
+    }
+    public MutableLiveData<Song> getCurrentSong() {
+        return currentSong;
+
 
     // ChatGPT Usage: No
     public void addFriend(Friend friendToAdd) {
@@ -101,46 +122,25 @@ public class ReduxStore extends ViewModel {
         return currentSession;
     }
 
-    // ChatGPT Usage: No
-    public boolean checkCurrentSessionActive() {
-        CurrentSession session = currentSession.getValue();
-        if (session != null) {
-            Log.d("redux store", "session is as such" + session.getSessionId());
-            return !session.getSessionId().equals("null");
-        } else {
-            Log.d("redux store", "session is null");
-            return false;
-        }
-    }
-
-    // ChatGPT Usage: No
-    public void setFriendsList(List<Friend> friends) {
-        friendsList.setValue(friends);
-    }
-
-    // ChatGPT Usage: No
-    public MutableLiveData<List<Session>> getSessionList() {
-        return sessionList;
-    }
-
-    // ChatGPT Usage: No
-    public void setSessionList(List<Session> sessions) {
-        sessionList.setValue(sessions);
-    }
-
-    // ChatGPT Usage: No
-    public MutableLiveData<List<Song>> getSongQueue() {
-        return songQueue;
-    }
-
-    // ChatGPT Usage: No
-    public void setSongQueue(List<Song> songs) {
-        songQueue.setValue(songs);
     }
 
     // Additional methods in ReduxStore for easier management of state
     // ChatGPT Usage: No
+    public void setFriendsList(List<Friend> friends) {
+        friendsList.setValue(friends);
+    }
+    public void setSessionList(List<Session> sessions) {
+        sessionList.setValue(sessions);
+    }
+    public void setSongQueue(List<Song> songs) {
+        songQueue.setValue(songs);
+    }
+
+
+    // Additional methods in ReduxStore for easier management of state
+    // ChatGPT Usage: No
     public void addMessage(Message message, boolean background) {
+
         List<Message> currentMessages = chatMessages.getValue();
         if (currentMessages == null) {
             currentMessages = new ArrayList<Message>();
@@ -157,8 +157,6 @@ public class ReduxStore extends ViewModel {
     public MutableLiveData<List<Message>> getMessages() {
         return chatMessages;
     }
-
-    // ChatGPT Usage: No
     public void addSongToQueue(Song song) {
         List<Song> currentQueue = songQueue.getValue();
         if (currentQueue == null) {
@@ -167,15 +165,14 @@ public class ReduxStore extends ViewModel {
         currentQueue.add(song);
         songQueue.setValue(currentQueue);
     }
-
-    // ChatGPT Usage: No
     public void removeSongFromQueue(Song song) {
         List<Song> currentQueue = songQueue.getValue();
         currentQueue.remove(song);
         songQueue.setValue(currentQueue);
     }
-
-    // ChatGPT Usage: No
+    public void setFriendsRequestList(List<SearchUser> newRequests) {
+        friendRequests.setValue(newRequests);
+    }
     public String getFriendName(String id) {
         String name = "";
         for (Friend f : friendsList.getValue()) {
@@ -187,8 +184,10 @@ public class ReduxStore extends ViewModel {
         return name;
     }
 
+
     // ChatGPT Usage: No
     public void removeFriend(String friendIdToRemove) {
+
         List<Friend> currFriendList = friendsList.getValue();
 
         for (int i = 0; i < currFriendList.size(); i++) {
@@ -201,6 +200,7 @@ public class ReduxStore extends ViewModel {
         }
         friendsList.postValue(currFriendList);
     }
+
 
     // ChatGPT Usage: No
     public void removeRequest(MutableLiveData<List<SearchUser>> requestList, String userIdToRemove) {
@@ -226,12 +226,17 @@ public class ReduxStore extends ViewModel {
                 if (u.getId().equals(user.getId())) {
                     return true;
                 }
+
             }
         }
         return false;
     }
 
-//    Handle sessions
+    public void setCurrentSongPlaying(Boolean isPlaying) {
+        Song song = currentSong.getValue();
+        song.setIsPLaying(isPlaying);
+        currentSong.setValue(song);
+    }
 
 }
 

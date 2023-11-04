@@ -19,12 +19,11 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
     private List<Song> items;
 
     WebSocketService webSocketService;
-    boolean isServiceBound;
 
-    public QueueAdapter(WebSocketService webSocketService, boolean isServiceBound) {
+
+    public QueueAdapter(WebSocketService webSocketService) {
         items = new ArrayList<>();  // Initialize the items list
         this.webSocketService = webSocketService;
-        this.isServiceBound = isServiceBound;
     }
     @NonNull
     @Override
@@ -47,30 +46,30 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
     public void onItemMove(int fromPosition, int toPosition) {
         Collections.swap(items, fromPosition, toPosition);
         notifyItemMoved(fromPosition, toPosition);
-        sendQueueDragMessage(fromPosition, toPosition);
+//        sendQueueDragMessage(fromPosition, toPosition);
     }
 
-    private void sendQueueDragMessage(int fromPosition, int toPosition) {
-        JSONObject message = new JSONObject();
-        try {
-            message.put("method", "SESSION");
-            message.put("action", "queueDrag");
-
-            JSONObject body = new JSONObject();
-            body.put("startIndex", fromPosition);
-            body.put("endIndex", toPosition);
-
-            message.put("body", body);
-
-            // Send the message via WebSocket
-            if (isServiceBound && webSocketService != null) {
-                webSocketService.sendMessage(message.toString());
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void sendQueueDragMessage(int fromPosition, int toPosition) {
+//        JSONObject message = new JSONObject();
+//        try {
+//            message.put("method", "SESSION");
+//            message.put("action", "queueDrag");
+//
+//            JSONObject body = new JSONObject();
+//            body.put("startIndex", fromPosition);
+//            body.put("endIndex", toPosition);
+//
+//            message.put("body", body);
+//
+//            // Send the message via WebSocket
+//            if (webSocketService != null) {
+//                webSocketService.sendMessage(message.toString());
+//            }
+//
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public static class QueueViewHolder extends RecyclerView.ViewHolder {
         private TextView songIdView;  // Assume you have a TextView to display the song ID
@@ -83,8 +82,11 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
         }
 
         public void bind(Song song) {
-            songIdView.setText(song.getSongID());
-            durationView.setText(song.getDuration());
+            songIdView.setText(song.getSongName()+" - "+song.getSongArtist());
+//            convert song in ms to mm:ss
+            durationView.setText(String.format("%d:%02d",
+                    Integer.parseInt(song.getDuration()) / 1000 / 60,
+                    Integer.parseInt(song.getDuration()) / 1000 % 60));
         }
     }
 

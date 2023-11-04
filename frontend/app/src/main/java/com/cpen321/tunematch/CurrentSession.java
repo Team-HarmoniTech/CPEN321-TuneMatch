@@ -10,7 +10,7 @@ public class CurrentSession {
     private List<Message> messages;
     private List<User> sessionMembers;
     private List<Song> sessionQueue;
-    private CurrentSong currentSong;
+    private Song currentSong;
     public CurrentSession(String name, String id) {
         sessionName = name;
         sessionId = id;
@@ -43,7 +43,7 @@ public class CurrentSession {
         return sessionQueue;
     }
 
-    public void setCurrentSong(CurrentSong currentSong) {
+    public void setCurrentSong(Song currentSong) {
         this.currentSong = currentSong;
     }
 

@@ -114,13 +114,11 @@ public class WebSocketClient {
         });
     }
 
-
     public void stop() {
         if (webSocket != null) {
             webSocket.close(1000, "Goodbye!");
         }
     }
-
     public void sendMessage(String message) {
         if (webSocket != null) {
             Log.d("WebSocketClient", "Sending message: " + message);
@@ -128,7 +126,9 @@ public class WebSocketClient {
         }
     }
 
+
     private void handleFriends(JsonObject json) {
+
         try {
             String action = json.get("action").getAsString();
             if (action.equals("refresh")) {
@@ -144,6 +144,7 @@ public class WebSocketClient {
                     JsonElement currentSource = friendJson.get("currentSource");
 
                     Friend friend = new Friend(id, username, profilePic);
+
                     friend.setCurrentSong(currentSong);
                     friend.setCurrentSource(currentSource);
                     friends.add(friend);
@@ -183,6 +184,7 @@ public class WebSocketClient {
                             String sourceType = getStringOrNull(currentSource.getAsJsonObject().get("type"));
                             if (sourceType.equals("session")) {
                                 boolean sessionExists = false;
+
                                 for (Session s : existingSessionList) {
                                     if (s.getSessionId().equals(from)) {
                                         sessionExists = true;
@@ -206,6 +208,7 @@ public class WebSocketClient {
                 model.getFriendsList().postValue(existingFriendList);
                 model.getSessionList().postValue(existingSessionList);
             }
+
             // Handling any other unexpected actions
             else {
                 Log.w("WebSocketClient", "Unknown friend action: " + action);
@@ -217,15 +220,14 @@ public class WebSocketClient {
     }
 
     private void handleSession(JSONObject json) {
+
         try {
             String action = json.getString("action");
-            // Handling the join action
             if (action.equals("join")) {
                 JSONObject body = json.getJSONObject("body");
                 String userId = body.getString("userId");
                 String username = body.optString("username", null);
                 String profilePic = body.optString("profilePic", null);
-                // TODO: Update the Redux store with the new member's details
                 CurrentSession currentSession = model.getCurrentSession().getValue();
                 List<User> sessionMembers = currentSession.getSessionMembers();
                 User user = new User(userId, username, profilePic);
@@ -233,9 +235,8 @@ public class WebSocketClient {
                 currentSession.setSessionMembers(sessionMembers);
                 model.getCurrentSession().postValue(currentSession);
             }
-
-            // Handling the leave action
             else if (action.equals("leave")) {
+
                 JSONObject body = json.getJSONObject("body");
                 String userId = body.getString("userId");
                 // TODO: Update the Redux store to remove the member's details
@@ -246,24 +247,27 @@ public class WebSocketClient {
                         sessionMembers.remove(s);
                         break;
                     }
+                    currentSession.setSessionMembers(sessionMembers);
+                    model.getCurrentSession().postValue(currentSession);
+                }else{
+                    model.checkSessionActive().postValue(false);
                 }
-                currentSession.setSessionMembers(sessionMembers);
-                model.getCurrentSession().postValue(currentSession);
             }
-
-            // Handling the refresh action
             else if (action.equals("refresh")) {
                 JSONObject body = json.getJSONObject("body");
                 JSONArray members = body.getJSONArray("members");
                 JSONObject currentlyPlaying = body.optJSONObject("currentlyPlaying");
                 JSONArray queue = body.getJSONArray("queue");
-                // TODO: Update the Redux store with the refreshed data
+
                 CurrentSession currentSession = model.getCurrentSession().getValue();
-                if (currentSession == null) {
-                    currentSession = new CurrentSession("session", "My Session");
+
+                if(currentSession == null){
+                    currentSession = new CurrentSession("session", "MySession");
+
                 }
                 List<User> sessionMembers = new ArrayList<>();
                 List<Song> sessionQueue = new ArrayList<>();
+
                 for (int i = 0; i < members.length(); i++) {
                     JSONObject member = members.getJSONObject(i);
                     String id = member.getString("userId");
@@ -272,72 +276,129 @@ public class WebSocketClient {
                     User user = new User(id, username, profilePic);
                     sessionMembers.add(user);
                 }
-                for (int i = 0; i < queue.length(); i++) {
-                    JSONObject song = queue.getJSONObject(i);
-                    String songId = song.getString("uri");
-                    String duration = song.getString("durationMs");
-                    Song songToAdd = new Song(songId, duration);
-                    sessionQueue.add(songToAdd);
-                }
-                if (currentlyPlaying != null) {
+
+                if(currentlyPlaying != null){
+
                     String songId = currentlyPlaying.getString("uri");
+                    String songName = currentlyPlaying.getString("title");
+                    String songArtist = currentlyPlaying.getString("artist");
                     String duration = currentlyPlaying.getString("durationMs");
-                    String timeStarted = currentlyPlaying.getString("timeStarted");
-                    CurrentSong currentSong = new CurrentSong(songId, duration, timeStarted);
+                    String Timestamp = currentlyPlaying.getString("timeStarted");
+                    Song currentSong = new Song(songId, songName, songArtist, duration);
+                    currentSong.setCurrentTimestamp(Timestamp);
+                    currentSong.setIsPLaying(true);
                     currentSession.setCurrentSong(currentSong);
                 }
+
+                if(members.length() == 0){
+                    List<Song> ExisitngSongQueue = model.getSongQueue().getValue();
+                    if(ExisitngSongQueue==null){
+                        ExisitngSongQueue = new ArrayList<>();
+                    }
+                    JSONArray songQueue = new JSONArray();
+                    try {
+                        for (Song s : ExisitngSongQueue) {
+                            JSONObject song = new JSONObject();
+                            song.put("uri", s.getSongID());
+                            song.put("durationMs", s.getDuration());
+                            song.put("title", s.getSongName());
+                            song.put("artist", s.getSongArtist());
+                            songQueue.put(song);
+                        }
+                        JSONObject messageToReplaceQueue = new JSONObject();
+                        messageToReplaceQueue.put("method", "SESSION");
+                        messageToReplaceQueue.put("action", "queueReplace");
+                        messageToReplaceQueue.put("body", songQueue);
+                        if (webSocket != null) {
+                            webSocket.send(messageToReplaceQueue.toString());
+                            currentSession.setSessionQueue(ExisitngSongQueue);
+                        }
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                else{
+                    for (int i = 0; i < queue.length(); i++) {
+                        JSONObject song = queue.getJSONObject(i);
+                        String songId = song.getString("uri");
+                        String duration = song.getString("durationMs");
+                        String songName = song.getString("title");
+                        String songArtist = song.getString("artist");
+                        Song songToAdd = new Song(songId, songName, songArtist, duration);
+                        sessionQueue.add(songToAdd);
+                    }
+                    currentSession.setSessionQueue(sessionQueue);
+                    model.getSongQueue().postValue(sessionQueue);
+                }
                 currentSession.setSessionMembers(sessionMembers);
-                currentSession.setSessionQueue(sessionQueue);
                 currentSession.setSessionId("session");
                 model.getCurrentSession().postValue(currentSession);
-                model.getSongQueue().postValue(sessionQueue);
                 model.checkSessionActive().postValue(true);
             }
-
-            // Handling the queueReplace action
             else if (action.equals("queueReplace")) {
                 JSONArray queue = json.getJSONArray("body");
-                // TODO: Replace the current song queue in the Redux store with the new queue
             }
-
-            // Handling the queueAdd action
             else if (action.equals("queueAdd")) {
                 JSONObject songDetails = json.getJSONObject("body");
-                // TODO: Add the new song to the Redux store's song queue
+                String songId = songDetails.getString("uri");
+                String duration = songDetails.getString("durationMs");
+                String songName = songDetails.getString("title");
+                String songArtist = songDetails.getString("artist");
+                Song songToAdd = new Song(songId, songName, songArtist, duration);
+                List<Song> sessionQueue = model.getSongQueue().getValue();
+                if(sessionQueue == null){
+                    sessionQueue = new ArrayList<>();
+                }
+                sessionQueue.add(songToAdd);
+                model.getSongQueue().postValue(sessionQueue);
+                CurrentSession currentSession = model.getCurrentSession().getValue();
+                currentSession.setSessionQueue(sessionQueue);
             }
-
-            // Handling the queueSkip action
             else if (action.equals("queueSkip")) {
-                // TODO: Skip the currently playing song in the Redux store
+                CurrentSession currentSession = model.getCurrentSession().getValue();
+                List<Song> sessionQueue = currentSession.getSessionQueue();
+                Song currentSong = sessionQueue.get(0);
+                sessionQueue.remove(0);
+                currentSession.setSessionQueue(sessionQueue);
+                currentSession.setCurrentSong(currentSong);
+                model.getCurrentSession().postValue(currentSession);
+                model.getCurrentSong().postValue(currentSong);
             }
-
-            // Handling the queueDrag action
             else if (action.equals("queueDrag")) {
-                int startIndex = json.getInt("startIndex");
-                int endIndex = json.getInt("endIndex");
-                // TODO: Reorder the song queue in the Redux store based on the startIndex and endIndex
+                JSONObject body = json.getJSONObject("body");
+                int startIndex =  body.getInt("startIndex");
+                int endIndex = body.getInt("endIndex");
+                CurrentSession currentSession = model.getCurrentSession().getValue();
+                List<Song> sessionQueue = currentSession.getSessionQueue();
+                Song songToMove = sessionQueue.get(startIndex);
+                sessionQueue.remove(startIndex);
+                sessionQueue.add(endIndex, songToMove);
+                currentSession.setSessionQueue(sessionQueue);
+                model.getCurrentSession().postValue(currentSession);
+                model.getSongQueue().postValue(sessionQueue);
             }
-
-            // Handling the queuePause action
             else if (action.equals("queuePause")) {
-                // TODO: Pause the currently playing song in the Redux store
+                Song currentSong = model.getCurrentSong().getValue();
+                currentSong.setIsPLaying(false);
+                model.getCurrentSong().postValue(currentSong);
             }
-
-            // Handling the queueResume action
             else if (action.equals("queueResume")) {
-                // TODO: Resume the paused song in the Redux store
+                Song currentSong = model.getCurrentSong().getValue();
+                currentSong.setIsPLaying(true);
+                model.getCurrentSong().postValue(currentSong);
             }
-
-            // Handling the queueSeek action
             else if (action.equals("queueSeek")) {
-                int seekPosition = json.getInt("seekPosition");
-                // TODO: Seek to the specified position in the currently playing song in the Redux store
+                JSONObject body = json.getJSONObject("body");
+                int seekPosition = body.getInt("seekPosition");
+                seekPosition = seekPosition / 1000;
+                Song currentSong = model.getCurrentSong().getValue();
+                currentSong.setCurrentTimestamp(seekPosition+"");
+                model.getCurrentSong().postValue(currentSong);
             }
-
-            // Handling the message action
             else if (action.equals("message")) {
                 JSONObject messageDetails = json.getJSONObject("body");
                 String from = json.getString("from");
+
                 User sender = model.getCurrentSession().getValue().getSessionMembers().stream()
                         .filter(member -> member.getUserId().equals(from))
                         .findFirst()
@@ -381,9 +442,8 @@ public class WebSocketClient {
                 // Show the notification
                 NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
                 notificationManager.notify(1, builder.build());
-            }
 
-            // Handling any other unexpected actions
+            }
             else {
                 Log.w("WebSocketClient", "Unknown session action: " + action);
             }
