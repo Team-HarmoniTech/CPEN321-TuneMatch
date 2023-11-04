@@ -99,7 +99,6 @@ public class SearchFragment extends Fragment {
                 String selectedUserWithScore = (String) parent.getItemAtPosition(position);
                 nameText.setText(selectedUserWithScore);
                 String username = selectedUserWithScore.split(" \\(")[0];
-                String encodedName = encodeUsername(username);
 
                 SearchUser[] friend = new SearchUser[1];
                 new Thread(new Runnable() {
@@ -107,7 +106,7 @@ public class SearchFragment extends Fragment {
                     public void run() {
                         try {
                             // only one user has to be returned
-                            SearchUser user = backend.searchUser(encodedName).get(0);
+                            SearchUser user = backend.searchUser(username).get(0);
                             Log.d("SearchFragment", "selected user info: " + user);
 
                             String profileUrl = user.getProfilePic();
@@ -222,18 +221,5 @@ public class SearchFragment extends Fragment {
         }).start();
 
         return true;
-    }
-
-    // ChatGPT Usage: Partial
-    private String encodeUsername(String username) {
-        String encodedName;
-        try {
-            encodedName = URLEncoder.encode(username, Charsets.UTF_8.toString());
-            Log.d("SearchFragment", "encodeUsername: " + encodedName);
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-
-        return encodedName;
     }
 }

@@ -492,7 +492,7 @@ public class WebSocketClient {
                             NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel.getId())
                                     .setSmallIcon(R.drawable.default_profile_image)
                                     .setContentTitle("New Friend")
-                                    .setContentText("You have got new request from " + username)
+                                    .setContentText("You have received new request from " + username)
                                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                                     .setAutoCancel(true); // Automatically removes the notification when the user taps it
 
