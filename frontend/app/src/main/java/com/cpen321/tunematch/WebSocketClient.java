@@ -15,7 +15,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -420,7 +419,6 @@ public class WebSocketClient {
                         .filter(member -> member.getUserId().equals(from))
                         .findFirst()
                         .orElse(null);
-                Gson gson = new Gson();
 
                 Message message = new Message(sender,
                         messageDetails.getString("message"),

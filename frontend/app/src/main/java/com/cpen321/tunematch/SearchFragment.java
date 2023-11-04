@@ -54,7 +54,6 @@ public class SearchFragment extends Fragment {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                String response;
                 try {
                     List<SearchUser> newSearchList = backend.getMatches();
                     // Update LiveData.

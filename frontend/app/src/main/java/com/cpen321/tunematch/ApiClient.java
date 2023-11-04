@@ -15,9 +15,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public abstract class ApiClient<T> {
-    protected abstract String getBaseUrl();
     private Retrofit retrofit;
     protected T api;
+    protected abstract String getBaseUrl();
 
     public ApiClient(Class<T> serviceClass) {
         retrofit = new Retrofit.Builder()

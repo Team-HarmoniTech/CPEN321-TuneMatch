@@ -17,20 +17,27 @@ import java.util.List;
 import retrofit2.Call;
 
 public class BackendClient extends ApiClient<BackendInterface> {
+    private @Nullable String currentUserId;
+    private static final int MAX_PROFILE_URL = 500;
+
+    // ChatGPT Usage: No
     @Override
     protected String getBaseUrl() {
         return "https://zphy19my7b.execute-api.us-west-2.amazonaws.com/";
     }
-    private @Nullable String currentUserId;
 
+    // ChatGPT Usage: No
     public BackendClient() {
         super(BackendInterface.class);
     }
+
+    // ChatGPT Usage: No
     public BackendClient(String currentUserId) {
         super(BackendInterface.class);
         this.currentUserId = currentUserId;
     }
 
+    // ChatGPT Usage: No
     public User getUser(String userId, boolean fullProfile) throws ApiException {
         Call<String> call = api.getUser(userId, fullProfile);
         JsonObject response = call(call).getAsJsonObject();
@@ -53,8 +60,7 @@ public class BackendClient extends ApiClient<BackendInterface> {
         }
         return user;
     }
-
-    private static final int MAX_PROFILE_URL = 500;
+    // ChatGPT Usage: No
     public User createUser(SpotifyClient spotifyClient) throws ApiException, JSONException {
         Gson gson = new Gson();
         JsonObject me = spotifyClient.getMe();
@@ -86,6 +92,7 @@ public class BackendClient extends ApiClient<BackendInterface> {
         );
     }
 
+    // ChatGPT Usage: No
     public List<SearchUser> searchUser(String searchTerm) throws ApiException {
         if (this.currentUserId == null) {
             throw new ApiException(400, "userId is not set");
@@ -113,6 +120,7 @@ public class BackendClient extends ApiClient<BackendInterface> {
         return searchedUser;
     }
 
+    // ChatGPT Usage: No
     public User getMe(boolean fullProfile) throws ApiException {
         if (this.currentUserId == null) {
             throw new ApiException(400, "userId is not set");
@@ -139,6 +147,7 @@ public class BackendClient extends ApiClient<BackendInterface> {
         return user;
     }
 
+    // ChatGPT Usage: No
     public List<SearchUser> getMatches() throws ApiException {
         if (this.currentUserId == null) {
             throw new ApiException(400, "userId is not set");
@@ -171,6 +180,7 @@ public class BackendClient extends ApiClient<BackendInterface> {
 //        call(call, callback);
 //    }
 
+    // ChatGPT Usage: No
     enum ReportReason {
         OFFENSIVE_LANGUAGE,
         PLAYLIST_ABUSE,
@@ -178,6 +188,7 @@ public class BackendClient extends ApiClient<BackendInterface> {
         OTHER
     }
 
+    // ChatGPT Usage: No
     public void generateReport(String offenderId, ReportReason reason, List<Message> context, String text) throws ApiException {
         if (this.currentUserId == null) {
             throw new ApiException(400, "userId is not set");

@@ -27,7 +27,6 @@ public class LoginActivity extends AppCompatActivity {
     private static final String REDIRECT_URI = "cpen321tunematch://callback";
     private static final String TAG = "LoginActivity";
     private static final String CLIENT_ID = "0dcb406f508a4845b32a1342a91a71af";
-    private static final int MAX_PROFILE_URL = 500;
 
     private String spotifyUserId;
 
@@ -129,9 +128,6 @@ public class LoginActivity extends AppCompatActivity {
 
         // Initialize your ApiClient with the base URL and custom headers
         SpotifyClient spotifyApiClient = new SpotifyClient(authToken);
-
-        // Define the endpoint to retrieve the user details
-        String userEndpoint = "me";
 
         new Thread(new Runnable() {
             @Override
