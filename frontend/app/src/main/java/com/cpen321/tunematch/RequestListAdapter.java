@@ -16,9 +16,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
-import okhttp3.internal.concurrent.TaskRunner;
 
 public class RequestListAdapter extends ArrayAdapter<SearchUser> {
     private List<SearchUser> dataList;

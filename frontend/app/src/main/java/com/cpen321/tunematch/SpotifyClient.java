@@ -1,23 +1,16 @@
 package com.cpen321.tunematch;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import retrofit2.Call;
-import retrofit2.http.Header;
-import retrofit2.http.Query;
 
 public class SpotifyClient extends ApiClient<SpotifyInterface> {
     @Override

@@ -1,7 +1,5 @@
 package com.cpen321.tunematch;
 
-import static com.cpen321.tunematch.Message.timestampFormat;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -23,8 +21,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-
-import org.json.JSONException;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;

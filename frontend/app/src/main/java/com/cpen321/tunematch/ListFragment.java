@@ -11,9 +11,7 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.List;
 
 public class ListFragment extends Fragment{
 
