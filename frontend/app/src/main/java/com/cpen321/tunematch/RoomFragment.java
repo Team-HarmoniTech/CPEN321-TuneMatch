@@ -77,6 +77,8 @@ public class RoomFragment extends Fragment {
         super.onCreate(savedInstanceState);
         initServices();
     }
+
+    // ChatGPT Usage: No
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -86,12 +88,15 @@ public class RoomFragment extends Fragment {
         initializeObservers();
         return view;
     }
+
+    // ChatGPT Usage: No
     @Override
     public void onStart() {
         super.onStart();
         setUpPlayerControls();
     }
 
+    // ChatGPT Usage: Partial
     private void initServices() {
         // Initialize ViewModel and ApiClient
         model = ReduxStore.getInstance();
@@ -102,6 +107,8 @@ public class RoomFragment extends Fragment {
         mSpotifyService = mainActivity.getSpotifyService();
         mSpotifyAppRemote = mSpotifyService.getSpotifyAppRemote();
     }
+
+    // ChatGPT Usage: No
     private void initializeViews() {
         chatBtn = view.findViewById(R.id.chatBtn);
         queueBtn = view.findViewById(R.id.queueBtn);
@@ -143,6 +150,8 @@ public class RoomFragment extends Fragment {
         // Initialize the Spotify API client with the base URL and custom headers
         spotifyClient = new SpotifyClient(authToken);
     }
+
+    // ChatGPT Usage: No
     private void initializeEventListeners() {
         chatBtn.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -207,6 +216,8 @@ public class RoomFragment extends Fragment {
 
 
     }
+
+    // ChatGPT Usage: Partial
     private void setUpPlayerControls(){
         final Handler handler = new Handler();
         final Runnable runnable = new Runnable() {
@@ -387,6 +398,8 @@ public class RoomFragment extends Fragment {
             }
         });
     }
+
+    // ChatGPT Usage: Partial
     private void initializeObservers() {
         model.getCurrentSong().observe(getViewLifecycleOwner(), currentSong -> {
             Log.d(TAG, "updateCurrentSongUI: name:: " + currentSong.getSongName() + " artist:: " + currentSong.getSongArtist() + " duration:: " + currentSong.getDuration() + " currentPos:: " + currentSong.getCurrentPosition() + " isPlaying:: " + currentSong.getIsPLaying());
@@ -428,6 +441,7 @@ public class RoomFragment extends Fragment {
 
 
     // Update UI components related to the session active state
+    // ChatGPT Usage: No
     private void updateSessionUI(Boolean isActive) {
         chatBtn.setVisibility(isActive ? View.VISIBLE : View.GONE);
         exitBtn.setVisibility(isActive ? View.VISIBLE : View.GONE);
@@ -435,12 +449,15 @@ public class RoomFragment extends Fragment {
 
 
     // Utility Methods
+    // ChatGPT Usage: No
     private String formatDuration(long duration) {
         int seconds = (int) (duration / 1000) % 60;
         int minutes = (int) ((duration / (1000 * 60)) % 60);
 
         return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
     }
+
+    // ChatGPT Usage: No
     private void switchFragment(int frameId, Fragment frag) {
         getFragmentManager()
                 .beginTransaction()
@@ -448,6 +465,8 @@ public class RoomFragment extends Fragment {
                 .addToBackStack(null)
                 .commit();
     }
+
+    // ChatGPT Usage: No
     private void filterSuggestions(String newText) {
         ArrayList<Song> filteredSuggestions = new ArrayList<>();
 
@@ -492,6 +511,8 @@ public class RoomFragment extends Fragment {
             }
         }).start();
     }
+
+    // ChatGPT Usage: No
     private String encodeSongTitle(String title) {
         String encoded;
         try {
@@ -501,6 +522,7 @@ public class RoomFragment extends Fragment {
         }
         return encoded;
     }
+
     // ChatGPT Usage: No
     private void addSongToQueue(Song suggestion) {
         if (model.checkSessionActive().getValue()) {
@@ -539,6 +561,8 @@ public class RoomFragment extends Fragment {
         songSearchBar.setQuery("", false);
         songSearchBar.clearFocus();
     }
+
+    // ChatGPT Usage: No
     private void updateFriendsAboutSongChange() {
         if (webSocketService != null && model.checkSessionActive().getValue()) {
             JSONObject messageToSend = new JSONObject();
@@ -554,6 +578,7 @@ public class RoomFragment extends Fragment {
         }
     }
 
+    // ChatGPT Usage: No
     private void sendCurrentSongToFriends(String songName) {
         if (webSocketService != null) {
             JSONObject messageToSend = new JSONObject();
@@ -572,6 +597,7 @@ public class RoomFragment extends Fragment {
         }
     }
 
+    // ChatGPT Usage: No
     private void playNextSong() {
         Log.d(TAG, "playNextSong: is it triggered?");
         List<Song> songQueue = model.getSongQueue().getValue();

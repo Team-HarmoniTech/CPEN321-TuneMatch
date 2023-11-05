@@ -14,14 +14,15 @@ import java.util.List;
 
 public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHolder> {
     private List<Song> items;
-
     WebSocketService webSocketService;
 
-
+    // ChatGPT Usage: No
     public QueueAdapter(WebSocketService webSocketService) {
         items = new ArrayList<>();  // Initialize the items list
         this.webSocketService = webSocketService;
     }
+
+    // ChatGPT Usage: No
     @NonNull
     @Override
     public QueueViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -29,17 +30,20 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
         return new QueueViewHolder(view);
     }
 
+    // ChatGPT Usage: No
     @Override
     public void onBindViewHolder(@NonNull QueueViewHolder holder, int position) {
         Song song = items.get(position);
         holder.bind(song);
     }
 
+    // ChatGPT Usage: No
     @Override
     public int getItemCount() {
         return items.size();
     }
 
+    // ChatGPT Usage: No
     public void onItemMove(int fromPosition, int toPosition) {
         Collections.swap(items, fromPosition, toPosition);
         notifyItemMoved(fromPosition, toPosition);
@@ -68,6 +72,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
 //        }
 //    }
 
+    // ChatGPT Usage: Partial
     public static class QueueViewHolder extends RecyclerView.ViewHolder {
         private TextView songIdView;  // Assume you have a TextView to display the song ID
         private TextView durationView;  // Assume you have a TextView to display the duration
@@ -87,11 +92,13 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
         }
     }
 
+    // ChatGPT Usage: No
     public void addSong(Song song) {
         items.add(song);
         notifyItemInserted(items.size() - 1);  // Notify the adapter that an item was added
     }
 
+    // ChatGPT Usage: No
     public void setSongs(List<Song> songs) {
         this.items = songs;
         notifyDataSetChanged();  // Notify the adapter that the data set has changed

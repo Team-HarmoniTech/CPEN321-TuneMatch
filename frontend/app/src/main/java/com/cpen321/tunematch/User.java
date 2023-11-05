@@ -34,20 +34,38 @@ public class User {
     public String getUserId() {
         return userId;
     }
+
+    // ChatGPT Usage: No
     public String getUserName() {
         return userName;
     }
+
+    // ChatGPT Usage: No
     public String getProfilePic() {
         return profileImageUrl;
     }
+
+    // ChatGPT Usage: No
     public String getProfileImageUrl() { return profileImageUrl; }
+
+    // ChatGPT Usage: No
     public void setTopArtists(ArrayList<String> topArtists) {this.topArtists = topArtists;}
+
+    // ChatGPT Usage: No
     public void setTopGenres(ArrayList<String> topGenres) {this.topGenres = topGenres;}
+
+    // ChatGPT Usage: No
     public ArrayList<String> getTopArtists() { return topArtists; }
+
+    // ChatGPT Usage: No
     public ArrayList<String> getTopGenres() { return topGenres; }
+
+    // ChatGPT Usage: No
     public void setBio(String bio) {
         this.bio = bio;
     }
+
+    // ChatGPT Usage: No
     public String getBio() {
         return bio;
     }

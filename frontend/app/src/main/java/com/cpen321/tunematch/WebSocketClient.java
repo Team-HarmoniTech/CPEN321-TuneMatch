@@ -50,6 +50,7 @@ public class WebSocketClient {
     private NotificationManager notification;
     private static final int PING_INTERVAL = 20000;  // 30 seconds
 
+    // ChatGPT Usage: Partial
     public WebSocketClient(ReduxStore model, Context context, NotificationManager notification) {
         this.context = context;
         this.client = new OkHttpClient();
@@ -58,6 +59,7 @@ public class WebSocketClient {
         this.notification = notification;
     }
 
+    // ChatGPT Usage: Partial
     public void start(Headers customHeader) {
         String url = "wss://tunematch-api.bhairawaryan.com/socket";
         Request request = new Request.Builder().url(url).build();
@@ -112,11 +114,14 @@ public class WebSocketClient {
         });
     }
 
+    // ChatGPT Usage: Partial
     public void stop() {
         if (webSocket != null) {
             webSocket.close(1000, "Goodbye!");
         }
     }
+
+    // ChatGPT Usage: Partial
     public void sendMessage(String message) {
         if (webSocket != null) {
             Log.d("WebSocketClient", "Sending message: " + message);
@@ -124,7 +129,7 @@ public class WebSocketClient {
         }
     }
 
-
+    // ChatGPT Usage: Partial
     private void handleFriends(JsonObject json) {
 
         try {
@@ -217,6 +222,7 @@ public class WebSocketClient {
         }
     }
 
+    // ChatGPT Usage: Partial
     private void handleSession(JSONObject json) {
 
         try {
@@ -468,7 +474,7 @@ public class WebSocketClient {
         }
     }
 
-    // ChatGPT Usage: No
+    // ChatGPT Usage: Partial
     private void handleRequests(JsonObject json){
         try {
             String action = json.get("action").getAsString();
@@ -618,6 +624,8 @@ public class WebSocketClient {
             Log.e("WebSocketClient", "Error processing request message", e);
         }
     }
+
+    // ChatGPT Usage: Partial
     private void startPing() {
         handler.postDelayed(new Runnable() {
             @Override
@@ -630,6 +638,7 @@ public class WebSocketClient {
         }, PING_INTERVAL);
     }
 
+    // ChatGPT Usage: Partial
     public static String getStringOrNull(JsonElement jsonElement) {
         if (jsonElement != null && !jsonElement.isJsonNull() && jsonElement.isJsonPrimitive()) {
             JsonPrimitive jsonPrimitive = jsonElement.getAsJsonPrimitive();

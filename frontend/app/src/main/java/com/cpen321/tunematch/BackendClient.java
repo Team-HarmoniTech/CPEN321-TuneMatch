@@ -60,6 +60,7 @@ public class BackendClient extends ApiClient<BackendInterface> {
         }
         return user;
     }
+
     // ChatGPT Usage: No
     public User createUser(SpotifyClient spotifyClient) throws ApiException, JSONException {
         Gson gson = new Gson();
