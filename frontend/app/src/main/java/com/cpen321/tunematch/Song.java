@@ -19,27 +19,42 @@ public class Song {
         this.isPlaying = false;
         this.currentPosition = "0";
     }
+
+    // ChatGPT Usage: No
     public void setCurrentPosition(String timeStarted) {
         this.currentPosition = timeStarted;
     }
+
+    // ChatGPT Usage: No
     public void setIsPLaying(Boolean isPLaying) {
         this.isPlaying = isPLaying;
     }
+
+    // ChatGPT Usage: No
     public String getSongID() {
         return songID;
     }
+
+    // ChatGPT Usage: No
     public String getDuration() {
         return duration;
     }
+
+    // ChatGPT Usage: No
     public String getSongName() {
         return songName;
     }
+
+    // ChatGPT Usage: No
     public String getSongArtist() {
         return songArtist;
     }
+
+    // ChatGPT Usage: No
     public String getCurrentPosition() {
         return currentPosition;
     }
+
     public boolean isPlaying() {
         return isPlaying;
     }
@@ -61,6 +76,9 @@ public class Song {
     public int hashCode() {
         return Objects.hash(songID, songName, songArtist, duration, currentPosition, isPlaying);
     }
+
+
+    // ChatGPT Usage: No
 
     @Override
     public String toString() {

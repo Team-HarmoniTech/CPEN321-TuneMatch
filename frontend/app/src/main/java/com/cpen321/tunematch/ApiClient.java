@@ -15,12 +15,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public abstract class ApiClient<T> {
-    protected abstract String getBaseUrl();
-    private Retrofit retrofit;
     protected T api;
+    protected abstract String getBaseUrl();
 
+    // ChatGPT Usage: No
     public ApiClient(Class<T> serviceClass) {
-        retrofit = new Retrofit.Builder()
+        Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(getBaseUrl())
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
@@ -29,16 +29,19 @@ public abstract class ApiClient<T> {
         api = retrofit.create(serviceClass);
     }
 
+    // ChatGPT Usage: No
     public interface ApiResponseCallback {
         void onSuccess(JsonElement result);
         void onError(ApiException exception);
     }
 
+    // ChatGPT Usage: No
     private JsonElement parseJsonObject(String json) {
         JsonParser parser = new JsonParser();
         return parser.parse(json);
     }
 
+    // ChatGPT Usage: No
     protected ArrayList<String> getAsStringList(JsonArray arr) {
         ArrayList<String> stringList = new ArrayList<String>();
         for (int i = 0; i < arr.size(); i++) {
@@ -48,6 +51,7 @@ public abstract class ApiClient<T> {
         return stringList;
     }
 
+    // ChatGPT Usage: No
     protected JsonElement call(Call<String> call) throws ApiException {
         try {
             Response<String> response = call.execute();

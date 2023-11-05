@@ -28,11 +28,9 @@ import java.util.Date;
 import java.util.List;
 
 public class ChatFragment extends Fragment {
-    private View view;
     private RecyclerView chatWindow;
     private MessageAdapter chatAdapter;
     private TextInputEditText chatInput;
-    private FloatingActionButton sendChat;
     private WebSocketService webSocketService;
     private boolean isServiceBound = false;
     ReduxStore model;
@@ -51,6 +49,7 @@ public class ChatFragment extends Fragment {
             isServiceBound = false;
         }
     };
+
     // ChatGPT Usage: No
     @Override
     public void onResume() {
@@ -58,6 +57,7 @@ public class ChatFragment extends Fragment {
         Intent intent = new Intent(getActivity(), WebSocketService.class);
         getActivity().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
+
     // ChatGPT Usage: No
     @Override
     public void onPause() {
@@ -68,13 +68,14 @@ public class ChatFragment extends Fragment {
         }
     }
 
+    // ChatGPT Usage: Partial
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.frag_chat, container, false);
+        View view = inflater.inflate(R.layout.frag_chat, container, false);
         chatWindow = view.findViewById(R.id.chatWindow);
         chatInput = view.findViewById(R.id.chatInput);
-        sendChat = view.findViewById(R.id.sendChatButton);
+        FloatingActionButton sendChat = view.findViewById(R.id.sendChatButton);
 
         model = ReduxStore.getInstance();
         initializeChat();
@@ -100,10 +101,11 @@ public class ChatFragment extends Fragment {
         return view;
     }
 
+    // ChatGPT Usage: Partial
     private void onSendMessage() {
         String messageText = chatInput.getText().toString();
         chatInput.setText("");
-        if (messageText == "") return;
+        if (messageText.equals("")) return;
 
         Log.d("ChatFragment", "Send: " + messageText);
         Message message = new Message(model.getCurrentUser().getValue(), messageText, new Date());
@@ -128,6 +130,7 @@ public class ChatFragment extends Fragment {
         model.addMessage(message, false);
     }
 
+    // ChatGPT Usage: Partial
     private void initializeChat() {
         List<Message> chatMsg = model.getMessages().getValue();
         if (chatMsg == null) {

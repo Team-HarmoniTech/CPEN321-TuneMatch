@@ -17,20 +17,26 @@ public class SpotifyService extends Service {
     private SpotifyAppRemote mSpotifyAppRemote;
     private String CLIENT_ID;
     private static final String REDIRECT_URI = "cpen321tunematch://callback"; // your redirect uri
+
     ReduxStore model;
     WebSocketService webSocketClient;
     MainActivity mainActivity;
+
+
+    // ChatGPT Usage: No
     public class LocalBinder extends Binder {
         SpotifyService getService() {
             return SpotifyService.this;
         }
     }
 
+    // ChatGPT Usage: No
     @Override
     public IBinder onBind(Intent intent) {
         return binder;
     }
 
+    // ChatGPT Usage: Partial
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Initialize and connect to Spotify here.
@@ -43,6 +49,7 @@ public class SpotifyService extends Service {
         return START_STICKY;
     }
 
+    // ChatGPT Usage: Partial
     private void connectToSpotify() {
         SpotifyAppRemote.connect(this, new ConnectionParams.Builder(CLIENT_ID)
                         .setRedirectUri(REDIRECT_URI)
@@ -72,6 +79,7 @@ public class SpotifyService extends Service {
                         });
     }
 
+    // ChatGPT Usage: No
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -81,6 +89,7 @@ public class SpotifyService extends Service {
         }
     }
 
+    // ChatGPT Usage: No
     public SpotifyAppRemote getSpotifyAppRemote() {
         return mSpotifyAppRemote;
     }

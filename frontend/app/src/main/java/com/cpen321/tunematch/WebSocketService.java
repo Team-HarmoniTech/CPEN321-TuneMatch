@@ -6,25 +6,26 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
-import android.util.Log;
-
 import okhttp3.Headers;
 
 public class WebSocketService extends Service {
     private final IBinder binder = new LocalBinder();
     private WebSocketClient webSocketClient;
 
+    // ChatGPT Usage: No
     public class LocalBinder extends Binder {
         WebSocketService getService() {
             return WebSocketService.this;
         }
     }
 
+    // ChatGPT Usage: No
     @Override
     public IBinder onBind(Intent intent) {
         return binder;
     }
 
+    // ChatGPT Usage: No
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // You can initialize your WebSocketClient here and start the connection.
@@ -39,7 +40,7 @@ public class WebSocketService extends Service {
         return START_STICKY;
     }
 
-
+    // ChatGPT Usage: No
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -48,6 +49,7 @@ public class WebSocketService extends Service {
         }
     }
 
+    // ChatGPT Usage: No
     // Method to send a message using WebSocketClient
     public void sendMessage(String message) {
         if (webSocketClient != null) {

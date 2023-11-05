@@ -29,7 +29,6 @@ public class HomeFragment extends Fragment {
     private WebSocketService webSocketService;
 
     // ChatGPT Usage: Partial
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,6 +38,7 @@ public class HomeFragment extends Fragment {
         bottomNavigationView = mainActivity.findViewById(R.id.bottomNavi);
     }
 
+    // ChatGPT Usage: No
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -46,6 +46,7 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
+    // ChatGPT Usage: Partial
     @Override
     public void onStart() {
         super.onStart();

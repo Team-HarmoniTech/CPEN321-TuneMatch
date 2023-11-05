@@ -18,9 +18,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
+
 import androidx.lifecycle.Observer;
 
 import android.util.Log;
+
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -31,15 +33,12 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.spotify.protocol.types.Track;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -51,10 +50,18 @@ import kotlin.text.Charsets;
 public class RoomFragment extends Fragment {
     // Views
     private View view;
-    private Button playpauseButton, nextButton, prevButton, chatBtn, queueBtn, exitBtn;
+    private Button playpauseButton;
+    private Button nextButton;
+    private Button prevButton;
+    private Button chatBtn;
+    private Button queueBtn;
+    private Button exitBtn;
     private SeekBar seekBar;
     private ImageView songBanner;
-    private TextView songTitle, songArtist, currentDuration, totalDuration;
+    private TextView songTitle;
+    private TextView songArtist;
+    private TextView currentDuration;
+    private TextView totalDuration;
     private SearchView songSearchBar;
     private ListView suggestionListView;
 
@@ -62,12 +69,13 @@ public class RoomFragment extends Fragment {
     private SpotifyAppRemote mSpotifyAppRemote;
     private ChatFragment chatFrag;
     private QueueFragment queueFrag;
+
     private ArrayAdapter<String> searchAdapter; // Changed to ArrayAdapter<String>
     private String authToken;
+
+
     private SpotifyClient spotifyClient;
-    private MainActivity mainActivity;
     private ReduxStore model;
-    private ApiClient apiClient;
     private CurrentSession currentSession;
     private WebSocketService webSocketService;
     private SpotifyService mSpotifyService;
@@ -81,6 +89,8 @@ public class RoomFragment extends Fragment {
         initServices();
 
     }
+
+    // ChatGPT Usage: No
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -89,6 +99,8 @@ public class RoomFragment extends Fragment {
         initializeEventListeners();
         return view;
     }
+
+    // ChatGPT Usage: No
     @Override
     public void onStart() {
         super.onStart();
@@ -97,16 +109,19 @@ public class RoomFragment extends Fragment {
         lastSongState = model.getCurrentSong().getValue();
     }
 
+    // ChatGPT Usage: Partial
     private void initServices() {
         // Initialize ViewModel and ApiClient
         model = ReduxStore.getInstance();
-        apiClient = ((MainActivity) getActivity()).getBackend();
+
         // Get instances of MainActivity, WebSocketService, and SpotifyService
-        mainActivity = (MainActivity) getActivity();
+        MainActivity mainActivity = (MainActivity) getActivity();
         webSocketService = mainActivity.getWebSocketService();
         mSpotifyService = mainActivity.getSpotifyService();
         mSpotifyAppRemote = mSpotifyService.getSpotifyAppRemote();
     }
+
+    // ChatGPT Usage: No
     private void initializeViews() {
         chatBtn = view.findViewById(R.id.chatBtn);
         queueBtn = view.findViewById(R.id.queueBtn);
@@ -143,11 +158,13 @@ public class RoomFragment extends Fragment {
 
         // Retrieve the authentication token
         SharedPreferences preferences = getActivity().getSharedPreferences("my_preferences", Context.MODE_PRIVATE);
-        authToken = preferences.getString("auth_token", null);
+        String authToken = preferences.getString("auth_token", null);
 
         // Initialize the Spotify API client with the base URL and custom headers
         spotifyClient = new SpotifyClient(authToken);
     }
+
+    // ChatGPT Usage: No
     private void initializeEventListeners() {
         chatBtn.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -218,6 +235,9 @@ public class RoomFragment extends Fragment {
             }
         });
     }
+
+
+    // ChatGPT Usage: Partial
 
     private void setUpPlayerControls(){
         final long[] trackDuration = {0};
@@ -421,7 +441,11 @@ public class RoomFragment extends Fragment {
             }
         });
     }
+
     private Song lastSongState = null;
+
+
+    // ChatGPT Usage: Partial
     private void initializeObservers() {
         model.getCurrentSong().observe(this, newSong -> {
                 if (newSong != null) {
@@ -476,17 +500,21 @@ public class RoomFragment extends Fragment {
     }
 
     // Update UI components related to the session active state
+    // ChatGPT Usage: No
     private void updateSessionUI(Boolean isActive) {
         chatBtn.setVisibility(isActive ? View.VISIBLE : View.GONE);
         exitBtn.setVisibility(isActive ? View.VISIBLE : View.GONE);
     }
     // Utility Methods
+    // ChatGPT Usage: No
     private String formatDuration(long duration) {
         int seconds = (int) (duration / 1000) % 60;
         int minutes = (int) ((duration / (1000 * 60)) % 60);
 
         return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
     }
+
+    // ChatGPT Usage: No
     private void switchFragment(int frameId, Fragment frag) {
         getFragmentManager()
                 .beginTransaction()
@@ -494,6 +522,8 @@ public class RoomFragment extends Fragment {
                 .addToBackStack(null)
                 .commit();
     }
+
+    // ChatGPT Usage: No
     private void filterSuggestions(String newText) {
         ArrayList<String> filteredSuggestions = new ArrayList<>();
         fullSongDataList.clear(); // Clear the full song data list
@@ -548,6 +578,8 @@ public class RoomFragment extends Fragment {
         }).start();
     }
 
+
+    // ChatGPT Usage: No
     private String encodeSongTitle(String title) {
         String encoded;
         try {
@@ -557,6 +589,7 @@ public class RoomFragment extends Fragment {
         }
         return encoded;
     }
+
     // ChatGPT Usage: No
     private void addSongToQueue(Song suggestion) {
         if (model.checkSessionActive().getValue()) {
@@ -595,6 +628,10 @@ public class RoomFragment extends Fragment {
         songSearchBar.setQuery("", false);
         songSearchBar.clearFocus();
     }
+
+
+    // ChatGPT Usage: No
+
     private void playNextSong() {
         List<Song> songQueue = model.getSongQueue().getValue();
         if (songQueue == null || songQueue.isEmpty()) {

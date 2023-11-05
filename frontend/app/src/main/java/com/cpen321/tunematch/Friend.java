@@ -35,10 +35,7 @@ public class Friend extends User {
     // ChatGPT Usage: No
     public boolean getIsListening() {
         Log.d("Friend", "current song: " + currentSong);
-        if (currentSong == null) {
-            return false;
-        }
-        return true;
+        return (currentSong != null);
     }
 
     // ChatGPT Usage: No

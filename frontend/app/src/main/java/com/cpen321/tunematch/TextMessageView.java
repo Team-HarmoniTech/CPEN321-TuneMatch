@@ -19,6 +19,7 @@ public class TextMessageView extends androidx.appcompat.widget.AppCompatTextView
         super(context, attrs, defStyleAttr);
     }
 
+    // ChatGPT Usage: No
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int maxWidth = (int) (getResources().getDisplayMetrics().widthPixels * MAX_WIDTH_PERCENTAGE);
