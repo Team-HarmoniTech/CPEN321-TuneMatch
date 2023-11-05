@@ -1,5 +1,7 @@
 package com.cpen321.tunematch;
 
+import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -117,6 +119,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    private Song lastSongState = null;
+
     // ChatGPT Usage: No
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
@@ -124,6 +129,39 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         model = ReduxStore.getInstance();
+
+
+
+
+
+        model.getCurrentSong().observe(this, song -> {
+//          execute the function only if the song name changes
+            if (song != null) {
+                // Check if the playing state has changed
+                if (lastSongState == null || lastSongState.getSongID().equals(song.getSongID())) {
+                    if (webSocketService != null) {
+                        JSONObject messageToSend = new JSONObject();
+                        try {
+                            messageToSend.put("method", "FRIENDS");
+                            messageToSend.put("action", "update");
+                            JSONObject body = new JSONObject();
+                            body.put("song", song.getSongName());
+                            messageToSend.put("body", body);
+                            webSocketService.sendMessage(messageToSend.toString());
+                        } catch (JSONException e) {
+                            Log.e(TAG, "Failed to create JSON message for updating friends about song change", e);
+                        }
+                    } else {
+                        Log.e(TAG, "WebSocketService is not available or session is not active");
+                    }
+                }
+                lastSongState = new Song(song.getSongID(), song.getSongName(), song.getSongArtist(), song.getDuration());
+                lastSongState.setCurrentPosition(song.getCurrentPosition());
+                lastSongState.setIsPLaying(song.isPlaying());
+            }
+        });
+
+
 
         // Retrieve the Spotify User ID from the Intent
         Intent intent = getIntent();

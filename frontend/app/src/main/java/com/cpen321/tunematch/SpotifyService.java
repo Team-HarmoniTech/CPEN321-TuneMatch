@@ -1,5 +1,7 @@
 package com.cpen321.tunematch;
 
+import static android.app.PendingIntent.getActivity;
+
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
@@ -15,6 +17,11 @@ public class SpotifyService extends Service {
     private SpotifyAppRemote mSpotifyAppRemote;
     private String CLIENT_ID;
     private static final String REDIRECT_URI = "cpen321tunematch://callback"; // your redirect uri
+
+    ReduxStore model;
+    WebSocketService webSocketClient;
+    MainActivity mainActivity;
+
 
     // ChatGPT Usage: No
     public class LocalBinder extends Binder {
@@ -35,6 +42,7 @@ public class SpotifyService extends Service {
         // Initialize and connect to Spotify here.
         // Consider checking if mSpotifyAppRemote is already initialized before trying to reconnect.
         CLIENT_ID = intent.getStringExtra("clientID");
+        model = ReduxStore.getInstance();
         if (mSpotifyAppRemote == null || !mSpotifyAppRemote.isConnected()) {
             connectToSpotify();
         }
@@ -49,7 +57,21 @@ public class SpotifyService extends Service {
                         .build(),
                         new Connector.ConnectionListener() {
                             public void onConnected(SpotifyAppRemote spotifyAppRemote) {
+                                Log.e("SpotifyService", "Connected! Yay!");
                                 mSpotifyAppRemote = spotifyAppRemote;
+//                                set the current song in the spotifyapp remote as the current song in the model
+                                mSpotifyAppRemote.getPlayerApi().getPlayerState()
+                                        .setResultCallback(playerState -> {
+                            if (playerState != null && playerState.track != null && model.getCurrentSong().getValue() != null) {
+                                                Log.e("SpotifyService the current song resets on load", playerState.track.uri);
+                                                String ID = playerState.track.uri.split(":")[2];
+                                                Song currentSong = new Song(ID, playerState.track.name, playerState.track.artist.name, playerState.track.duration+"");
+                                                currentSong.setCurrentPosition(String.valueOf(playerState.playbackPosition));
+//                                                currentSong.setIsPLaying(!playerState.isPaused);
+                                                model.getCurrentSong().postValue(currentSong);
+                                            }
+                                        });
+
                             }
                             public void onFailure(Throwable throwable) {
                                 Log.e("SpotifyService", throwable.getMessage());

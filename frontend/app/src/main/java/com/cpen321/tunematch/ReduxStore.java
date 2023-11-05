@@ -19,6 +19,7 @@ public class ReduxStore extends ViewModel {
     private final MutableLiveData<CurrentSession> currentSession;
     private final MutableLiveData<MediaControllerState> mediaControllerState;
     private final MutableLiveData<List<Message>> chatMessages;
+    private final MutableLiveData<Boolean> sessionCreatedByMe;
 
     private final MutableLiveData<Song> currentSong;
 
@@ -39,7 +40,7 @@ public class ReduxStore extends ViewModel {
         currentSong = new MutableLiveData<>();
         sessionActive = new MutableLiveData<>(false);
         currentUser = new MutableLiveData<>(null);
-
+        sessionCreatedByMe = new MutableLiveData<>(true);
     }
 
     // ChatGPT Usage: Partial
@@ -48,6 +49,10 @@ public class ReduxStore extends ViewModel {
             instance = new ReduxStore();
         }
         return instance;
+    }
+
+    public MutableLiveData<Boolean> checkSessionCreatedByMe() {
+        return sessionCreatedByMe;
     }
 
     // ChatGPT Usage: No
@@ -226,7 +231,6 @@ public class ReduxStore extends ViewModel {
                 if (u.getId().equals(user.getId())) {
                     return true;
                 }
-
             }
         }
         return false;
@@ -239,6 +243,11 @@ public class ReduxStore extends ViewModel {
         currentSong.setValue(song);
     }
 
+    public void setCurrentSongPosition(String timeStarted) {
+        Song song = currentSong.getValue();
+        song.setCurrentPosition(timeStarted);
+        currentSong.setValue(song);
+    }
 }
 
 
