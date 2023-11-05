@@ -33,6 +33,7 @@ export class Queue {
   /**
    * Start playing the current queue.
    */
+  // ChatGPT Usage: No
   start() {
     if (this.songs.length !== 0 && !this.running) {
       this.running = true;
@@ -40,6 +41,7 @@ export class Queue {
     }
   }
 
+  // ChatGPT Usage: No
   private playNext() {
     if (this.songs.length !== 0) {
       this.currentlyPlaying = this.songs.shift();
@@ -56,6 +58,7 @@ export class Queue {
   /**
    * Stop the queue from playing.
    */
+  // ChatGPT Usage: No
   stop() {
     if (this.running) {
       this.running = false;
@@ -76,6 +79,7 @@ export class Queue {
    * Replace the entire queue.
    * @param songs the new queue
    */
+  // ChatGPT Usage: No
   replace(songs: Song[]) {
     if (this.currentlyPlaying) {
       clearTimeout(this.runQueue);
@@ -91,6 +95,7 @@ export class Queue {
    * @param song the song to add
    * @param index the index to add after
    */
+  // ChatGPT Usage: No
   addAfter(song: Song, index?: number) {
     const splicePos = index ? index : Infinity;
     song.leftMs = song.durationMs;
@@ -104,6 +109,7 @@ export class Queue {
   /**
    * Skip the currently playing song.
    */
+  // ChatGPT Usage: No
   skip() {
     if (this.currentlyPlaying != null) {
       clearTimeout(this.runQueue);
@@ -117,6 +123,7 @@ export class Queue {
    * @param startIdx start index
    * @param endIdx end index
    */
+  // ChatGPT Usage: No
   drag(startIdx: number, endIdx: number) {
     const song = this.songs.splice(startIdx, 1)[0];
     if (song) {
@@ -128,6 +135,7 @@ export class Queue {
    * Seek the current song
    * @param seekPosition position to seek to
    */
+  // ChatGPT Usage: No
   seek(seekPosition: number) {
     if (this.currentlyPlaying) {
       clearTimeout(this.runQueue);
