@@ -25,17 +25,15 @@ import java.util.List;
 import java.util.Objects;
 
 public class MessageAdapter extends RecyclerView.Adapter  {
-
     private List<Message> messages;
     private User currentUser;
     private LayoutInflater inflater;
     private Context context;
-
     private BackendClient backend;
-
     public final static int MESSAGE_TYPE_RECEIVED = 1;
     public final static int MESSAGE_TYPE_SENT = 0;
 
+    // ChatGPT Usage: No
     public MessageAdapter(List<Message> messages, User currentUser, @NonNull LayoutInflater inflater, @NonNull Context context, @NonNull BackendClient backend) {
         this.messages = messages;
         this.currentUser = currentUser;
@@ -117,6 +115,7 @@ public class MessageAdapter extends RecyclerView.Adapter  {
         }
     }
 
+    // ChatGPT Usage: No
     public int getBottomSize() {
         return (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
@@ -180,6 +179,7 @@ public class MessageAdapter extends RecyclerView.Adapter  {
         }
     }
 
+    // ChatGPT Usage: No
     public class OnLongClickReportListener implements View.OnLongClickListener {
         private int position;
 

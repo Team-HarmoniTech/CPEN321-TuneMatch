@@ -63,7 +63,7 @@ public class SearchFragment extends Fragment {
         }).start();
     }
 
-    // ChatGPT Usage: No
+    // ChatGPT Usage: Partial
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -184,6 +184,7 @@ public class SearchFragment extends Fragment {
         return view;
     }
 
+    // ChatGPT Usage: Partial
     private boolean updateQuery(String query) {
         String encodedQuery;
         try {

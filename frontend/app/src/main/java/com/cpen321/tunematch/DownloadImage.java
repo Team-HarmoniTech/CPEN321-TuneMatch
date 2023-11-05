@@ -11,12 +11,14 @@ public class DownloadImage implements Runnable {
     private String url;
     private int placeholder;
 
+    // ChatGPT Usage: Partial
     public DownloadImage(ImageView image, String url, int placeholder) {
         this.image = image;
         this.url = url;
         this.placeholder = placeholder;
     }
 
+    // ChatGPT Usage: Partial
     @Override
     public void run() {
         try {

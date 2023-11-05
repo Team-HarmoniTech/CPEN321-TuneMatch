@@ -23,6 +23,7 @@ public class RequestListAdapter extends ArrayAdapter<SearchUser> {
     private final WebSocketService webSocketService;
     ReduxStore model = ReduxStore.getInstance();
 
+    // ChatGPT Usage: No
     public RequestListAdapter(Context context, List<SearchUser> dataList, WebSocketService webSocketService) {
         super(context, R.layout.request_list_item, dataList);
         this.context = context;
@@ -30,6 +31,7 @@ public class RequestListAdapter extends ArrayAdapter<SearchUser> {
         this.dataList = dataList;
     }
 
+    // ChatGPT Usage: Partial
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);

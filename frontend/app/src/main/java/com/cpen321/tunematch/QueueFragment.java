@@ -21,11 +21,10 @@ public class QueueFragment extends Fragment {
     private RecyclerView recyclerView;
     private QueueAdapter queueAdapter;
     private WebSocketService webSocketService;
-
     ReduxStore model;
     MainActivity mainActivity;
-    // ChatGPT Usage: Partial
 
+    // ChatGPT Usage: Partial
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,7 +33,7 @@ public class QueueFragment extends Fragment {
         webSocketService = mainActivity.getWebSocketService();
     }
 
-
+    // ChatGPT Usage: Partial
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -103,6 +102,8 @@ public class QueueFragment extends Fragment {
         addSongsToQueue();
         return view;
     }
+
+    // ChatGPT Usage: No
     private void addSongsToQueue() {
         model.getSongQueue().observe(getViewLifecycleOwner(), songs -> {
             if(songs == null) {

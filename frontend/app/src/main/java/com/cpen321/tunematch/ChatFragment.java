@@ -49,6 +49,7 @@ public class ChatFragment extends Fragment {
             isServiceBound = false;
         }
     };
+
     // ChatGPT Usage: No
     @Override
     public void onResume() {
@@ -56,6 +57,7 @@ public class ChatFragment extends Fragment {
         Intent intent = new Intent(getActivity(), WebSocketService.class);
         getActivity().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
+
     // ChatGPT Usage: No
     @Override
     public void onPause() {
@@ -66,6 +68,7 @@ public class ChatFragment extends Fragment {
         }
     }
 
+    // ChatGPT Usage: Partial
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -98,6 +101,7 @@ public class ChatFragment extends Fragment {
         return view;
     }
 
+    // ChatGPT Usage: Partial
     private void onSendMessage() {
         String messageText = chatInput.getText().toString();
         chatInput.setText("");
@@ -126,6 +130,7 @@ public class ChatFragment extends Fragment {
         model.addMessage(message, false);
     }
 
+    // ChatGPT Usage: Partial
     private void initializeChat() {
         List<Message> chatMsg = model.getMessages().getValue();
         if (chatMsg == null) {
