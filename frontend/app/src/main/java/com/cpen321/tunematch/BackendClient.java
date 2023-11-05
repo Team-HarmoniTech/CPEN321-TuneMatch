@@ -42,7 +42,7 @@ public class BackendClient extends ApiClient<BackendInterface> {
         Call<String> call = api.getUser(userId, fullProfile);
         JsonObject response = call(call).getAsJsonObject();
         User user;
-        if (fullProfile) {
+        if (!fullProfile) {
             user = new User(
                     response.get("userId").getAsString(),
                     response.get("username").getAsString(),
@@ -53,7 +53,7 @@ public class BackendClient extends ApiClient<BackendInterface> {
                     response.get("userId").getAsString(),
                     response.get("username").getAsString(),
                     response.get("profilePic").getAsString(),
-                    response.get("bio").getAsString(),
+                    response.get("bio").isJsonNull() ? null : response.get("bio").getAsString(),
                     getAsStringList(response.getAsJsonArray("topArtists")),
                     getAsStringList(response.getAsJsonArray("topGenres"))
             );
@@ -127,8 +127,9 @@ public class BackendClient extends ApiClient<BackendInterface> {
         }
         Call<String> call = api.getMe(this.currentUserId, fullProfile);
         JsonObject response = call(call).getAsJsonObject();
+        Log.d("backend", "getMe response: "+response);
         User user;
-        if (fullProfile) {
+        if (!fullProfile) {
             user = new User(
                     response.get("userId").getAsString(),
                     response.get("username").getAsString(),
@@ -139,7 +140,7 @@ public class BackendClient extends ApiClient<BackendInterface> {
                     response.get("userId").getAsString(),
                     response.get("username").getAsString(),
                     response.get("profilePic").getAsString(),
-                    response.get("bio").getAsString(),
+                    response.get("bio").isJsonNull() ? null : response.get("bio").getAsString(),
                     getAsStringList(response.getAsJsonArray("topArtists")),
                     getAsStringList(response.getAsJsonArray("topGenres"))
             );

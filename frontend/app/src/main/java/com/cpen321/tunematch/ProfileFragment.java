@@ -2,6 +2,7 @@
 package com.cpen321.tunematch;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,6 +77,7 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 ArrayList<String> topArtistsList = model.getCurrentUser().getValue().getTopArtists();
+                Log.d("ProfileFragment", "topArtistsList:"+topArtistsList);
                 ListFragment topArtistFragment = ListFragment.newInstance(topArtistsList, "Top Artists");
 
                 // Begin a fragment transaction
@@ -92,6 +94,7 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 ArrayList<String> topGenreList = model.getCurrentUser().getValue().getTopGenres();
+                Log.d("ProfileFragment", "topGenresList:"+topGenreList);
                 ListFragment topArtistFragment = ListFragment.newInstance(topGenreList, "Top Genres");
 
                 // Begin a fragment transaction

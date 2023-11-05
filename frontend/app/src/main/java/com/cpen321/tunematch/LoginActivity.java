@@ -27,7 +27,6 @@ public class LoginActivity extends AppCompatActivity {
     private static final String REDIRECT_URI = "cpen321tunematch://callback";
     private static final String TAG = "LoginActivity";
     private static final String CLIENT_ID = "0dcb406f508a4845b32a1342a91a71af";
-
     private String spotifyUserId;
 
     // ChatGPT Usage: Partial

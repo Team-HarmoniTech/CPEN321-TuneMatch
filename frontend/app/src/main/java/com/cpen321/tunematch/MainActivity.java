@@ -35,7 +35,6 @@ public class MainActivity extends AppCompatActivity {
     private BackendClient backend;
     private WebSocketClient webSocketClient;
     private ReduxStore model;
-
     public boolean isServiceBound = false;
     private WebSocketService webSocketService;
     private SpotifyService mSpotifyService;
