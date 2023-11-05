@@ -127,7 +127,6 @@ public class WebSocketClient {
 
 
     private void handleFriends(JsonObject json) {
-
         try {
             String action = json.get("action").getAsString();
             if (action.equals("refresh")) {
@@ -228,41 +227,49 @@ public class WebSocketClient {
                 String username = body.optString("username", null);
                 String profilePic = body.optString("profilePic", null);
                 CurrentSession currentSession = model.getCurrentSession().getValue();
+                if(currentSession == null){
+                    currentSession = new CurrentSession("session", "MySession");
+                }
                 List<User> sessionMembers = currentSession.getSessionMembers();
+                if(sessionMembers == null){
+                    sessionMembers = new ArrayList<>();
+                }
                 User user = new User(userId, username, profilePic);
                 sessionMembers.add(user);
                 currentSession.setSessionMembers(sessionMembers);
                 model.getCurrentSession().postValue(currentSession);
             }
             else if (action.equals("leave")) {
-
                 JSONObject body = json.getJSONObject("body");
                 String userId = body.getString("userId");
-                // TODO: Update the Redux store to remove the member's details
                 CurrentSession currentSession = model.getCurrentSession().getValue();
+                if(currentSession == null){
+                    currentSession = new CurrentSession("session", "MySession");
+                }
                 List<User> sessionMembers = currentSession.getSessionMembers();
+                if(sessionMembers == null){
+                    sessionMembers = new ArrayList<>();
+                }
                 for (User s : sessionMembers) {
                     if (s.getUserId().equals(userId)) {
                         sessionMembers.remove(s);
                         break;
                     }
-                    currentSession.setSessionMembers(sessionMembers);
-                    model.getCurrentSession().postValue(currentSession);
-                    model.checkSessionActive().postValue(false);
                 }
+                currentSession.setSessionMembers(sessionMembers);
+                model.getCurrentSession().postValue(currentSession);
             }
             else if (action.equals("refresh")) {
                 JSONObject body = json.getJSONObject("body");
                 JSONArray members = body.getJSONArray("members");
                 JSONObject currentlyPlaying = body.optJSONObject("currentlyPlaying");
                 JSONArray queue = body.getJSONArray("queue");
-
                 CurrentSession currentSession = model.getCurrentSession().getValue();
 
                 if(currentSession == null){
                     currentSession = new CurrentSession("session", "MySession");
-
                 }
+
                 List<User> sessionMembers = new ArrayList<>();
                 List<Song> sessionQueue = new ArrayList<>();
 
@@ -274,9 +281,9 @@ public class WebSocketClient {
                     User user = new User(id, username, profilePic);
                     sessionMembers.add(user);
                 }
-
-
+//                session was created by current user
                 if(members.length() == 0){
+                    model.checkSessionCreatedByMe().postValue(true);
                     Log.d(TAG, "handleSession: you created a session instead of joining one");
                     List<Song> ExisitngSongQueue = model.getSongQueue().getValue();
                     if(ExisitngSongQueue==null){
@@ -286,11 +293,13 @@ public class WebSocketClient {
                     try {
                         Song currentSong = model.getCurrentSong().getValue();
                         JSONObject currSong = new JSONObject();
-                        currSong.put("uri", currentSong.getSongID());
-                        currSong.put("durationMs", currentSong.getDuration());
-                        currSong.put("title", currentSong.getSongName());
-                        currSong.put("artist", currentSong.getSongArtist());
-                        songQueue.put(currSong);
+                        if (currentSong != null){
+                            currSong.put("uri", currentSong.getSongID());
+                            currSong.put("durationMs", currentSong.getDuration());
+                            currSong.put("title", currentSong.getSongName());
+                            currSong.put("artist", currentSong.getSongArtist());
+                            songQueue.put(currSong);
+                        }
                         for (Song s : ExisitngSongQueue) {
                             JSONObject song = new JSONObject();
                             song.put("uri", s.getSongID());
@@ -303,34 +312,20 @@ public class WebSocketClient {
                         messageToReplaceQueue.put("method", "SESSION");
                         messageToReplaceQueue.put("action", "queueReplace");
                         messageToReplaceQueue.put("body", songQueue);
-                        JSONObject messageToResume = new JSONObject();
-                        messageToResume.put("method", "SESSION");
-                        messageToResume.put("action", "queueResume");
                         if (webSocket != null) {
+                            Log.e(TAG, "handleSession: replace queue now:: "+ messageToReplaceQueue.toString());
                             webSocket.send(messageToReplaceQueue.toString());
-                            webSocket.send(messageToResume.toString());
                             currentSession.setSessionQueue(ExisitngSongQueue);
-
                         }
                     } catch (JSONException e) {
                         throw new RuntimeException(e);
                     }
                 }
-                else{
-                    if(currentlyPlaying != null){
-                        Log.d(TAG, "handleSession: you joined a session instead of creating one");
-                        String songId = currentlyPlaying.getString("uri");
-                        String songName = currentlyPlaying.getString("title");
-                        String songArtist = currentlyPlaying.getString("artist");
-                        String duration = currentlyPlaying.getString("durationMs");
-                        Date timeStarted = timestampFormat.parse(currentlyPlaying.getString("timeStarted"));
-                        long elapsedMs = System.currentTimeMillis() - timeStarted.getTime();
-                        Song currentSong = new Song(songId, songName, songArtist, duration);
-                        currentSong.setCurrentPosition(elapsedMs+"");
-                        currentSong.setIsPLaying(true);
-                        currentSession.setCurrentSong(currentSong);
-                        model.getCurrentSong().postValue(currentSong);
-                    }
+                else{ //session was joined by current user
+                    model.checkSessionCreatedByMe().postValue(false);
+                    Log.e(TAG, "handleSession: you joined a session instead of creating one");
+                    model.getCurrentSong().postValue(null);
+                    Log.e(TAG, "handleSession: current song is null now");
                     for (int i = 0; i < queue.length(); i++) {
                         JSONObject song = queue.getJSONObject(i);
                         String songId = song.getString("uri");
@@ -338,6 +333,7 @@ public class WebSocketClient {
                         String songName = song.getString("title");
                         String songArtist = song.getString("artist");
                         Song songToAdd = new Song(songId, songName, songArtist, duration);
+                        Log.e(TAG, "handleSession: adding song to queue:: "+ songToAdd.getSongName()+ " :: "+ songToAdd.getSongArtist()+ " :: "+ songToAdd.getSongID()+ " :: "+ songToAdd.getDuration()+ " :: "+ songToAdd.getCurrentPosition());
                         sessionQueue.add(songToAdd);
                     }
                     currentSession.setSessionQueue(sessionQueue);
@@ -345,7 +341,6 @@ public class WebSocketClient {
                 }
                 currentSession.setSessionMembers(sessionMembers);
                 currentSession.setSessionId("session");
-                model.getCurrentSession().postValue(currentSession);
                 model.checkSessionActive().postValue(true);
             }
             else if (action.equals("queueReplace")) {
@@ -365,13 +360,23 @@ public class WebSocketClient {
                 sessionQueue.add(songToAdd);
                 model.getSongQueue().postValue(sessionQueue);
                 CurrentSession currentSession = model.getCurrentSession().getValue();
+                if(currentSession == null){
+                    currentSession = new CurrentSession("session", "MySession");
+                }
                 currentSession.setSessionQueue(sessionQueue);
+                model.getCurrentSession().postValue(currentSession);
             }
             else if (action.equals("queueSkip")) {
                 Log.d(TAG, "handleSession: queueSkip has been initiated");
                 Log.d(TAG, "handleSession: queueSkip: " + model.getCurrentSong().getValue().getSongName()+" :: "+model.getSongQueue().getValue().get(0).getSongName());
                 CurrentSession currentSession = model.getCurrentSession().getValue();
+                if(currentSession == null){
+                    currentSession = new CurrentSession("session", "MySession");
+                }
                 List<Song> sessionQueue = model.getSongQueue().getValue();
+                if(sessionQueue == null){
+                    sessionQueue = new ArrayList<>();
+                }
                 Song currentSong = sessionQueue.get(0);
                 sessionQueue.remove(0);
                 currentSession.setSessionQueue(sessionQueue);
@@ -385,7 +390,13 @@ public class WebSocketClient {
                 int startIndex =  body.getInt("startIndex");
                 int endIndex = body.getInt("endIndex");
                 CurrentSession currentSession = model.getCurrentSession().getValue();
+                if(currentSession == null){
+                    currentSession = new CurrentSession("session", "MySession");
+                }
                 List<Song> sessionQueue = currentSession.getSessionQueue();
+                if(sessionQueue == null){
+                    sessionQueue = new ArrayList<>();
+                }
                 Song songToMove = sessionQueue.get(startIndex);
                 sessionQueue.remove(startIndex);
                 sessionQueue.add(endIndex, songToMove);
@@ -407,7 +418,6 @@ public class WebSocketClient {
                 JSONObject body = json.getJSONObject("body");
                 int seekPosition = body.getInt("seekPosition");
                 Log.d(TAG, "handleSession: seekPosition: " + seekPosition);
-                seekPosition = seekPosition / 1000;
                 Song currentSong = model.getCurrentSong().getValue();
                 currentSong.setCurrentPosition(seekPosition+"");
                 model.getCurrentSong().postValue(currentSong);

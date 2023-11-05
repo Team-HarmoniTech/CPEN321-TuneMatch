@@ -1,5 +1,7 @@
 package com.cpen321.tunematch;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.google.gson.JsonArray;
@@ -60,6 +62,7 @@ public class SpotifyClient extends ApiClient<SpotifyInterface> {
 
     public JsonObject getSong(String query) throws ApiException {
         Call<String> call = api.getSong(auth, query, "track");
+//        Log.d("SpotifyClient", "getSong: " + call(call).getAsJsonObject());
         return call(call).getAsJsonObject();
     }
 }

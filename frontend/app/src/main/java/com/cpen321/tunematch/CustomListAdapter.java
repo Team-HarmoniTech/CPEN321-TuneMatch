@@ -93,6 +93,9 @@ public class CustomListAdapter extends BaseAdapter {
                 public void onClick(View view) {
                     JSONObject messageToSend = new JSONObject();
                     JSONObject body = new JSONObject();
+                    model.checkSessionActive().postValue(true);
+                    model.getSongQueue().postValue(null);
+                    model.getCurrentSong().postValue(null);
                     try {
                         body.put("userId", ownerId);
                         messageToSend.put("method", "SESSION");
@@ -104,8 +107,7 @@ public class CustomListAdapter extends BaseAdapter {
                     if (webSocketService != null) {
                         webSocketService.sendMessage(messageToSend.toString());
                     }
-                    model.checkSessionActive().postValue(true);
-                    model.getSongQueue().postValue(null);
+
                     BottomNavigationView bottomNavigationView = parentView.findViewById(R.id.bottomNavi);
                     bottomNavigationView.setSelectedItemId(R.id.navigation_room);
                 }
