@@ -19,6 +19,12 @@ public class CurrentSession {
         sessionMembers = new ArrayList<>();
         sessionQueue = new ArrayList<>();
         messages = new ArrayList<>();
+        currentSong = null;
+    }
+
+    // ChatGPT Usage: No
+    public String getSessionName() {
+        return sessionName;
     }
 
     // ChatGPT Usage: No

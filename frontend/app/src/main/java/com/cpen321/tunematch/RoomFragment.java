@@ -5,7 +5,6 @@ import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -14,37 +13,34 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.SearchView;
-import androidx.fragment.app.Fragment;
-
-import androidx.lifecycle.Observer;
-
-import android.util.Log;
-
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
+import androidx.fragment.app.Fragment;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
-import com.spotify.protocol.types.Track;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import jp.wasabeef.blurry.Blurry;
+
 import kotlin.text.Charsets;
 
 public class RoomFragment extends Fragment {
@@ -71,16 +67,14 @@ public class RoomFragment extends Fragment {
     private QueueFragment queueFrag;
 
     private ArrayAdapter<String> searchAdapter; // Changed to ArrayAdapter<String>
-    private String authToken;
-
 
     private SpotifyClient spotifyClient;
     private ReduxStore model;
-    private CurrentSession currentSession;
     private WebSocketService webSocketService;
     private SpotifyService mSpotifyService;
     private List<JSONObject> fullSongDataList = new ArrayList<>();
     private long currentPosition = 0;
+    private Song lastSongState = null;
 
     // ChatGPT Usage: Partial
     @Override
@@ -145,9 +139,6 @@ public class RoomFragment extends Fragment {
         // Initially set chatBtn and exitBtn to GONE
         chatBtn.setVisibility(View.GONE);
         exitBtn.setVisibility(View.GONE);
-
-        // Get the current session
-        CurrentSession currentSession = model.getCurrentSession().getValue();
 
         // Set the queue fragment to be the default fragment in the subFrame
         switchFragment(R.id.subFrame, queueFrag);
@@ -442,9 +433,6 @@ public class RoomFragment extends Fragment {
         });
     }
 
-    private Song lastSongState = null;
-
-
     // ChatGPT Usage: Partial
     private void initializeObservers() {
         model.getCurrentSong().observe(this, newSong -> {
@@ -505,6 +493,7 @@ public class RoomFragment extends Fragment {
         chatBtn.setVisibility(isActive ? View.VISIBLE : View.GONE);
         exitBtn.setVisibility(isActive ? View.VISIBLE : View.GONE);
     }
+
     // Utility Methods
     // ChatGPT Usage: No
     private String formatDuration(long duration) {
