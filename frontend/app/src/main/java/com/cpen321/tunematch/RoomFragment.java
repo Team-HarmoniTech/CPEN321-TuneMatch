@@ -71,7 +71,6 @@ public class RoomFragment extends Fragment {
     private SpotifyClient spotifyClient;
     private ReduxStore model;
     private WebSocketService webSocketService;
-    private SpotifyService mSpotifyService;
     private List<JSONObject> fullSongDataList = new ArrayList<>();
     private long currentPosition = 0;
     private Song lastSongState = null;
@@ -111,8 +110,7 @@ public class RoomFragment extends Fragment {
         // Get instances of MainActivity, WebSocketService, and SpotifyService
         MainActivity mainActivity = (MainActivity) getActivity();
         webSocketService = mainActivity.getWebSocketService();
-        mSpotifyService = mainActivity.getSpotifyService();
-        mSpotifyAppRemote = mSpotifyService.getSpotifyAppRemote();
+        mSpotifyAppRemote = mainActivity.getSpotifyService().getSpotifyAppRemote();
     }
 
     // ChatGPT Usage: No

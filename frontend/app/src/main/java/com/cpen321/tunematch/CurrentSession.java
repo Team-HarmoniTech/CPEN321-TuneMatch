@@ -58,9 +58,10 @@ public class CurrentSession {
     }
 
     // ChatGPT Usage: No
-    public void setCurrentSong(Song currentSong) {
-        this.currentSong = currentSong;
-    }
+    public void setCurrentSong(Song currentSong) { this.currentSong = currentSong; }
+
+    // ChatGPT Usage: No
+    public Song getCurrentSong() { return currentSong; }
 
     // ChatGPT Usage: No
     public List<Message> getMessages() {
