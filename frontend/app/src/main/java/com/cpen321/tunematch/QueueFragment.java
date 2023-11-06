@@ -65,7 +65,8 @@ public class QueueFragment extends Fragment {
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-
+                // Required function
+                // Not used in our app
             }
 
             @Override
