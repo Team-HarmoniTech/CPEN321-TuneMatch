@@ -102,7 +102,7 @@ public class CustomListAdapter extends BaseAdapter {
                         messageToSend.put("action", "join");
                         messageToSend.put("body", body);
                     } catch (JSONException e) {
-                        throw new RuntimeException(e);
+                        Log.e("JSONException", "Exception message: "+e.getMessage());
                     }
                     if (webSocketService != null) {
                         webSocketService.sendMessage(messageToSend.toString());
@@ -143,7 +143,7 @@ public class CustomListAdapter extends BaseAdapter {
                         body.put("userId", id);
                         messageToSend.put("body", body);
                     } catch (JSONException e) {
-                        throw new RuntimeException(e);
+                        Log.e("JSONException", "Exception message: "+e.getMessage());
                     }
 
                     if (webSocketService != null) {

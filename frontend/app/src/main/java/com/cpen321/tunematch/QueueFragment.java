@@ -144,7 +144,7 @@ public class QueueFragment extends Fragment {
 //                webSocketService.sendMessage(message.toString());
 //            }
 //        } catch (JSONException e) {
-//            throw new RuntimeException(e);
+//            Log.e("JSONException", "Exception message: "+e.getMessage());
 //        }
     }
 }

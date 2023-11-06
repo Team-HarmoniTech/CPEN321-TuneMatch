@@ -198,7 +198,7 @@ public class RoomFragment extends Fragment {
                     messageToSend.put("method", "SESSION");
                     messageToSend.put("action", "leave");
                 } catch (JSONException e) {
-                    throw new RuntimeException(e);
+                    Log.e("JSONException", "Exception message: "+e.getMessage());
                 }
                 if(webSocketService != null) {
                     model.checkSessionActive().postValue(false);
@@ -221,15 +221,13 @@ public class RoomFragment extends Fragment {
                     Song song = new Song(songId, songName, songArtist, songDuration);
                     addSongToQueue(song);
                 } catch (JSONException e) {
-                    throw new RuntimeException(e);
+                    Log.e("JSONException", "Exception message: "+e.getMessage());
                 }
             }
         });
     }
 
-
     // ChatGPT Usage: Partial
-
     private void setUpPlayerControls(){
         final long[] trackDuration = {0};
         final Handler handler = new Handler(Looper.getMainLooper());
@@ -363,7 +361,7 @@ public class RoomFragment extends Fragment {
                         messageToSend.put("action", "queueSeek");
                         messageToSend.put("body", new JSONObject().put("seekPosition", newProgress));
                     } catch (JSONException e) {
-                        throw new RuntimeException(e);
+                        Log.e("JSONException", "Exception message: "+e.getMessage());
                     }
                     webSocketService.sendMessage(messageToSend.toString());
                 }
@@ -383,7 +381,7 @@ public class RoomFragment extends Fragment {
                             messageToSend.put("method", "SESSION");
                             messageToSend.put("action", "queueResume");
                         } catch (JSONException e) {
-                            throw new RuntimeException(e);
+                            Log.e("JSONException", "Exception message: "+e.getMessage());
                         }
                         webSocketService.sendMessage(messageToSend.toString());
                     }
@@ -396,7 +394,7 @@ public class RoomFragment extends Fragment {
                             messageToSend.put("method", "SESSION");
                             messageToSend.put("action", "queuePause");
                         } catch (JSONException e) {
-                            throw new RuntimeException(e);
+                            Log.e("JSONException", "Exception message: "+e.getMessage());
                         }
                         webSocketService.sendMessage(messageToSend.toString());
                     }
@@ -425,7 +423,7 @@ public class RoomFragment extends Fragment {
                         messageToSend.put("action", "queueSeek");
                         messageToSend.put("body", new JSONObject().put("seekPosition", 0));
                     } catch (JSONException e) {
-                        throw new RuntimeException(e);
+                        Log.e("JSONException", "Exception message: "+e.getMessage());
                     }
                     webSocketService.sendMessage(messageToSend.toString());
                 }
@@ -570,11 +568,11 @@ public class RoomFragment extends Fragment {
 
     // ChatGPT Usage: No
     private String encodeSongTitle(String title) {
-        String encoded;
+        String encoded = null;
         try {
             encoded = URLEncoder.encode(title, Charsets.UTF_8.toString());
         } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+            Log.e("JSONException", "Exception message: "+e.getMessage());
         }
         return encoded;
     }

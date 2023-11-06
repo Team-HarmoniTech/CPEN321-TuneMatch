@@ -321,7 +321,7 @@ public class WebSocketClient {
                             currentSession.setSessionQueue(ExisitngSongQueue);
                         }
                     } catch (JSONException e) {
-                        throw new RuntimeException(e);
+                        Log.e("JSONException", "Exception message: "+e.getMessage());
                     }
                 }
                 else{ //session was joined by current user
