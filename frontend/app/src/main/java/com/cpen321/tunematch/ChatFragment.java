@@ -22,7 +22,6 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -111,7 +110,6 @@ public class ChatFragment extends Fragment {
         Message message = new Message(model.getCurrentUser().getValue(), messageText, new Date());
 
         Gson gson = new Gson();
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
         JsonObject socketMessage = new JsonObject();
         socketMessage.add("method", gson.toJsonTree("SESSION"));
         socketMessage.add("action", gson.toJsonTree("message"));

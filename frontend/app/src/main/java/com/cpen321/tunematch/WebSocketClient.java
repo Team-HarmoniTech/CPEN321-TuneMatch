@@ -29,7 +29,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -267,7 +266,6 @@ public class WebSocketClient {
             else if (action.equals("refresh")) {
                 JSONObject body = json.getJSONObject("body");
                 JSONArray members = body.getJSONArray("members");
-                JSONObject currentlyPlaying = body.optJSONObject("currentlyPlaying");
                 JSONArray queue = body.getJSONArray("queue");
                 CurrentSession currentSession = model.getCurrentSession().getValue();
 
@@ -323,7 +321,7 @@ public class WebSocketClient {
                             currentSession.setSessionQueue(ExisitngSongQueue);
                         }
                     } catch (JSONException e) {
-                        throw new RuntimeException(e);
+                        Log.e("JSONException", "Exception message: "+e.getMessage());
                     }
                 }
                 else{ //session was joined by current user
@@ -347,9 +345,6 @@ public class WebSocketClient {
                 currentSession.setSessionMembers(sessionMembers);
                 currentSession.setSessionId("session");
                 model.checkSessionActive().postValue(true);
-            }
-            else if (action.equals("queueReplace")) {
-                JSONArray queue = json.getJSONArray("body");
             }
             else if (action.equals("queueAdd")) {
                 JSONObject songDetails = json.getJSONObject("body");

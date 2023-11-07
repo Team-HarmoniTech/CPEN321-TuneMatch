@@ -17,8 +17,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 public class QueueFragment extends Fragment {
-
-    private RecyclerView recyclerView;
     private QueueAdapter queueAdapter;
     private WebSocketService webSocketService;
     ReduxStore model;
@@ -39,7 +37,7 @@ public class QueueFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.frag_queue, container, false);
-        recyclerView = view.findViewById(R.id.recycler_view);
+        RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         queueAdapter = new QueueAdapter(webSocketService);
@@ -67,17 +65,19 @@ public class QueueFragment extends Fragment {
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-
+                // Required function
+                // Not used in our app
             }
 
             @Override
             public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
                 super.onSelectedChanged(viewHolder, actionState);
 
-                if (actionState == ItemTouchHelper.ACTION_STATE_IDLE) {
-                    if (draggedFromPosition != -1 && draggedToPosition != -1 && draggedFromPosition != draggedToPosition) {
-                        // Send the WebSocket message only after the item is dropped.
-                        if (webSocketService != null && model.checkSessionActive().getValue()) {
+                // Send the WebSocket message only after the item is dropped.
+                if (actionState == ItemTouchHelper.ACTION_STATE_IDLE
+                        && draggedFromPosition != -1 && draggedToPosition != -1
+                        && draggedFromPosition != draggedToPosition && webSocketService != null
+                        && model.checkSessionActive().getValue()) {
                             JSONObject jsonObject = new JSONObject();
                             try {
                                 jsonObject.put("method", "SESSION");
@@ -90,8 +90,7 @@ public class QueueFragment extends Fragment {
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
-                        }
-                    }
+
                     // Reset the positions
                     draggedFromPosition = -1;
                     draggedToPosition = -1;
@@ -144,7 +143,7 @@ public class QueueFragment extends Fragment {
 //                webSocketService.sendMessage(message.toString());
 //            }
 //        } catch (JSONException e) {
-//            throw new RuntimeException(e);
+//            Log.e("JSONException", "Exception message: "+e.getMessage());
 //        }
     }
 }

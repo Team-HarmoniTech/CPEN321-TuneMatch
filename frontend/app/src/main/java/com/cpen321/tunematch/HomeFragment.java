@@ -1,7 +1,7 @@
 package com.cpen321.tunematch;
 
 import android.os.Bundle;
-
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -86,7 +86,7 @@ public class HomeFragment extends Fragment {
                     messageToCreateSession.put("method", "SESSION");
                     messageToCreateSession.put("action", "join");
                 } catch (JSONException e) {
-                    throw new RuntimeException(e);
+                    Log.e("JSONException", "Exception message: "+e.getMessage());
                 }
                 if (webSocketService != null) {
                     webSocketService.sendMessage(messageToCreateSession.toString());
