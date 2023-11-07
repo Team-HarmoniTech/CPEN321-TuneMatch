@@ -239,17 +239,9 @@ public class RoomFragment extends Fragment {
             @Override
             public void run() {
                 synchronized (this){
-                if(lastSongState != null) {
-                    long totalDuration = Long.parseLong(lastSongState.getDuration());
-                    currentDuration.setText(formatDuration(currentPosition));
-                    int progress = (int) ((float) currentPosition / (float) totalDuration * 100);
-                    seekBar.setProgress(progress);
-                    if (totalDuration - currentPosition < 3000) {
-                        playNextSong();
+                    if(lastSongState != null) {
+                        updatePlayerProgress();
                     }
-                    currentPosition += 1000; // Assumes that this is run every second
-                    lastSongState.setCurrentPosition(String.valueOf(currentPosition));
-                }
                     handler.postDelayed(this, 1000);
                 }
 
@@ -261,14 +253,7 @@ public class RoomFragment extends Fragment {
             handler.post(runnable);
 //        }
 
-        songBanner.setImageResource(R.color.darkGray);
-        songTitle.setText(lastSongState == null ? "No Song" : lastSongState.getSongName());
-        songArtist.setText(lastSongState == null ? "No Artist" : lastSongState.getSongArtist());
-        totalDuration.setText(lastSongState == null ? "0:00" : formatDuration(Long.parseLong(lastSongState.getDuration())));
-//        currentDuration.setText(lastSongState == null ? "0:00" : formatDuration(Long.parseLong(lastSongState.getCurrentPosition())));
-//        seekBar.setProgress(lastSongState == null ? 0 : (int) ((float) Long.parseLong(lastSongState.getCurrentPosition()) / Long.parseLong(lastSongState.getDuration()) * 100));
-        playpauseButton.setBackgroundResource(lastSongState == null || !lastSongState.isPlaying() ? R.drawable.play_btn : R.drawable.pause_btn);
-
+        updateUI();
 
         //
 //        mSpotifyAppRemote.getPlayerApi()
@@ -326,7 +311,39 @@ public class RoomFragment extends Fragment {
 //                    }
 //                });
 
+        setSeekBarListener(trackDuration, handler, runnable);
 
+        setSongCtrlBtn();
+    }
+
+    // ChatGPT Usage: No
+    private void updatePlayerProgress() {
+        if(lastSongState != null) {
+            long totalDuration = Long.parseLong(lastSongState.getDuration());
+            currentDuration.setText(formatDuration(currentPosition));
+            int progress = (int) ((float) currentPosition / (float) totalDuration * 100);
+            seekBar.setProgress(progress);
+            if (totalDuration - currentPosition < 3000) {
+                playNextSong();
+            }
+            currentPosition += 1000; // Assumes that this is run every second
+            lastSongState.setCurrentPosition(String.valueOf(currentPosition));
+        }
+    }
+
+    // ChatGPT Usage: No
+    private void updateUI(){
+        songBanner.setImageResource(R.color.darkGray);
+        songTitle.setText(lastSongState == null ? "No Song" : lastSongState.getSongName());
+        songArtist.setText(lastSongState == null ? "No Artist" : lastSongState.getSongArtist());
+        totalDuration.setText(lastSongState == null ? "0:00" : formatDuration(Long.parseLong(lastSongState.getDuration())));
+//        currentDuration.setText(lastSongState == null ? "0:00" : formatDuration(Long.parseLong(lastSongState.getCurrentPosition())));
+//        seekBar.setProgress(lastSongState == null ? 0 : (int) ((float) Long.parseLong(lastSongState.getCurrentPosition()) / Long.parseLong(lastSongState.getDuration()) * 100));
+        playpauseButton.setBackgroundResource(lastSongState == null || !lastSongState.isPlaying() ? R.drawable.play_btn : R.drawable.pause_btn);
+    }
+
+    // ChatGPT Usage: No
+    private void setSeekBarListener(long[] trackDuration, Handler handler, Runnable runnable) {
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progressChangedValue = 0;
             long newProgress = 0;
@@ -350,8 +367,6 @@ public class RoomFragment extends Fragment {
 //                handler.removeCallbacks(runnable);
 //                set handler based on curr song state
 
-
-
                 if(webSocketService!=null && model.checkSessionActive().getValue()){
                     JSONObject messageToSend = new JSONObject();
                     try {
@@ -366,12 +381,15 @@ public class RoomFragment extends Fragment {
                 handler.post(runnable);
             }
         });
+    }
 
+    // ChatGPT Usage: No
+    private void setSongCtrlBtn(){
         playpauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Song currSong = model.getCurrentSong().getValue();
-                Boolean isPlaying = currSong.isPlaying();
+                Boolean isPlaying = (currSong!=null ? currSong.isPlaying() : false);
                 if (!isPlaying) {
                     if(webSocketService!=null && model.checkSessionActive().getValue()){
                         JSONObject messageToSend = new JSONObject();
