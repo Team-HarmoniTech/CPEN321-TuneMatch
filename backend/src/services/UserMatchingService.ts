@@ -65,9 +65,24 @@ export class UserMatchingService {
       });
   }
 
+  private scalingFormula: number[] = [];
+  
+  constructor() {
+    this.preCalculateScalingFormula();
+  }
+
+  // Pre-calculate and store the scaling formula
+  private preCalculateScalingFormula(): void {
+    for (let score = 0; score <= 100; score++) {
+      // Apply f(x)= -0.00002*x^3 -0.001*x^2 + x + 30 to make users feel better :)
+      const outputMultiplier = -0.00002*Math.pow(score, 3) + -0.00002*Math.pow(score, 2) + score + 30;
+      this.scalingFormula[score] = outputMultiplier;
+    }
+  }
+
   // ChatGPT usage: No
   calcPercentMatch(u1: User, u2: User): number {
-    // Apply f(x)= -0.00002*x^3 -0.001*x^2 + x + 30 to make users feel better :)
+    
     const outputMultiplier = (score): number => {
       return -0.00002*Math.pow(score, 3) + -0.00002*Math.pow(score, 2) + score + 30;
     }
@@ -93,13 +108,14 @@ export class UserMatchingService {
       return score / maxLength;
     };
 
-    return outputMultiplier(
-      (
-        (arrayScore(u1.top_artists, u2.top_artists) +
-          arrayScore(u1.top_genres, u2.top_genres)) *
-        50
-      )
+    const roundedScore = Math.round(
+      (arrayScore(u1.top_artists, u2.top_artists) + 
+        arrayScore(u1.top_genres, u2.top_genres)) * 
+      50
     );
+
+    // Use the pre-calculated scaling formula
+    return this.scalingFormula[roundedScore];
   }
 
   // ChatGPT usage: Partial
@@ -169,7 +185,21 @@ export class UserMatchingService {
   }
 
   // ChatGPT usage: No
-  async getTopMatches(userId: number): Promise<(User & { match: number })[]> {
+  async getTopMatches(
+    userId: number, 
+    timeoutMs: number = 60000
+  ): Promise<(User & { match: number })[]> {
+    const startTime = Date.now();
+
+    while (!(await userService.getUserById(userId)).connectionComputed) {
+      if (Date.now() - startTime >= timeoutMs) {
+        throw new Error('User connections were not computed within 60 seconds.');
+      }
+  
+      /* Check every second until complete */
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+    
     while (!(await userService.getUserById(userId)).connectionComputed) {
       /* Check every second until complete */
       await new Promise((f) => setTimeout(f, 1000));
