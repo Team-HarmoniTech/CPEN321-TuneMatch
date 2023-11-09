@@ -59,23 +59,26 @@ async function authenticateSocket(socket, req): Promise<number> {
       }),
     ),
   );
+  /* Start ping pong */
+  socket.ping();
 
   return user.id;
 }
 
 // ChatGPT Usage: No
 export async function handleConnection(ws: WebSocket, req: Request) {
-  // Authenticate and add to our persistant set of connections
+  /* Authenticate and add to our persistant set of connections */
   const currentUserId = await authenticateSocket(ws, req);
 
   ws.on("error", console.error);
 
+  ws.on("pong", () => {
+    /* reply to the pong after 20s */
+    setTimeout(() => ws.ping(), 20000);
+  });
+
   // ChatGPT Usage: No
   ws.on("message", function message(data) {
-    if (data.toString() === "ping") {
-      ws.send("pong");
-      return;
-    }
     try {
       const req: SocketMessage = JSON.parse(data.toString());
       if (!req.method) {

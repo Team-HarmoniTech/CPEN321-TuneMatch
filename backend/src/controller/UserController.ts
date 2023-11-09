@@ -160,7 +160,7 @@ export class UserController {
     const user = await userService.updateUserStatus(
       currentUserId,
       message?.body?.song,
-      undefined,
+      message?.body?.source,
     );
   }
 }
