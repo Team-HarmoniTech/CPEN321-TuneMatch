@@ -69,7 +69,8 @@ export class UserMatchingService {
   calcPercentMatch(u1: User, u2: User): number {
     // Apply f(x)= -0.00002*x^3 -0.001*x^2 + x + 30 to make users feel better :)
     const outputMultiplier = (score): number => {
-      return -0.00002*Math.pow(score, 3) + -0.00002*Math.pow(score, 2) + score + 30;
+      const out = -0.00002*Math.pow(score, 3) + -0.00002*Math.pow(score, 2) + score + 30;
+      return Math.min(100, out + Math.floor(Math.random() * 11) - 5);
     }
 
     const arrayScore = (arr1, arr2): number => {
@@ -89,7 +90,6 @@ export class UserMatchingService {
           //score += (maxLength - Math.abs(index - arr1map.get(value))) / Math.max(arr1.length, 1);
         }
       });
-      console.log(score);
       return score / maxLength;
     };
 

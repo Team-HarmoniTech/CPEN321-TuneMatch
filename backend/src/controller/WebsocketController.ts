@@ -19,7 +19,7 @@ import { WebSocket } from "ws";
 // ChatGPT Usage: No
 async function authenticateSocket(socket, req): Promise<number> {
   if (!req.headers["user-id"]) {
-    socket.close();
+    socket.close(1008, 'No Authentication Provided');
     return;
   }
 
@@ -72,7 +72,8 @@ export async function handleConnection(ws: WebSocket, req: Request) {
 
   // ChatGPT Usage: No
   ws.on("message", function message(data) {
-    if (data.toString() === "") {
+    if (data.toString() === "ping") {
+      ws.send("pong");
       return;
     }
     try {

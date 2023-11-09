@@ -1,6 +1,18 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
-  clearMocks: true,
   preset: "ts-jest",
   testEnvironment: "node",
+  setupFiles: ["dotenv/config"],
+  moduleNameMapper: {
+    "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+    "^@src/(.*)$": "<rootDir>/src/$1",
+    "^@controller/(.*)$": "<rootDir>/src/controller/$1",
+    "^@services/(.*)$": "<rootDir>/src/services/$1",
+    "^@routes/(.*)$": "<rootDir>/src/routes/$1",
+    "^@models/(.*)$": "<rootDir>/src/models/$1",
+    "^@middleware/(.*)$": "<rootDir>/src/middleware/$1"
+  },
+  globalTeardown: '<rootDir>/test/globalTeardown.ts',
+  setupFiles: ['<rootDir>/test/globalMocks.ts'],
+  testTimeout: 5000
 };
