@@ -1,5 +1,6 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
-module.exports = {
+
+const sharedConfig = {
   preset: "ts-jest",
   testEnvironment: "node",
   setupFiles: ["dotenv/config"],
@@ -12,7 +13,27 @@ module.exports = {
     "^@models/(.*)$": "<rootDir>/src/models/$1",
     "^@middleware/(.*)$": "<rootDir>/src/middleware/$1"
   },
+}
+
+module.exports = {
+  ...sharedConfig,
   globalTeardown: '<rootDir>/test/globalTeardown.ts',
   setupFiles: ['<rootDir>/test/globalMocks.ts'],
-  testTimeout: 5000
+  testTimeout: 5000,
+  projects: [
+    {
+      displayName: 'Http Tests',
+      testMatch: ['<rootDir>/test/http/**/*.test.ts'],
+      setupFilesAfterEnv: [
+        '<rootDir>/test/http/httpSetup.ts'
+      ],
+      ...sharedConfig
+    },
+    {
+      displayName: 'Websocket Tests',
+      testMatch: ['<rootDir>/test/websocket/**/*.test.ts'],
+      setupFilesAfterEnv: ['<rootDir>/test/websocket/websocketSetup.ts'],
+      ...sharedConfig
+    },
+  ]
 };

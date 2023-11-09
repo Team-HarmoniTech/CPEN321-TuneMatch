@@ -2,14 +2,6 @@ import { server } from "@src/index"; // Assuming your Express app instance is ex
 import request from 'superwstest';
 
 describe("GET /me", () => {
-    beforeEach((done) => {
-        server.listen(0, 'localhost', done);
-    });
-
-    afterEach((done) => {
-        server.close(done);
-    });
-
     test("responds with 200 OK", async () => {
         const messages: string[] = [];
         const response = await request(server).get("/users/test");
