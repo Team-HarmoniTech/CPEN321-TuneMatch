@@ -9,6 +9,7 @@
     "experimentalDecorators": true,
     "sourceMap": true,
     "downlevelIteration": true,
+    "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {
       "@src/*": ["src/*"],

@@ -3,21 +3,26 @@ import 'module-alias/register';
 import { handleConnection } from "@controller/WebsocketController";
 import { findCurrentUser } from "@middleware/CurrentUser";
 import { handleError } from "@middleware/ErrorHandler";
-import { Prisma } from "@prisma/client";
-import { PORT } from "@src/config";
+import { Prisma } from '@prisma/client';
 import { Routes } from "@src/routes";
-import { database } from "@src/services";
-import * as express from "express";
-import { Request, Response } from "express";
+import express, { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import * as http from "http";
-import * as morgan from "morgan";
+import morgan from 'morgan';
 import { WebSocketServer } from "ws";
+import { ENVIRONMENT, PORT } from './config';
+import logger from './logger';
+import { database } from './services';
 
-const app = express();
+export const app = express();
 
 /* Middleware */
-app.use(morgan("tiny")); /* API logger */
+
+app.use(morgan("tiny", { /* API logger */
+  skip: () => { 
+    return process.env.LOGGING === "false"; 
+  },
+})); 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(findCurrentUser);
@@ -52,7 +57,7 @@ Routes.forEach((route) => {
 app.use(handleError);
 
 /* Create http websocket server */
-const server = http.createServer(app);
+export const server = http.createServer(app);
 const wss = new WebSocketServer({ server: server, path: "/socket" });
 
 /* Register websocket routes with WebsocketController */
@@ -69,7 +74,9 @@ Promise.all([
     },
   }),
 ]).then(() => {
-  server.listen(PORT, () => {
-    console.log(`Express server has started on port ${PORT}.`);
-  });
+  if (ENVIRONMENT !== "testing") {
+    server.listen(PORT, () => {
+      logger.info(`Express server has started on port ${PORT}.`);
+    });
+  }
 });
