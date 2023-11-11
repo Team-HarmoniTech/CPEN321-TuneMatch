@@ -26,8 +26,7 @@ services:
     container_name: backend_app
     environment:
       DATABASE_URL: "mysql://root:5KvX9bzs8x8VSAmwcD9S@mysql:3306/TuneMatchDB"
-      LOGGING: false
-      ENVIRONMENT: "production"
+      ENVIRONMENT: "prod"
     ports:
       - "80:3000"
     depends_on:

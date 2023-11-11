@@ -74,9 +74,9 @@ Promise.all([
     },
   }),
 ]).then(() => {
-  if (ENVIRONMENT !== "testing") {
+  if (ENVIRONMENT !== "test") {
     server.listen(PORT, () => {
-      logger.info(`Express server has started on port ${PORT}.`);
+      logger.log(`Express server has started on port ${PORT}.`);
     });
   }
 });

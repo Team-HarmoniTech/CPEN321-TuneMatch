@@ -6,7 +6,7 @@ import {
   RequestsMessage,
   transformUsers
 } from "@models/UserModels";
-import { SocketMessage } from "@models/WebsocketModels";
+import logger from "@src/logger";
 import {
   database,
   sessionService,
@@ -70,17 +70,17 @@ export async function handleConnection(ws: WebSocket, req: Request) {
   /* Authenticate and add to our persistant set of connections */
   const currentUserId = await authenticateSocket(ws, req);
 
-  ws.on("error", console.error);
+  ws.on("error", logger.err);
 
-  ws.on("pong", () => {
-    /* reply to the pong after 20s */
-    setTimeout(() => ws.ping(), 20000);
+  ws.on("pong", async () => {
+    /* Reply to the pong after 20s */
+    await setTimeout(() => ws.ping(), 20000);
   });
 
   // ChatGPT Usage: No
   ws.on("message", function message(data) {
     try {
-      const req: SocketMessage = JSON.parse(data.toString());
+      const req = JSON.parse(data.toString());
       if (!req.method) {
         ws.send(JSON.stringify({ Error: "Received data is missing fields" }));
       } else {
@@ -109,7 +109,7 @@ export async function handleConnection(ws: WebSocket, req: Request) {
 
   // ChatGPT Usage: No
   ws.on("close", async function close(code, reason) {
-    console.error(`Socket Closed: ${reason.toString()}`);
+    logger.log(`Socket Closed: ${reason.toString()}`);
     const userId = await socketService.retrieveBySocket(ws);
     try {
       if (userId) {

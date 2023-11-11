@@ -17,7 +17,7 @@ export class WebSocketService {
         return;
       }
       this.connections.set(userId, socket);
-      logger.info(`WEBSOCKET: User ${userId} connected`);
+      logger.log(`WEBSOCKET: User ${userId} connected`);
     });
   }
 
@@ -25,7 +25,7 @@ export class WebSocketService {
   async removeConnectionById(userId: number) {
     await this.connectionsLock.runExclusive(() => {
       this.connections.removeByKey(userId);
-      logger.info(`WEBSOCKET: User ${userId} disconnected`);
+      logger.log(`WEBSOCKET: User ${userId} disconnected`);
     });
   }
 
@@ -34,7 +34,7 @@ export class WebSocketService {
     await this.connectionsLock.runExclusive(() => {
       const id = this.connections.getFromValue(socket);
       this.connections.removeByValue(socket);
-      logger.info(`WEBSOCKET: User ${id} disconnected`);
+      logger.log(`WEBSOCKET: User ${id} disconnected`);
     });
   }
 

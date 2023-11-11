@@ -1,9 +1,15 @@
-import winston from "winston";
+import { ENVIRONMENT } from "./config";
 
-const logger = winston.createLogger({
-  level: process.env.LOGGING ? "error" : "info", // Default to info level, but can be overridden with environment variable
-  format: winston.format.simple(),
-  transports: [new winston.transports.Console()],
-});
+const logger = {
+  log: (message?: any, ...optionalParams: any[]) => { 
+    if (ENVIRONMENT !== "test") console.log(message, optionalParams) 
+  },
+  dev: (message?: any, ...optionalParams: any[]) => { 
+    if (ENVIRONMENT === "dev") console.debug(message, optionalParams) 
+  },
+  err: (message?: any, ...optionalParams: any[]) => {
+    if (ENVIRONMENT !== "test") console.error(message, optionalParams) 
+  }
+}
 
 export default logger;

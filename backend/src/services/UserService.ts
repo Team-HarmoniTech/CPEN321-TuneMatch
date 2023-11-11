@@ -87,7 +87,7 @@ export class UserService {
   ): Promise<
     User & { requesting: User[]; requested: User[]; session: Session }
   > {
-    return await this.userDB.findUnique({
+    const user = await database.user.findUnique({
       where: { spotify_id: spotify_id },
       include: {
         requested: true,
@@ -95,6 +95,7 @@ export class UserService {
         session: true,
       },
     });
+    return user;
   }
 
   // ChatGPT Usage: No

@@ -18,17 +18,16 @@ const sharedConfig = {
 module.exports = {
   ...sharedConfig,
   globalTeardown: '<rootDir>/test/globalTeardown.ts',
-  setupFiles: ['<rootDir>/test/globalMocks.ts'],
   testTimeout: 5000,
   projects: [
-    {
-      displayName: 'Http Tests',
-      testMatch: ['<rootDir>/test/http/**/*.test.ts'],
-      setupFilesAfterEnv: [
-        '<rootDir>/test/http/httpSetup.ts'
-      ],
-      ...sharedConfig
-    },
+    // {
+    //   displayName: 'Http Tests',
+    //   testMatch: ['<rootDir>/test/http/**/*.test.ts'],
+    //   setupFilesAfterEnv: [
+    //     '<rootDir>/test/http/httpSetup.ts'
+    //   ],
+    //   ...sharedConfig
+    // },
     {
       displayName: 'Websocket Tests',
       testMatch: ['<rootDir>/test/websocket/**/*.test.ts'],

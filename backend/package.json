@@ -20,6 +20,7 @@
     "nodemon": "^3.0.1",
     "prisma": "^5.3.1",
     "prisma-mock": "^0.10.0",
+    "prismock": "^1.23.0",
     "supertest": "^6.3.3",
     "superwstest": "^2.0.3",
     "ts-jest": "^29.1.1",
@@ -41,9 +42,9 @@
   },
   "scripts": {
     "start": "ts-node src/index.ts",
-    "dev": "nodemon -w *.ts src/index.ts",
+    "dev": "npx dotenv -v ENVIRONMENT=dev -- nodemon -w *.ts src/index.ts",
     "compose:dev": "docker-compose -f ./database/docker-compose.local.yml up -d",
-    "test": "npx dotenv -v LOGGING=false -v ENVIRONMENT=testing -- npx jest --coverage"
+    "test": "npx dotenv -v ENVIRONMENT=test -- npx jest --coverage"
   },
   "_moduleAliases": {
     "@controller": "src/controller",
