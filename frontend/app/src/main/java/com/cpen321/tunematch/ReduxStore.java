@@ -17,12 +17,9 @@ public class ReduxStore extends ViewModel {
     private final MutableLiveData<List<Song>> songQueue;
     private final MutableLiveData<List<SearchUser>> searchList;
     private final MutableLiveData<CurrentSession> currentSession;
-    private final MutableLiveData<MediaControllerState> mediaControllerState;
     private final MutableLiveData<List<Message>> chatMessages;
     private final MutableLiveData<Boolean> sessionCreatedByMe;
-
     private final MutableLiveData<Song> currentSong;
-
     private final MutableLiveData<Boolean> sessionActive;
     private final MutableLiveData<User> currentUser;
 
@@ -35,7 +32,6 @@ public class ReduxStore extends ViewModel {
         songQueue = new MutableLiveData<>();
         searchList = new MutableLiveData<>();
         currentSession = new MutableLiveData<>();
-        mediaControllerState = new MutableLiveData<>();
         chatMessages = new MutableLiveData<>();
         currentSong = new MutableLiveData<>();
         sessionActive = new MutableLiveData<>(false);

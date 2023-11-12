@@ -19,6 +19,12 @@ public class CurrentSession {
         sessionMembers = new ArrayList<>();
         sessionQueue = new ArrayList<>();
         messages = new ArrayList<>();
+        currentSong = null;
+    }
+
+    // ChatGPT Usage: No
+    public String getSessionName() {
+        return sessionName;
     }
 
     // ChatGPT Usage: No
@@ -52,9 +58,10 @@ public class CurrentSession {
     }
 
     // ChatGPT Usage: No
-    public void setCurrentSong(Song currentSong) {
-        this.currentSong = currentSong;
-    }
+    public void setCurrentSong(Song currentSong) { this.currentSong = currentSong; }
+
+    // ChatGPT Usage: No
+    public Song getCurrentSong() { return currentSong; }
 
     // ChatGPT Usage: No
     public List<Message> getMessages() {

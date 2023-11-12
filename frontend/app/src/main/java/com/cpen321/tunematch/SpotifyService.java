@@ -1,7 +1,5 @@
 package com.cpen321.tunematch;
 
-import static android.app.PendingIntent.getActivity;
-
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;

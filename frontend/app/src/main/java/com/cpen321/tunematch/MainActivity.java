@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private WebSocketService webSocketService;
     private SpotifyService mSpotifyService;
     private boolean mSpotifyBound = false;
+    private Song lastSongState = null;
 
     // ChatGPT Usage: Partial
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -118,9 +119,6 @@ public class MainActivity extends AppCompatActivity {
             webSocketService.sendMessage(message);
         }
     }
-
-
-    private Song lastSongState = null;
 
     // ChatGPT Usage: No
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)

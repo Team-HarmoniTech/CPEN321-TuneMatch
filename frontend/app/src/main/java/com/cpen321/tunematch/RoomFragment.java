@@ -5,7 +5,6 @@ import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -14,37 +13,34 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.SearchView;
-import androidx.fragment.app.Fragment;
-
-import androidx.lifecycle.Observer;
-
-import android.util.Log;
-
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
+import androidx.fragment.app.Fragment;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
-import com.spotify.protocol.types.Track;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import jp.wasabeef.blurry.Blurry;
+
 import kotlin.text.Charsets;
 
 public class RoomFragment extends Fragment {
@@ -71,16 +67,13 @@ public class RoomFragment extends Fragment {
     private QueueFragment queueFrag;
 
     private ArrayAdapter<String> searchAdapter; // Changed to ArrayAdapter<String>
-    private String authToken;
-
 
     private SpotifyClient spotifyClient;
     private ReduxStore model;
-    private CurrentSession currentSession;
     private WebSocketService webSocketService;
-    private SpotifyService mSpotifyService;
     private List<JSONObject> fullSongDataList = new ArrayList<>();
     private long currentPosition = 0;
+    private Song lastSongState = null;
 
     // ChatGPT Usage: Partial
     @Override
@@ -117,8 +110,7 @@ public class RoomFragment extends Fragment {
         // Get instances of MainActivity, WebSocketService, and SpotifyService
         MainActivity mainActivity = (MainActivity) getActivity();
         webSocketService = mainActivity.getWebSocketService();
-        mSpotifyService = mainActivity.getSpotifyService();
-        mSpotifyAppRemote = mSpotifyService.getSpotifyAppRemote();
+        mSpotifyAppRemote = mainActivity.getSpotifyService().getSpotifyAppRemote();
     }
 
     // ChatGPT Usage: No
@@ -145,9 +137,6 @@ public class RoomFragment extends Fragment {
         // Initially set chatBtn and exitBtn to GONE
         chatBtn.setVisibility(View.GONE);
         exitBtn.setVisibility(View.GONE);
-
-        // Get the current session
-        CurrentSession currentSession = model.getCurrentSession().getValue();
 
         // Set the queue fragment to be the default fragment in the subFrame
         switchFragment(R.id.subFrame, queueFrag);
@@ -207,7 +196,7 @@ public class RoomFragment extends Fragment {
                     messageToSend.put("method", "SESSION");
                     messageToSend.put("action", "leave");
                 } catch (JSONException e) {
-                    throw new RuntimeException(e);
+                    Log.e("JSONException", "Exception message: "+e.getMessage());
                 }
                 if(webSocketService != null) {
                     model.checkSessionActive().postValue(false);
@@ -230,15 +219,13 @@ public class RoomFragment extends Fragment {
                     Song song = new Song(songId, songName, songArtist, songDuration);
                     addSongToQueue(song);
                 } catch (JSONException e) {
-                    throw new RuntimeException(e);
+                    Log.e("JSONException", "Exception message: "+e.getMessage());
                 }
             }
         });
     }
 
-
     // ChatGPT Usage: Partial
-
     private void setUpPlayerControls(){
         final long[] trackDuration = {0};
         final Handler handler = new Handler(Looper.getMainLooper());
@@ -252,17 +239,9 @@ public class RoomFragment extends Fragment {
             @Override
             public void run() {
                 synchronized (this){
-                if(lastSongState != null) {
-                    long totalDuration = Long.parseLong(lastSongState.getDuration());
-                    currentDuration.setText(formatDuration(currentPosition));
-                    int progress = (int) ((float) currentPosition / (float) totalDuration * 100);
-                    seekBar.setProgress(progress);
-                    if (totalDuration - currentPosition < 3000) {
-                        playNextSong();
+                    if(lastSongState != null) {
+                        updatePlayerProgress();
                     }
-                    currentPosition += 1000; // Assumes that this is run every second
-                    lastSongState.setCurrentPosition(String.valueOf(currentPosition));
-                }
                     handler.postDelayed(this, 1000);
                 }
 
@@ -274,14 +253,7 @@ public class RoomFragment extends Fragment {
             handler.post(runnable);
 //        }
 
-        songBanner.setImageResource(R.color.darkGray);
-        songTitle.setText(lastSongState == null ? "No Song" : lastSongState.getSongName());
-        songArtist.setText(lastSongState == null ? "No Artist" : lastSongState.getSongArtist());
-        totalDuration.setText(lastSongState == null ? "0:00" : formatDuration(Long.parseLong(lastSongState.getDuration())));
-//        currentDuration.setText(lastSongState == null ? "0:00" : formatDuration(Long.parseLong(lastSongState.getCurrentPosition())));
-//        seekBar.setProgress(lastSongState == null ? 0 : (int) ((float) Long.parseLong(lastSongState.getCurrentPosition()) / Long.parseLong(lastSongState.getDuration()) * 100));
-        playpauseButton.setBackgroundResource(lastSongState == null || !lastSongState.isPlaying() ? R.drawable.play_btn : R.drawable.pause_btn);
-
+        updateUI();
 
         //
 //        mSpotifyAppRemote.getPlayerApi()
@@ -339,7 +311,39 @@ public class RoomFragment extends Fragment {
 //                    }
 //                });
 
+        setSeekBarListener(trackDuration, handler, runnable);
 
+        setSongCtrlBtn();
+    }
+
+    // ChatGPT Usage: No
+    private void updatePlayerProgress() {
+        if(lastSongState != null) {
+            long totalDuration = Long.parseLong(lastSongState.getDuration());
+            currentDuration.setText(formatDuration(currentPosition));
+            int progress = (int) ((float) currentPosition / (float) totalDuration * 100);
+            seekBar.setProgress(progress);
+            if (totalDuration - currentPosition < 3000) {
+                playNextSong();
+            }
+            currentPosition += 1000; // Assumes that this is run every second
+            lastSongState.setCurrentPosition(String.valueOf(currentPosition));
+        }
+    }
+
+    // ChatGPT Usage: No
+    private void updateUI(){
+        songBanner.setImageResource(R.color.darkGray);
+        songTitle.setText(lastSongState == null ? "No Song" : lastSongState.getSongName());
+        songArtist.setText(lastSongState == null ? "No Artist" : lastSongState.getSongArtist());
+        totalDuration.setText(lastSongState == null ? "0:00" : formatDuration(Long.parseLong(lastSongState.getDuration())));
+//        currentDuration.setText(lastSongState == null ? "0:00" : formatDuration(Long.parseLong(lastSongState.getCurrentPosition())));
+//        seekBar.setProgress(lastSongState == null ? 0 : (int) ((float) Long.parseLong(lastSongState.getCurrentPosition()) / Long.parseLong(lastSongState.getDuration()) * 100));
+        playpauseButton.setBackgroundResource(lastSongState == null || !lastSongState.isPlaying() ? R.drawable.play_btn : R.drawable.pause_btn);
+    }
+
+    // ChatGPT Usage: No
+    private void setSeekBarListener(long[] trackDuration, Handler handler, Runnable runnable) {
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progressChangedValue = 0;
             long newProgress = 0;
@@ -363,8 +367,6 @@ public class RoomFragment extends Fragment {
 //                handler.removeCallbacks(runnable);
 //                set handler based on curr song state
 
-
-
                 if(webSocketService!=null && model.checkSessionActive().getValue()){
                     JSONObject messageToSend = new JSONObject();
                     try {
@@ -372,19 +374,22 @@ public class RoomFragment extends Fragment {
                         messageToSend.put("action", "queueSeek");
                         messageToSend.put("body", new JSONObject().put("seekPosition", newProgress));
                     } catch (JSONException e) {
-                        throw new RuntimeException(e);
+                        Log.e("JSONException", "Exception message: "+e.getMessage());
                     }
                     webSocketService.sendMessage(messageToSend.toString());
                 }
                 handler.post(runnable);
             }
         });
+    }
 
+    // ChatGPT Usage: No
+    private void setSongCtrlBtn(){
         playpauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Song currSong = model.getCurrentSong().getValue();
-                Boolean isPlaying = currSong.isPlaying();
+                Boolean isPlaying = (currSong!=null ? currSong.isPlaying() : false);
                 if (!isPlaying) {
                     if(webSocketService!=null && model.checkSessionActive().getValue()){
                         JSONObject messageToSend = new JSONObject();
@@ -392,7 +397,7 @@ public class RoomFragment extends Fragment {
                             messageToSend.put("method", "SESSION");
                             messageToSend.put("action", "queueResume");
                         } catch (JSONException e) {
-                            throw new RuntimeException(e);
+                            Log.e("JSONException", "Exception message: "+e.getMessage());
                         }
                         webSocketService.sendMessage(messageToSend.toString());
                     }
@@ -405,7 +410,7 @@ public class RoomFragment extends Fragment {
                             messageToSend.put("method", "SESSION");
                             messageToSend.put("action", "queuePause");
                         } catch (JSONException e) {
-                            throw new RuntimeException(e);
+                            Log.e("JSONException", "Exception message: "+e.getMessage());
                         }
                         webSocketService.sendMessage(messageToSend.toString());
                     }
@@ -434,16 +439,13 @@ public class RoomFragment extends Fragment {
                         messageToSend.put("action", "queueSeek");
                         messageToSend.put("body", new JSONObject().put("seekPosition", 0));
                     } catch (JSONException e) {
-                        throw new RuntimeException(e);
+                        Log.e("JSONException", "Exception message: "+e.getMessage());
                     }
                     webSocketService.sendMessage(messageToSend.toString());
                 }
             }
         });
     }
-
-    private Song lastSongState = null;
-
 
     // ChatGPT Usage: Partial
     private void initializeObservers() {
@@ -505,6 +507,7 @@ public class RoomFragment extends Fragment {
         chatBtn.setVisibility(isActive ? View.VISIBLE : View.GONE);
         exitBtn.setVisibility(isActive ? View.VISIBLE : View.GONE);
     }
+
     // Utility Methods
     // ChatGPT Usage: No
     private String formatDuration(long duration) {
@@ -581,11 +584,11 @@ public class RoomFragment extends Fragment {
 
     // ChatGPT Usage: No
     private String encodeSongTitle(String title) {
-        String encoded;
+        String encoded = null;
         try {
             encoded = URLEncoder.encode(title, Charsets.UTF_8.toString());
         } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+            Log.e("JSONException", "Exception message: "+e.getMessage());
         }
         return encoded;
     }

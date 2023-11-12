@@ -143,7 +143,7 @@ public class SearchFragment extends Fragment {
                                 body.put("userId", friend[0].getId());
                                 messageToSend.put("body", body);
                             } catch (JSONException e) {
-                                throw new RuntimeException(e);
+                                Log.e("JSONException", "Exception message: "+e.getMessage());
                             }
 
                             if (webSocketService != null) {
@@ -186,13 +186,6 @@ public class SearchFragment extends Fragment {
 
     // ChatGPT Usage: Partial
     private boolean updateQuery(String query) {
-        String encodedQuery;
-        try {
-            encodedQuery = URLEncoder.encode(query, Charsets.UTF_8.toString());
-            Log.d("SearchFragment", "onQueryTextSubmit: " + encodedQuery);
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -202,6 +195,13 @@ public class SearchFragment extends Fragment {
                         newSearchList = backend.getMatches();
                     }
                     else{
+                        String encodedQuery = "";
+                        try {
+                            encodedQuery = URLEncoder.encode(query, Charsets.UTF_8.toString());
+                            Log.d("SearchFragment", "onQueryTextSubmit: " + encodedQuery);
+                        } catch (UnsupportedEncodingException e) {
+                            Log.e("JSONException", "Exception message: "+e.getMessage());
+                        }
                         newSearchList = backend.searchUser(encodedQuery);
                     }
 

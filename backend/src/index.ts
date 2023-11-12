@@ -4,19 +4,32 @@ import { handleConnection } from "@controller/WebsocketController";
 import { findCurrentUser } from "@middleware/CurrentUser";
 import { handleError } from "@middleware/ErrorHandler";
 import { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { Routes } from "@src/routes";
+import express, { Request, Response } from "express";
 import express, { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import * as http from "http";
+import morgan from 'morgan';
 import morgan from 'morgan';
 import { WebSocketServer } from "ws";
 import { ENVIRONMENT, PORT } from './config';
 import logger from './logger';
 import { database } from './services';
+import { ENVIRONMENT, PORT } from './config';
+import logger from './logger';
+import { database } from './services';
 
+export const app = express();
 export const app = express();
 
 /* Middleware */
+
+app.use(morgan("tiny", { /* API logger */
+  skip: () => { 
+    return process.env.LOGGING === "false"; 
+  },
+})); 
 
 app.use(morgan("tiny", { /* API logger */
   skip: () => { 
@@ -57,6 +70,7 @@ Routes.forEach((route) => {
 app.use(handleError);
 
 /* Create http websocket server */
+export const server = http.createServer(app);
 export const server = http.createServer(app);
 const wss = new WebSocketServer({ server: server, path: "/socket" });
 

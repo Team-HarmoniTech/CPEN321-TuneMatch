@@ -63,7 +63,7 @@ public class RequestListAdapter extends ArrayAdapter<SearchUser> {
                     body.put("userId", currentItem.getId());
                     messageToSend.put("body", body);
                 } catch (JSONException e) {
-                    throw new RuntimeException(e);
+                    Log.e("JSONException", "Exception message: "+e.getMessage());
                 }
 
                 if (webSocketService != null) {
@@ -87,7 +87,7 @@ public class RequestListAdapter extends ArrayAdapter<SearchUser> {
                     body.put("userId", currentItem.getId());
                     messageToSend.put("body", body);
                 } catch (JSONException e) {
-                    throw new RuntimeException(e);
+                    Log.e("JSONException", "Exception message: "+e.getMessage());
                 }
 
                 if (webSocketService != null) {
