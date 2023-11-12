@@ -1,7 +1,6 @@
 import { BiMap } from "@jsdsl/bimap";
 import { SocketMessage } from "@models/WebsocketModels";
 import logger from "@src/logger";
-import logger from "@src/logger";
 import { Mutex } from "async-mutex";
 import WebSocket = require("ws");
 
