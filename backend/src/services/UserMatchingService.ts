@@ -83,12 +83,6 @@ export class UserMatchingService {
 
   // ChatGPT usage: No
   calcPercentMatch(u1: User, u2: User): number {
-    
-    const outputMultiplier = (score): number => {
-      const out = -0.00002*Math.pow(score, 3) + -0.00002*Math.pow(score, 2) + score + 30;
-      return Math.min(100, out + Math.floor(Math.random() * 11) - 5);
-    }
-
     const arrayScore = (arr1, arr2): number => {
       // Create map from value to index
       const arr1map = new Map<string, number>();

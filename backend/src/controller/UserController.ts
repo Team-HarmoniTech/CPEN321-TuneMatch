@@ -91,6 +91,7 @@ export class UserController {
   // ChatGPT Usage: No
   async deleteUser(req: Request, res: Response, next: NextFunction) {
     await userService.deleteUser(Number(req.headers.currentUserId));
+    res.send("User has been deleted!")
   }
 
   // ChatGPT Usage: No
