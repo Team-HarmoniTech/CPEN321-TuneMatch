@@ -128,10 +128,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         model = ReduxStore.getInstance();
 
-
-
-
-
         model.getCurrentSong().observe(this, song -> {
 //          execute the function only if the song name changes
             if (song != null) {
@@ -227,18 +223,22 @@ public class MainActivity extends AppCompatActivity {
         switch (n) {
             case 1:
                 ft.replace(R.id.mainFrame, roomFrag);
+                ft.addToBackStack(null);
                 ft.commit();
                 break;
             case 2:
                 ft.replace(R.id.mainFrame, searchFrag);
+                ft.addToBackStack(null);
                 ft.commit();
                 break;
             case 3:
                 ft.replace(R.id.mainFrame, profileFrag);
+                ft.addToBackStack(null);
                 ft.commit();
                 break;
             default:
                 ft.replace(R.id.mainFrame, homeFrag);
+                ft.addToBackStack(null);
                 ft.commit();
                 break;
         }
