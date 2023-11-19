@@ -20,12 +20,12 @@ module.exports = {
   globalTeardown: '<rootDir>/test/globalTeardown.ts',
   testTimeout: 10000,
   projects: [
-    // {
-    //   displayName: 'Http Tests',
-    //   testMatch: ['<rootDir>/test/http/**/*.test.ts'],
-    //   setupFilesAfterEnv: ['<rootDir>/test/http/httpSetup.ts'],
-    //   ...sharedConfig
-    // },
+    {
+      displayName: 'Http Tests',
+      testMatch: ['<rootDir>/test/http/**/*.test.ts'],
+      setupFilesAfterEnv: ['<rootDir>/test/http/httpSetup.ts'],
+      ...sharedConfig
+    },
     {
       displayName: 'Websocket Tests',
       testMatch: ['<rootDir>/test/websocket/**/*.test.ts'],

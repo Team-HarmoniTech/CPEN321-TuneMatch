@@ -49,41 +49,33 @@ export class UserService {
 
   // ChatGPT Usage: No
   async addFriend(userId: number, requestedId: number): Promise<User> {
-    try {
-      const friend = await this.friendDB.create({
-        data: { 
-          requested: { connect: { id: requestedId } }, 
-          requesting: { connect: { id: userId } }
-        },
-        include: {
-          requesting: true
-        }
-      });
-      return this.userDB.findUnique({ where: { id: userId } });
-    } catch {
-      throw { message: "User does not exist", statusCode: 400 };
-    }
+    await this.friendDB.create({
+      data: { 
+        requested: { connect: { id: requestedId } }, 
+        requesting: { connect: { id: userId } }
+      },
+      include: {
+        requesting: true
+      }
+    });
+    return this.userDB.findUniqueOrThrow({ where: { id: userId } });
   }
 
   // ChatGPT Usage: No
   async removeFriend(userId: number, otherId: number): Promise<User> {
-    try {
-      await this.friendDB.deleteMany({
-        where:  {
-          requested_id: userId,
-          requesting_id: otherId,
-        }
-      });
-      await this.friendDB.deleteMany({
-        where:  {
-          requested_id: otherId,
-          requesting_id: userId,
-        }
-      });
-      return this.userDB.findUnique({ where: { id: userId } });
-    } catch {
-      throw { message: "User does not exist", statusCode: 400 };
-    }
+    await this.friendDB.deleteMany({
+      where:  {
+        requested_id: userId,
+        requesting_id: otherId,
+      }
+    });
+    await this.friendDB.deleteMany({
+      where:  {
+        requested_id: otherId,
+        requesting_id: userId,
+      }
+    });
+    return this.userDB.findUnique({ where: { id: userId } });
   }
 
   async broadcastToFriends(userId: number, message: FriendsMessage) {

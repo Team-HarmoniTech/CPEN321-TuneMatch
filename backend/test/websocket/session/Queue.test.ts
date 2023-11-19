@@ -369,7 +369,6 @@ describe("Session Queue", () => {
 
         await new Promise(f => setTimeout(f, 1000));
         const queueData = await sessionService.getQueue(1);
-        console.log(queueData)
         expect(queueData.queue[0].title).toBe("2 second song #3");
         expect(queueData.queue[1].title).toBe("2 second song #1");
         expect(queueData.queue[2].title).toBe("2 second song #2");
