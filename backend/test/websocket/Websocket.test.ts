@@ -23,6 +23,13 @@ describe("Websocket", () => {
         .close();
     });
 
+    it("should error on missing fields", async () => {
+        await request(server).ws("/socket", { headers: { "user-id": "testUser1" } }).expectJson().expectJson()
+        .sendJson({})
+        .expectJson({ Error: "Received data is missing fields" })
+        .close();
+    });
+
     it("should error on incorrect action", async () => {
         await request(server).ws("/socket", { headers: { "user-id": "testUser1" } }).expectJson().expectJson()
         .sendJson({

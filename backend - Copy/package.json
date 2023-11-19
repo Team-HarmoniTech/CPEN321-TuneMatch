@@ -1,0 +1,54 @@
+{
+  "name": "cpen321-tunematch-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "description": "",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.8",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^20.7.2",
+    "@types/supertest": "^2.0.16",
+    "@types/ws": "^8.5.6",
+    "dotenv": "^16.3.1",
+    "jest": "^29.7.0",
+    "jest-mock-extended": "^3.0.5",
+    "nodemon": "^3.0.1",
+    "prisma": "^5.3.1",
+    "prisma-mock": "^0.10.0",
+    "supertest": "^6.3.3",
+    "superwstest": "^2.0.3",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@jsdsl/bimap": "^0.1.1",
+    "@prisma/client": "^5.3.1",
+    "async-mutex": "^0.4.0",
+    "dotenv-cli": "^7.3.0",
+    "express": "^4.17.2",
+    "express-validator": "^7.0.1",
+    "module-alias": "^2.2.3",
+    "morgan": "^1.10.0",
+    "ws": "^8.14.2"
+  },
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "dev": "nodemon -w *.ts src/index.ts",
+    "compose:dev": "docker-compose -f ./database/docker-compose.local.yml up -d",
+    "test": "npx dotenv -v LOGGING=false -v ENVIRONMENT=testing -- npx jest --coverage"
+  },
+  "_moduleAliases": {
+    "@controller": "src/controller",
+    "@src": "src",
+    "@services": "src/services",
+    "@routes": "src/routes",
+    "@models": "src/models",
+    "@middleware": "src/middleware"
+  }
+}

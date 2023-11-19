@@ -69,7 +69,7 @@ Promise.all([
   database.session.deleteMany(),
   database.user.updateMany({
     data: {
-      current_song: null,
+      current_song: Prisma.DbNull,
       current_source: Prisma.DbNull,
     },
   }),

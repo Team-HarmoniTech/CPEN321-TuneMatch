@@ -1,0 +1,127 @@
+// Create a new session or join as user's session
+// SEND
+{ 
+    "method": "SESSION",
+    "action": "join",
+    "body": { // Only if joining another user
+        "userId": "spotify id"
+    }
+}
+// RETURN to sender
+{ 
+    "method": "SESSION",
+    "action": "refresh",
+    "body": {
+        "members": [], //populated with members already in the session
+        "currentlyPlaying": { // or null if nothing playing currently
+            "uri": "spotify song uri",
+            "durationMs": 1234,
+            "timeStarted": "ISO format string"
+        },
+        "queue": [{ //the current queue with uris and durations
+            "uri": "spotify song uri",
+            "durationMs": 1234,
+        }]
+    }
+}
+// Return to other users in the session
+{ 
+    "method": "SESSION",
+    "action": "join",
+    "body": { 
+        "userId": "spotify id",
+        "username": "username",
+        "profilePic": "image url"
+    }
+}
+
+//Leave a session
+// SEND
+{ 
+    "method": "SESSION",
+    "action": "leave",
+}
+// Return to other users in the session
+{ 
+    "method": "SESSION",
+    "action": "leave",
+    "body": { 
+        "userId": "spotify id",
+        "username": "username",
+        "profilePic": "image url"
+    }
+}
+
+// Queue editing, all messages made here are passed to all other users in the same session 
+// queueReplace: replace the whole queue
+{ 
+    "method": "SESSION",
+    "action": "queueReplace",
+    "body": [{ //the new queue with uris and durations
+        "uri": "spotify song uri",
+        "durationMs": 1234,
+    }]
+}
+
+// queueAdd: add one song to the queue
+{ 
+    "method": "SESSION",
+    "action": "queueAdd",
+    "body": {
+        "uri": "spotify song uri",
+        "durationMs": 1234,
+        "index": 1234 //The index after which the song will be placed or do not include to put it at the back
+    }
+}
+
+// queueSkip: skip the currently playing song and start the next
+{ 
+    "method": "SESSION",
+    "action": "queueSkip",
+}
+
+// queueDrag: drag a song from one place to the next in the queue
+{ 
+    "method": "SESSION",
+    "action": "queueDrag",
+    "body": {
+        "startIndex": 1234, //position to drag from
+        "endIndex": 1234 //position to drag to
+    }
+}
+
+// queuePause: pause the currently playing song if there is one
+{ 
+    "method": "SESSION",
+    "action": "queuePause"
+}
+
+// queueResume: resume the queue if stopped
+{ 
+    "method": "SESSION",
+    "action": "queueResume",
+}
+
+// queueSeek: seek the currently playing song or the first song in the queue
+{ 
+    "method": "SESSION",
+    "action": "queueSeek",
+    "body": {
+        "seekPosition": 1234, //position to seek to
+    }
+}
+
+// Messaging, passed to all other members in the session
+//SEND
+{ 
+    "method": "SESSION",
+    "action": "message",
+    "body": //This can be whatever you want it will just get passed to other members of the session
+}
+// Return to other users in the session
+{ 
+    "method": "SESSION",
+    "action": "leave",
+    "body": "body",//whatever the user sent,
+    "from": "spotify id"//the spotify id of the sender
+}
