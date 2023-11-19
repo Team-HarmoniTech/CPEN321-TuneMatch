@@ -18,7 +18,7 @@ const sharedConfig = {
 module.exports = {
   ...sharedConfig,
   globalTeardown: '<rootDir>/test/globalTeardown.ts',
-  testTimeout: 5000,
+  testTimeout: 10000,
   projects: [
     // {
     //   displayName: 'Http Tests',

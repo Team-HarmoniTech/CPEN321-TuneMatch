@@ -14,14 +14,18 @@ export class SessionService {
     userId: number,
     otherUserId?: string,
   ): Promise<SessionWithMembers> {
-    const otherSession = await this.sessionDB.findFirst({
-      where: { members: { some: { spotify_id: otherUserId } } },
-      include: { members: true },
-    });
-    if (otherSession.members.some(m => m.id === userId)) {
-      /* We are already in the user's session */
-      return otherSession;
+    if (otherUserId) {
+      const otherSession = await this.sessionDB.findFirst({
+        where: { members: { some: { spotify_id: otherUserId } } },
+        include: { members: true },
+      });
+
+      if (otherSession && otherSession.members.some(m => m.id === userId)) {
+        /* We are already in the user's session */
+        return otherSession;
+      }
     }
+    
 
     /* Leave old session if exists */
     await this.leaveSession(userId);
@@ -87,7 +91,7 @@ export class SessionService {
     if (!session) {
       return undefined;
     }
-
+    
     /* If session will be empty delete, otherwise leave */
     const toDelete = session.members.length <= 1;
     if (toDelete) {
@@ -97,8 +101,7 @@ export class SessionService {
     } else {
       await this.sessionDB.update({
         where: { id: session.id },
-        data: { members: { disconnect: { id: userId } } },
-        include: { members: true },
+        data: { members: { disconnect: { id: userId } } }
       });
     }
 
@@ -217,15 +220,8 @@ export class SessionService {
     return await queueData.lock.runExclusive(() => {
       const q = queueData.queue;
       return {
-        currentlyPlaying: q.currentlyPlaying
-          ? {
-              uri: q.currentlyPlaying.uri,
-              durationMs: q.currentlyPlaying.durationMs,
-              timeStarted: q.currentlyPlaying.timeStarted.toISOString(),
-              title: q.currentlyPlaying.title,
-              artist: q.currentlyPlaying.artist
-            }
-          : null,
+        running: q.running,
+        timeStarted: q[0]?.timeStarted?.toISOString(),
         queue: [...q.songs].map((val) => {
           return { uri: val.uri, durationMs: val.durationMs, title: val.title, artist: val.artist };
         }),

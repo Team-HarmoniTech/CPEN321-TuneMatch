@@ -1,5 +1,5 @@
 import { SocketMessage } from "@models/WebsocketModels";
-import { User } from "@prisma/client";
+import { Prisma, User } from "@prisma/client";
 
 export type VisibleUser = {
   userId: String;
@@ -29,6 +29,13 @@ export async function transformUser(
     profilePic: user.pfp_url,
     ...(extras ? await extras(user) : {}),
   };
+}
+
+export function transformObject(input: any) {
+  if (input && !Array.isArray(input)) {
+    return input === Prisma.DbNull ? null : input;
+  }
+  return input;
 }
 
 export class FriendsMessage extends SocketMessage {

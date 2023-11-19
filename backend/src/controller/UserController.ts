@@ -1,5 +1,6 @@
 import {
   FriendsMessage,
+  transformObject,
   transformUser,
   transformUsers,
 } from "@models/UserModels";
@@ -146,8 +147,8 @@ export class UserController {
           "refresh",
           await transformUsers(friends, async (user) => {
             return {
-              currentSong: user.current_song,
-              currentSource: user.current_source,
+              currentSong: transformObject(user.current_song),
+              currentSource: transformObject(user.current_source),
             };
           }),
         ),

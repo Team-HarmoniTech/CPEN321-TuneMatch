@@ -1,6 +1,7 @@
 import {
   FriendsMessage,
   RequestsMessage,
+  transformObject,
   transformUser,
   transformUsers,
 } from "@models/UserModels";
@@ -69,8 +70,8 @@ export class RequestController {
             "add",
             await transformUser(user, async (user) => {
               return {
-                currentSong: user.current_song,
-                currentSource: user.current_source,
+                currentSong: transformObject(user.current_song),
+                currentSource: transformObject(user.current_source),
               };
             }),
           ),
@@ -88,8 +89,8 @@ export class RequestController {
             "update",
             await transformUser(otherUser, async (user) => {
               return {
-                currentSong: user.current_song,
-                currentSource: user.current_source,
+                currentSong: transformObject(user.current_song),
+                currentSource: transformObject(user.current_source),
               };
             }),
           ),

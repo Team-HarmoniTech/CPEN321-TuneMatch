@@ -1,5 +1,4 @@
 import { User } from "@prisma/client";
-import logger from "@src/logger";
 import { database, userService } from "@src/services";
 
 export class UserMatchingService {
@@ -105,7 +104,6 @@ export class UserMatchingService {
           //score += (maxLength - Math.abs(index - arr1map.get(value))) / Math.max(arr1.length, 1);
         }
       });
-      logger.dev(score);
       return score / maxLength;
     };
 

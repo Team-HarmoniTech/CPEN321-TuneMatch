@@ -4,6 +4,7 @@ import { UserController } from "@controller/UserController";
 import {
   FriendsMessage,
   RequestsMessage,
+  transformObject,
   transformUsers
 } from "@models/UserModels";
 import logger from "@src/logger";
@@ -43,8 +44,8 @@ async function authenticateSocket(socket, req): Promise<number> {
         "refresh",
         await transformUsers(friends, async (user) => {
           return {
-            currentSong: user.current_song,
-            currentSource: user.current_source,
+            currentSong: transformObject(user.current_song),
+            currentSource: transformObject(user.current_source),
           };
         }),
       ),

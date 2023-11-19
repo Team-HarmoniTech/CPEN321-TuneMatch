@@ -173,8 +173,7 @@ export class SessionController {
           members: await transformUsers(
             session.members.filter((x) => x.id !== currentUserId),
           ),
-          currentlyPlaying: queue.currentlyPlaying,
-          queue: queue.queue,
+          ...queue
         }),
       ),
     );

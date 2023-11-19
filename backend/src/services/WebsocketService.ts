@@ -22,14 +22,6 @@ export class WebSocketService {
   }
 
   // ChatGPT Usage: No
-  async removeConnectionById(userId: number) {
-    await this.connectionsLock.runExclusive(() => {
-      this.connections.removeByKey(userId);
-      logger.log(`WEBSOCKET: User ${userId} disconnected`);
-    });
-  }
-
-  // ChatGPT Usage: No
   async removeConnectionBySocket(socket: WebSocket) {
     await this.connectionsLock.runExclusive(() => {
       const id = this.connections.getFromValue(socket);
