@@ -1,28 +1,17 @@
 package com.cpen321.tunematch;
 
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.core.app.ActivityScenario;
-import androidx.test.espresso.Espresso;
-import androidx.test.espresso.action.ViewActions;
-import androidx.test.espresso.assertion.ViewAssertions;
-import androidx.test.espresso.matcher.ViewMatchers;
-import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.espresso.intent.matcher.IntentMatchers;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class ChatTest {
-//    @Rule
-//    public ActivityScenarioRule<LoginActivity> activityRule
-//            = new ActivityScenarioRule<>(LoginActivity.class);
 
     private ActivityScenario<LoginActivity> loginActivityScenario;
 
@@ -31,11 +20,7 @@ public class ChatTest {
         Intents.init();
         loginActivityScenario = ActivityScenario.launch(LoginActivity.class);
 
-        try {
-            Thread.sleep(15000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        UiTestHelper.addDelay(15000);
 
         Intents.intended(IntentMatchers.hasComponent(MainActivity.class.getName()));
     }
@@ -60,11 +45,7 @@ public class ChatTest {
         UiTestHelper.clickOnView(R.id.createListeningSessionBtn);
 
         // Wait till move to listening session
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        UiTestHelper.addDelay(1000);
 
         List<Integer> idsToCheck = Arrays.asList(R.id.songSearchBar, R.id.queueBtn, R.id.chatBtn, R.id.exitBtn);
         UiTestHelper.checkViewListAreDisplayed(idsToCheck);
@@ -75,11 +56,7 @@ public class ChatTest {
         UiTestHelper.clickOnView(R.id.chatBtn);
 
         // Wait till change sub-frame to chat
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        UiTestHelper.addDelay(1000);
 
         // Check all the view components are displayed
         List<Integer> idsToCheck = Arrays.asList(R.id.chatInput, R.id.sendChatButton, R.id.chatWindow);
@@ -93,11 +70,7 @@ public class ChatTest {
             UiTestHelper.clickOnView(R.id.sendChatButton);
 
             // Wait 1 seconds to send message
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            UiTestHelper.addDelay(1000);
 
             // Check message was displayed
             UiTestHelper.checkTextIsDisplayed(msg);

@@ -1,5 +1,7 @@
 package com.cpen321.tunematch;
 
+import static org.hamcrest.CoreMatchers.anything;
+
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.assertion.PositionAssertions;
@@ -42,6 +44,13 @@ public class UiTestHelper {
                 .perform(ViewActions.click());
     }
 
+    public static void clickListItem(int listViewId, int pos) {
+        Espresso.onData(anything())
+                .inAdapterView(ViewMatchers.withId(listViewId))
+                .atPosition(pos)
+                .perform(ViewActions.click());
+    }
+
     public static void checkViewListAreDisplayed(List<Integer> viewIds) {
         for (int id : viewIds) {
             checkViewIsDisplayed(id);
@@ -53,6 +62,15 @@ public class UiTestHelper {
                 .perform(ViewActions.typeText(message), ViewActions.closeSoftKeyboard());
     }
 
-    // You can add more helper methods as needed, such as entering text, checking text content, etc.
+    public static void addDelay(int millisec) {
+        try {
+            Thread.sleep(millisec);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
 }
 
