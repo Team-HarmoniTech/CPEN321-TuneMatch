@@ -15,16 +15,18 @@ public class SearchTest {
 
     private ActivityScenario<LoginActivity> loginActivityScenario;
 
+    // ChatGPT Usage: Partial
     @Before
     public void setUp() {
         Intents.init();
         loginActivityScenario = ActivityScenario.launch(LoginActivity.class);
 
-        UiTestHelper.addDelay(15000);
+        UiTestHelper.addDelay(20000);
 
         Intents.intended(IntentMatchers.hasComponent(MainActivity.class.getName()));
     }
 
+    // ChatGPT Usage: No
     @Test
     public void testSearch() {
         // Move to search friends page
@@ -48,6 +50,7 @@ public class SearchTest {
         UiTestHelper.clickOnView(R.id.addButton);
     }
 
+    // ChatGPT Usage: Partial
     @After
     public void destroy() {
         loginActivityScenario.close();

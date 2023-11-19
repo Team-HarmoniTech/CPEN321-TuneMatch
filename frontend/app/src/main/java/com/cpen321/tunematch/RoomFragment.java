@@ -531,7 +531,7 @@ public class RoomFragment extends Fragment {
         ArrayList<String> filteredSuggestions = new ArrayList<>();
         fullSongDataList.clear(); // Clear the full song data list
 
-        String query = "track:" + encodeSongTitle(newText);
+        String query = "track:" + newText;
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -579,18 +579,6 @@ public class RoomFragment extends Fragment {
                 }
             }
         }).start();
-    }
-
-
-    // ChatGPT Usage: No
-    private String encodeSongTitle(String title) {
-        String encoded = null;
-        try {
-            encoded = URLEncoder.encode(title, Charsets.UTF_8.toString());
-        } catch (UnsupportedEncodingException e) {
-            Log.e("JSONException", "Exception message: "+e.getMessage());
-        }
-        return encoded;
     }
 
     // ChatGPT Usage: No

@@ -15,16 +15,18 @@ public class ChatTest {
 
     private ActivityScenario<LoginActivity> loginActivityScenario;
 
+    // ChatGPT Usage: Partial
     @Before
     public void setUp() {
         Intents.init();
         loginActivityScenario = ActivityScenario.launch(LoginActivity.class);
 
-        UiTestHelper.addDelay(15000);
+        UiTestHelper.addDelay(20000);
 
         Intents.intended(IntentMatchers.hasComponent(MainActivity.class.getName()));
     }
 
+    // ChatGPT Usage: Partial
     @Test
     public void testChat() {
         testCreateSession();
@@ -35,12 +37,14 @@ public class ChatTest {
         testMsgPersist(messages);
     }
 
+    // ChatGPT Usage: Partial
     @After
     public void destroy() {
         loginActivityScenario.close();
         Intents.release();
     }
 
+    // ChatGPT Usage: No
     public void testCreateSession() {
         UiTestHelper.clickOnView(R.id.createListeningSessionBtn);
 
@@ -51,6 +55,7 @@ public class ChatTest {
         UiTestHelper.checkViewListAreDisplayed(idsToCheck);
     }
 
+    // ChatGPT Usage: No
     public void testChatView() {
         // Click chat button
         UiTestHelper.clickOnView(R.id.chatBtn);
@@ -63,10 +68,11 @@ public class ChatTest {
         UiTestHelper.checkViewListAreDisplayed(idsToCheck);
     }
 
+    // ChatGPT Usage: No
     public void testSendChat(List<String> messages) {
         for (String msg : messages) {
             // type message then send
-            UiTestHelper.inputMessage(R.id.chatInput, msg);
+            UiTestHelper.inputMessage(R.id.chatInput, msg, false);
             UiTestHelper.clickOnView(R.id.sendChatButton);
 
             // Wait 1 seconds to send message
@@ -80,6 +86,7 @@ public class ChatTest {
         UiTestHelper.checkTextOrder(messages);
     }
 
+    // ChatGPT Usage: No
     public void testMsgPersist(List<String> messages) {
         // Click Queue button to move out from chat
         UiTestHelper.clickOnView(R.id.queueBtn);
