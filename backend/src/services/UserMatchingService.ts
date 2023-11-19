@@ -99,6 +99,7 @@ export class UserMatchingService {
           //score += (maxLength - Math.abs(index - arr1map.get(value))) / Math.max(arr1.length, 1);
         }
       });
+      console.log(score);
       return score / maxLength;
     };
 
@@ -187,7 +188,7 @@ export class UserMatchingService {
 
     while (!(await userService.getUserById(userId)).connectionComputed) {
       if (Date.now() - startTime >= timeoutMs) {
-        throw new Error('User connections were not computed within 60 seconds.');
+        throw { message: `User connections were not computed within 60 seconds.`, statusCode: 400 };
       }
   
       /* Check every second until complete */
