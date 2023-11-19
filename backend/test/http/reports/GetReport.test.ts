@@ -14,7 +14,7 @@ describe("Get report", () => {
             .get('/reports')
             .query({ dateFrom, dateTo });
 
-        expect(res.statusCode).toBe(400);
+        expect(res.statusCode).toBe(200);
         expect(Array.isArray(res.body)).toBeTruthy();
         res.body.forEach(report => {
             expect(report).toHaveProperty('id');
@@ -24,7 +24,9 @@ describe("Get report", () => {
             expect(report).toHaveProperty('reason_text');
             expect(report).toHaveProperty('report_context');
             expect(report).toHaveProperty('timestamp');
-        }); 
+        });
+
+        expect(res.body.length).toBe(2);
     });
 
     // Input: Valid dates
@@ -35,7 +37,7 @@ describe("Get report", () => {
         const res = await request(server)
             .get('/reports');
 
-        expect(res.statusCode).toBe(400);
+        expect(res.statusCode).toBe(200);
         expect(Array.isArray(res.body)).toBeTruthy();
         res.body.forEach(report => {
             expect(report).toHaveProperty('id');
