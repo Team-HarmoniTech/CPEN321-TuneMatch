@@ -99,7 +99,6 @@ export class UserMatchingService {
           //score += (maxLength - Math.abs(index - arr1map.get(value))) / Math.max(arr1.length, 1);
         }
       });
-      console.log(score);
       return score / maxLength;
     };
 
@@ -115,28 +114,18 @@ export class UserMatchingService {
 
   // ChatGPT usage: Partial
   async matchNewUser(userId: number, maxComputed?: number) {
-    const matchedUsers: number[] = (await this.getUserConnections(userId)).map(
-      (u) => u.id,
-    );
+    const matchedUsers: number[] = [];
     const maxMatches: number = (maxComputed ?? 80) + matchedUsers.length;
     const matchThreshold: number = 80;
     const matchQueue: User[] = [];
-
-    const user = await userService.getUserById(userId);
-
-    if (!user) {
-      throw { message: `User not found.`, statusCode: 400 };
-    }
 
     while (matchedUsers.length < maxMatches) {
       let userToMatch: User;
       if (matchQueue.length > 0) {
         // Match with calculated high matches
         userToMatch = matchQueue.pop();
-      } else if (
-        matchedUsers.length === 0 ||
-        matchedUsers.length < maxMatches
-      ) {
+      } 
+      else {
         // Find a random user since no checked friends that are over 80
         userToMatch = await userService.getRandomUser([
           ...matchedUsers,
@@ -195,11 +184,6 @@ export class UserMatchingService {
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
     
-    while (!(await userService.getUserById(userId)).connectionComputed) {
-      /* Check every second until complete */
-      await new Promise((f) => setTimeout(f, 1000));
-    }
-
     const userConnections = await this.getUserConnections(userId);
 
     userConnections.sort((a, b) => b.match - a.match);

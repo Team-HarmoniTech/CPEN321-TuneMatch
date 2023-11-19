@@ -36,7 +36,7 @@ export class ReportService {
 
   // ChatGPT Usage: No
   async banUser(userId: string) {
-    await database.user.update({
+    return await database.user.update({
       where: { spotify_id: userId },
       data: { is_banned: true },
     });

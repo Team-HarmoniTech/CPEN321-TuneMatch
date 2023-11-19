@@ -22,7 +22,7 @@ export class ReportController {
 
   // ChatGPT usage: No
   async banUser(req: Request, res: Response, next: NextFunction) {
-    const userId = await reportService.banUser(req.params.userId);
-    res.send({ message: `User with ID ${userId} has been banned.` });
+    const user = await reportService.banUser(req.params.userId);
+    res.send({ message: `${user.username} is banned: ${user.is_banned}.` });
   }
 }

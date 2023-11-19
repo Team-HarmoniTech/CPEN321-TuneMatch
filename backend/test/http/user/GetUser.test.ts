@@ -1,5 +1,5 @@
 import { server } from "@src/index";
-import request from 'supertest';
+import request from 'superwstest';
 
 describe("Get user", () => {
     // Input: user-id is an existing user, full-profile parameter is false/doesn't exist
@@ -8,15 +8,12 @@ describe("Get user", () => {
     // Expected output: userId, username, profile-pic
     test("Existing user", async () => {
         const res = await request(server)
-            .get("/me")
-            .set('user-id', 'testUser1');
-
-        expect(res.status).toStrictEqual(200);
-        expect(res.body).toEqual(expect.objectContaining({ 
-            id: expect.any(Number),
-            username: expect.any(String),
-                // other user fields...
-        }));
+            .get('/users/testUser1')
+  
+        expect(res.statusCode).toBe(200);
+        expect(res.body).toHaveProperty('userId');
+        expect(res.body).toHaveProperty('username');
+        expect(res.body).toHaveProperty('profilePic');
     });
   
     // Input: user-id is an existing user, full-profile parameter is true
@@ -25,37 +22,27 @@ describe("Get user", () => {
     // Expected output: userId, username, profile pic, bio, top artists, top genres
     test("Existing user full profile", async () => {
         const res = await request(server)
-            .get("/me")
-            .set('user-id', 'testUser123');
+            .get('/users/testUser1')
+            .query({ fullProfile: true });
+  
+        expect(res.statusCode).toBe(200);
+        expect(res.body).toHaveProperty('userId');
+        expect(res.body).toHaveProperty('username');
+        expect(res.body).toHaveProperty('profilePic');
+        expect(res.body).toHaveProperty('bio');
+        expect(res.body).toHaveProperty('topArtists');
+        expect(res.body).toHaveProperty('topGenres');
     });
 
     // Input: user-id doesn’t exist
-    // Expected status code: 401
-    // Expected behavior: Return error message
-    // Expected output: This executing user does not exist
-    test("Non-existing user", async () => {
-        const res = await request(server)
-            .get("/me")
-            .set('user-id', 'testUser123');
-    });
-
-    // Input: user-id is not included
     // Expected status code: 400
     // Expected behavior: Return error message
-    // Expected output: Error JSON indicating which fields were invalid
-    test("Missing user-id", async () => {
+    // Expected output: User not found
+    test("Non-existing user", async () => {
         const res = await request(server)
-            .get("/me")
-            .set('user-id', 'testUser123');
-    });
-
-    // Input: user-id is that of banned user
-    // Expected status code: 403
-    // Expected behavior: Return error message
-    // Expected output: This executing user is banned
-    test("Banned user", async () => {
-        const res = await request(server)
-            .get("/me")
-            .set('user-id', 'testUser123');
+            .get('/users/nonExistingSpotifyId')
+  
+        expect(res.statusCode).toBe(400);
+        expect(res.body).toEqual({ error : "User not found." });
     });
   });
