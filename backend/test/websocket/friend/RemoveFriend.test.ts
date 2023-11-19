@@ -52,7 +52,11 @@ describe("Removing Friends", () => {
 
         expect(await userService.getUserFriends(1)).toHaveLength(1);
 
-        await request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
+        const socket2 = request(server).ws("/socket", { headers: { "user-id": "testUser2" } })
+        .expectJson()
+        .expectJson();
+
+        const socket1 = request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
         .expectJson({
             method: "FRIENDS",
             action: "refresh",
@@ -66,15 +70,26 @@ describe("Removing Friends", () => {
                 }
             ]
         })
-        .expectJson()
-        .sendJson({
+        .expectJson();
+
+        await socket1.sendJson({
             method: "REQUESTS",
             action: "remove",
             body: {
                 userId: "testUser2"
             }
-        })
-        .close();
+        });
+
+        await socket2.expectJson({
+            method: "REQUESTS",
+            action: "remove",
+            body: {
+                userId: "testUser1",
+                username: "testUsername1",
+                profilePic: null
+            }
+        }).close();
+        await socket1.close();
 
         const startTime = Date.now();
         const timeout = 10000;
@@ -87,6 +102,7 @@ describe("Removing Friends", () => {
             // Poll every 500 milliseconds (adjust as needed)
             await new Promise(resolve => setTimeout(resolve, 500));
         }
+        expect(await userService.getUserFriends(1)).toHaveLength(0);
     });
 
     it("should reject the removal of a user that doesn't exist", async () => {

@@ -1,6 +1,6 @@
 import { server } from "@src/index";
-import request from 'superwstest';
 import { userMatchingService, userService } from "@src/services";
+import request from 'superwstest';
 
 describe("Get match", () => {
     // Input: user-id is an existing user, spotify_id is an existing user

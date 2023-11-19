@@ -1,12 +1,6 @@
 import { RequestController } from "@controller/RequestController";
 import { SessionController } from "@controller/SessionController";
 import { UserController } from "@controller/UserController";
-import {
-  FriendsMessage,
-  RequestsMessage,
-  transformObject,
-  transformUsers
-} from "@models/UserModels";
 import logger from "@src/logger";
 import {
   database,
@@ -37,29 +31,8 @@ async function authenticateSocket(socket, req): Promise<number> {
   await socketService.addConnection(user.id, socket);
 
   /* Initial Data Push */
-  const friends = await userService.getUserFriends(user.id);
-  socket.send(
-    JSON.stringify(
-      new FriendsMessage(
-        "refresh",
-        await transformUsers(friends, async (user) => {
-          return {
-            currentSong: transformObject(user.current_song),
-            currentSource: transformObject(user.current_source),
-          };
-        }),
-      ),
-    ),
-  );
-  const requests = await userService.getUserFriendsRequests(user.id);
-  socket.send(
-    JSON.stringify(
-      new RequestsMessage("refresh", {
-        requesting: await transformUsers(requests.requesting),
-        requested: await transformUsers(requests.requested),
-      }),
-    ),
-  );
+  await (new UserController()).refresh(socket, null, user.id);
+  await (new RequestController()).refresh(socket, null, user.id);
   /* Start ping pong */
   socket.ping();
 
@@ -85,6 +58,7 @@ export async function handleConnection(ws: WebSocket, req: Request) {
       if (!req.method) {
         ws.send(JSON.stringify({ Error: "Received data is missing fields" }));
       } else {
+        logger.dev(`${req.method} request`);
         switch (req.method) {
           case "SESSION":
             new SessionController().acceptRequest(ws, req, currentUserId);
@@ -110,7 +84,7 @@ export async function handleConnection(ws: WebSocket, req: Request) {
 
   // ChatGPT Usage: No
   ws.on("close", async function close(code, reason) {
-    logger.log(`Socket Closed: ${reason.toString()}`);
+    logger.err(`Socket Closed: ${reason.toString()}`);
     const userId = await socketService.retrieveBySocket(ws);
     try {
       if (userId) {

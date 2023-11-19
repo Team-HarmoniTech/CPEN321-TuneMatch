@@ -110,6 +110,7 @@ describe("Adding Friends", () => {
     });
 
     it("should reject the addition of a user that doesn't exist", async () => {
+        expect(await userService.getUserById(-1)).toBe(null);
         await request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
         .expectJson()
         .expectJson()

@@ -37,6 +37,16 @@ describe("Websocket", () => {
             action: "invalid action"
         })
         .expectJson({ Error: "Session endpoint invalid action does not exist." })
+        .sendJson({
+            method: "FRIENDS",
+            action: "invalid action"
+        })
+        .expectJson({ Error: "Friends endpoint invalid action does not exist." })
+        .sendJson({
+            method: "REQUESTS",
+            action: "invalid action"
+        })
+        .expectJson({ Error: "Requests endpoint invalid action does not exist." })
         .close();
     });
 

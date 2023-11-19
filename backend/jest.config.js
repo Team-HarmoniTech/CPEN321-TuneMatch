@@ -32,5 +32,10 @@ module.exports = {
       setupFilesAfterEnv: ['<rootDir>/test/websocket/websocketSetup.ts'],
       ...sharedConfig
     },
+    {
+      displayName: 'Global Tests',
+      testMatch: ['<rootDir>/test/*.test.ts'],
+      ...sharedConfig
+    },
   ]
 };

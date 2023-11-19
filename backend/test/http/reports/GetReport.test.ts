@@ -12,9 +12,7 @@ describe("Get report", () => {
 
         const res = await request(server)
             .get('/reports')
-            .query({ dateFrom, dateTo })
-
-        console.log(res.body);
+            .query({ dateFrom, dateTo });
 
         expect(res.statusCode).toBe(400);
         expect(Array.isArray(res.body)).toBeTruthy();
@@ -35,9 +33,7 @@ describe("Get report", () => {
     // Expected output: List of reports
     test("Valid user data without date query", async () => {
         const res = await request(server)
-            .get('/reports')
-
-        console.log(res.body);
+            .get('/reports');
 
         expect(res.statusCode).toBe(400);
         expect(Array.isArray(res.body)).toBeTruthy();

@@ -21,7 +21,7 @@ export class RequestController {
     if (!func) {
       ws.send(
         JSON.stringify({
-          Error: `Session endpoint ${message.action} does not exist.`,
+          Error: `Requests endpoint ${message.action} does not exist.`,
         }),
       );
     } else {
@@ -41,7 +41,6 @@ export class RequestController {
     currentUserId: number,
   ) {
     const requests = await userService.getUserFriendsRequests(currentUserId);
-
     ws.send(
       JSON.stringify(
         new RequestsMessage("refresh", {

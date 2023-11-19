@@ -125,14 +125,14 @@ export class UserController {
     if (!func) {
       ws.send(
         JSON.stringify({
-          Error: `Session endpoint ${message.action} does not exist.`,
+          Error: `Friends endpoint ${message.action} does not exist.`,
         }),
       );
     } else {
       try {
         await func(ws, message, currentUserId);
       } catch (err) {
-        ws.send(JSON.stringify(new FriendsMessage("error", err.message)));
+        //ws.send(JSON.stringify(new FriendsMessage("error", err.message)));
       }
     }
   }
@@ -159,7 +159,7 @@ export class UserController {
 
   // ChatGPT Usage: No
   async update(ws: WebSocket, message: FriendsMessage, currentUserId: number) {
-    const user = await userService.updateUserStatus(
+    await userService.updateUserStatus(
       currentUserId,
       message?.body?.song,
       message?.body?.source,

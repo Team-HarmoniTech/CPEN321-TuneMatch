@@ -10,9 +10,9 @@ import { validationResult } from "express-validator";
 import * as http from "http";
 import morgan from 'morgan';
 import { WebSocketServer } from "ws";
-import { ENVIRONMENT, PORT } from './config';
-import logger from './logger';
+import { ENVIRONMENT } from './config';
 import { database } from './services';
+import { startServer } from './startup';
 
 export const app = express();
 
@@ -20,7 +20,7 @@ export const app = express();
 
 app.use(morgan("tiny", { /* API logger */
   skip: () => { 
-    return process.env.LOGGING === "false"; 
+    return ENVIRONMENT === "test"; 
   },
 })); 
 app.use(express.json());
@@ -74,9 +74,5 @@ Promise.all([
     },
   }),
 ]).then(() => {
-  if (ENVIRONMENT !== "test") {
-    server.listen(PORT, () => {
-      logger.log(`Express server has started on port ${PORT}.`);
-    });
-  }
+  startServer();
 });
