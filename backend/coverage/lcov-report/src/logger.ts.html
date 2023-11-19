@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">41.66% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>3/3</span>
+                <span class='fraction'>5/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/2</span>
+                <span class='fraction'>0/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">33.33% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>1/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">55.55% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>3/3</span>
+                <span class='fraction'>5/9</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -71,21 +71,39 @@
 <a name='L6'></a><a href='#L6'>6</a>
 <a name='L7'></a><a href='#L7'>7</a>
 <a name='L8'></a><a href='#L8'>8</a>
-<a name='L9'></a><a href='#L9'>9</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">404x</span>
+<span class="cline-any cline-yes">202x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">import winston from "winston";
+<span class="cline-any cline-yes">9x</span></td><td class="text"><pre class="prettyprint lang-js">import { ENVIRONMENT } from "./config";
 &nbsp;
-const logger = winston.createLogger({
-  level: process.env.LOGGING ? "error" : <span class="branch-1 cbranch-no" title="branch not covered" >"info",</span> // Default to info level, but can be overridden with environment variable
-  format: winston.format.simple(),
-  transports: [new winston.transports.Console()],
-});
+const logger = {
+  log: (message?: any, ...optionalParams: any[]) =&gt; { 
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (ENVIRONMENT !== "test") <span class="cstat-no" title="statement not covered" >console.log(message, ...optionalParams) </span>
+  },
+  dev: <span class="fstat-no" title="function not covered" >(m</span>essage?: any, <span class="cstat-no" title="statement not covered" >...optionalParams: any[])</span> =&gt; { 
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (ENVIRONMENT === "dev") <span class="cstat-no" title="statement not covered" >console.debug(message, ...optionalParams) </span></span>
+  },
+  err: <span class="fstat-no" title="function not covered" >(m</span>essage?: any, <span class="cstat-no" title="statement not covered" >...optionalParams: any[])</span> =&gt; {
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (ENVIRONMENT !== "test") <span class="cstat-no" title="statement not covered" >console.error(message, ...optionalParams) </span></span>
+  }
+}
 &nbsp;
 export default logger;</pre></td></tr></table></pre>
 
@@ -94,7 +112,7 @@ export default logger;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-11-09T01:12:38.798Z
+                at 2023-11-19T02:27:08.340Z
             </div>
         <script src="../prettify.js"></script>
         <script>
