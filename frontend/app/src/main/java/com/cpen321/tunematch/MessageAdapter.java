@@ -125,6 +125,11 @@ public class MessageAdapter extends RecyclerView.Adapter  {
     }
 
     // ChatGPT Usage: No
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    // ChatGPT Usage: No
     @Override
     public int getItemCount() {
         return messages.size();

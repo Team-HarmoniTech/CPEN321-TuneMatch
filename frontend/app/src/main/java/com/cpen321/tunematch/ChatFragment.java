@@ -135,6 +135,7 @@ public class ChatFragment extends Fragment {
             chatMsg = new ArrayList<Message>();
             model.getMessages().setValue(chatMsg);
         }
+
         chatAdapter = new MessageAdapter(chatMsg,
                 model.getCurrentUser().getValue(),
                 getLayoutInflater(),
