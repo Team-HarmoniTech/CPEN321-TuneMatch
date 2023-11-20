@@ -8,8 +8,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
+import com.cpen321.tunematch.UiTestHelper;
 
 public class PlaySongTest {
     private ActivityScenario<LoginActivity> loginActivityScenario;
@@ -28,9 +30,9 @@ public class PlaySongTest {
     // ChatGPT Usage: Partial
     @Test
     public void testPlaySong() {
-        testJoinSession();
+        testCreateSession();
         testSearchSong();
-//        testQueue();
+        testQueue();
     }
 
     // ChatGPT Usage: Partial
@@ -38,6 +40,18 @@ public class PlaySongTest {
     public void destroy() {
         loginActivityScenario.close();
         Intents.release();
+    }
+
+    // ChatGPT Usage: No
+    public void testCreateSession() {
+        UiTestHelper.clickOnView(R.id.createListeningSessionBtn);
+
+        // Wait till move to listening session
+        UiTestHelper.addDelay(1000);
+
+        List<Integer> idsToCheck = Arrays.asList(R.id.songSearchBar, R.id.queueBtn, R.id.chatBtn,
+                                                    R.id.exitBtn, R.id.recycler_view);
+        UiTestHelper.checkViewListAreDisplayed(idsToCheck);
     }
 
     // ChatGPT Usage: Partial
@@ -54,20 +68,30 @@ public class PlaySongTest {
 
     // ChatGPT Usage: Partial
     public void testSearchSong() {
-        //TODO: Typing text into search bar is not working
-
         // testInvalid input if specified
         UiTestHelper.inputMessage(R.id.songSearchBar, "?@}#{$%!", true);
         UiTestHelper.checkViewIsNotDisplayed(R.id.suggestionListView);
 
         // Test valid input
-        UiTestHelper.inputMessage(R.id.songSearchBar, "snowman", true);
-        UiTestHelper.checkViewIsDisplayed(R.id.suggestionListView);
-        UiTestHelper.clickListItem(R.id.suggestionListView, 0);
+        // Have snowman twice since first click would play the song
+        List<String> songTitle = Arrays.asList("Santa Tell Me", "snowman", "Last christmas", "All I");
+        for (String song : songTitle) {
+            // Search song
+            UiTestHelper.inputMessage(R.id.songSearchBar, song, true);
+            UiTestHelper.addDelay(2000);
 
-        UiTestHelper.inputMessage(R.id.songSearchBar, "Last christmas", true);
-        UiTestHelper.checkViewIsDisplayed(R.id.suggestionListView);
-        UiTestHelper.clickListItem(R.id.suggestionListView, 0);
+            // Add to queue
+            UiTestHelper.checkViewIsDisplayed(R.id.suggestionListView);
+            UiTestHelper.clickListItem(R.id.suggestionListView, 0);
+            UiTestHelper.addDelay(1000);
+
+            // Test if added to queue
+//            UiTestHelper.checkTextIsDisplayed(song);
+        }
+
+        // Check if queue has right order
+//        UiTestHelper.checkTextOrder(songTitle);
+
     }
 
     // ChatGPT Usage: No
@@ -82,7 +106,8 @@ public class PlaySongTest {
         UiTestHelper.swipeListItem(R.id.recycler_view, 0, false);
 
         // TODO: Need a way to check that changing position worked correctly
-
+//        List<String> expectedOrder = Arrays.asList("Santa Tell Me", "snowman", "Last christmas", "All I");
+//        UiTestHelper.checkTextOrder();
     }
 
     public void testMediaPlayer() {
