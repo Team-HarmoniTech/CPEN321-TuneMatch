@@ -103,4 +103,6 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
         this.items = songs;
         notifyDataSetChanged();  // Notify the adapter that the data set has changed
     }
+
+    public List<Song> getQueue() {return items;}
 }

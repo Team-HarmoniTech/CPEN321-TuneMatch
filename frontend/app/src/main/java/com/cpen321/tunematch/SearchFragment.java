@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -163,11 +164,11 @@ public class SearchFragment extends Fragment {
         searchFriend.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
             @Override
             public boolean onQueryTextSubmit(String query) {
-                return updateQuery(query);
+                return updateQuery(query, true);
             }
             @Override
             public boolean onQueryTextChange(String newText) {
-                return updateQuery(newText);
+                return updateQuery(newText, false);
             }
         });
 
@@ -185,16 +186,16 @@ public class SearchFragment extends Fragment {
     }
 
     // ChatGPT Usage: Partial
-    private boolean updateQuery(String query) {
+    private boolean updateQuery(String query, boolean submit) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 List<SearchUser> newSearchList;
                 try {
-                    if(query.isEmpty()){
+                    if (query.isEmpty()) {
                         newSearchList = backend.getMatches();
                     }
-                    else{
+                    else {
                         String encodedQuery = "";
                         try {
                             encodedQuery = URLEncoder.encode(query, Charsets.UTF_8.toString());
@@ -203,6 +204,17 @@ public class SearchFragment extends Fragment {
                             Log.e("JSONException", "Exception message: "+e.getMessage());
                         }
                         newSearchList = backend.searchUser(encodedQuery);
+
+                        if (submit && newSearchList.size() == 0) {
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getContext(),
+                                            "User with username "+query+" does not exist.",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
                     }
 
                     model.getSearchList().postValue(newSearchList);

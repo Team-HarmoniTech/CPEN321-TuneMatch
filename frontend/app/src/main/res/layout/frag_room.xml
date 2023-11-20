@@ -10,7 +10,6 @@
         android:layout_width="match_parent"
         android:layout_height="54dp"
         android:layout_marginStart="16dp"
-
         android:layout_marginEnd="16dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/song_banner_imageview"
