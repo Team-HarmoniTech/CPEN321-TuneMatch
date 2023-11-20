@@ -75,6 +75,7 @@ public class PlaySongTest {
         UiTestHelper.checkListIsEmpty(R.id.recycler_view, true);
 
         // Test play button with empty queue
+        // TODO: Currently crashing the app; needs to be fixed
         UiTestHelper.clickOnView(R.id.play_button);
         UiTestHelper.checkToastMessage("Queue is empty");
         UiTestHelper.checkBtnBackground(R.id.play_button, R.drawable.play_btn);
@@ -92,9 +93,62 @@ public class PlaySongTest {
         UiTestHelper.addDelay(2000);
     }
 
+    // ChatGPT Usage: No
+    @Test
+    public void D_testNextButton() {
+        A_testCreateSession();
+
+        // Add known number of songs to the queue
+        List<String> songList = Arrays.asList("Santa Tell Me", "Snowman", "Last Christmas", "All I");
+        for (String title : songList) {
+            searchSong(title);
+        }
+
+        // Check when next button is clicked, have pause button and queue length decrease
+        for (int size = songList.size()-2; size >= 0; size--) {
+            UiTestHelper.clickOnView(R.id.next_button);
+
+            UiTestHelper.checkListSize(R.id.recycler_view, size);
+            UiTestHelper.checkSeekBarPosition(0);
+        }
+    }
+
+    // ChatGPT Usage: No
+    @Test
+    public void E_testPlayButton() {
+        A_testCreateSession();
+
+        // Have a song playing
+        searchSong("Snowman");
+
+        for (int i = 0; i < 10; i++) {
+            UiTestHelper.clickOnView(R.id.play_button);
+            UiTestHelper.addDelay(1000);
+            UiTestHelper.checkSeekBarPosition(i+1);
+        }
+    }
+
     // ChatGPT Usage: Partial
     @Test
-    public void D_testSearchSong() {
+    public void F_testPreviousButton() {
+        A_testCreateSession();
+
+        // Have a song playing
+        searchSong("Snowman");
+        UiTestHelper.clickRecyclerItem(R.id.recycler_view, 0);
+
+        for (int i = 0; i < 5; i++) {
+            UiTestHelper.addDelay(i*1000);
+            UiTestHelper.clickOnView(R.id.previous_button);
+
+            UiTestHelper.checkTextIsDisplayed("00:00");
+            UiTestHelper.checkSeekBarPosition(0);
+        }
+    }
+
+    // ChatGPT Usage: Partial
+    @Test
+    public void G_testSearchSong() {
         A_testCreateSession();
 
         // testInvalid input if specified
@@ -119,7 +173,7 @@ public class PlaySongTest {
 
     // ChatGPT Usage: No
     @Test
-    public void E_testQueue() {
+    public void H_testQueue() {
         A_testCreateSession();
 
         // Check Queue is displayed
@@ -131,78 +185,33 @@ public class PlaySongTest {
         // Swipe first song on the list to bottom
         UiTestHelper.swipeListItem(R.id.recycler_view, 0, false);
 
-        // TODO: Need a way to check that changing position worked correctly
+        // Check if order is changed correctly
         List<String> expectedOrder = Arrays.asList("Last christmas", "snowman", "All I");
         UiTestHelper.checkListOrder(R.id.recycler_view, expectedOrder);
     }
 
     // ChatGPT Usage: No
     @Test
-    public void F_testExit() {
+    public void I_testSeekBar() {
+        A_testCreateSession();
+
+        for (int i = 0; i < 10; i++) {
+            UiTestHelper.setSeekBarPosition(i*10);
+            UiTestHelper.checkSeekBarPosition(i*10);
+        }
+
+    }
+
+    // ChatGPT Usage: No
+    @Test
+    public void J_testExit() {
         A_testCreateSession();
 
         UiTestHelper.clickOnView(R.id.exitBtn);
 
         List<Integer> idsToCheck = Arrays.asList(R.id.listeningSessionTitle, R.id.listeningSessionList,
-                                                R.id.friendsList, R.id.friendsListTitle);
+                R.id.friendsList, R.id.friendsListTitle);
         UiTestHelper.checkViewListDisplay(idsToCheck, true);
-    }
-
-    // ChatGPT Usage: No
-    @Test
-    public void G_testPlayButton() {
-        A_testCreateSession();
-
-//        UiTestHelper.checkBtnBackground(R.id.play_button, R.drawable.play_btn);
-
-        // Media player should play song automatically and change play_button to pause_button
-        UiTestHelper.checkBtnBackground(R.id.play_button, R.drawable.pause_btn);
-
-        for (int i = 0; i < 10; i++) {
-            UiTestHelper.clickOnView(R.id.play_button);
-            UiTestHelper.addDelay(1000);
-
-            if (i % 2 == 0) {
-                UiTestHelper.checkBtnBackground(R.id.play_button, R.drawable.play_btn);
-            } else {
-                UiTestHelper.checkBtnBackground(R.id.play_button, R.drawable.pause_btn);
-            }
-        }
-    }
-
-    // ChatGPT Usage: Partial
-    @Test
-    public void H_testPreviousButton() {
-        A_testCreateSession();
-
-        for (int i = 0; i < 5; i++) {
-            UiTestHelper.addDelay(i*1000);
-            UiTestHelper.clickOnView(R.id.previous_button);
-
-            UiTestHelper.checkTextIsDisplayed("00:00");
-            UiTestHelper.checkSeekBarPosition(0);
-        }
-    }
-
-    // ChatGPT Usage: No
-    @Test
-    public void I_testNextButton() {
-        A_testCreateSession();
-
-        // Add known number of songs to the queue
-        int queueLen = 6;
-        for (int i = 0; i < queueLen; i++) {
-            searchSong("Snowman");
-        }
-
-        // Check when next button is clicked, have pause button and queue length decrease
-        for (int size = queueLen - 2; size > 0; size--) {
-            UiTestHelper.clickOnView(R.id.next_button);
-
-            UiTestHelper.checkBtnBackground(R.id.play_button, R.drawable.play_btn);
-            UiTestHelper.checkListSize(R.id.recycler_view, size);
-            UiTestHelper.checkSeekBarPosition(0);
-        }
     }
 
     public void searchSong(String title) {

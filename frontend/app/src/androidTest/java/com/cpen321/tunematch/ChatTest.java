@@ -66,6 +66,7 @@ public class ChatTest {
         UiTestHelper.checkViewListDisplay(idsToCheck, true);
     }
 
+    // ChatGPT Usage: No
     @Test
     public void C_testSendChat() {
         List<String> messages = Arrays.asList("Hi", "I like this song", "let's share playlist");
@@ -127,6 +128,7 @@ public class ChatTest {
         sendChat(messages);
     }
 
+    // ChatGPT Usage: No
     @Test
     public void F_testExit() {
         B_testChatView();

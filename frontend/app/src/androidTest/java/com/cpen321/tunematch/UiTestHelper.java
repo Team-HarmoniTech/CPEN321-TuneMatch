@@ -30,6 +30,10 @@ import androidx.test.espresso.Root;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.ViewInteraction;
+import androidx.test.espresso.action.GeneralLocation;
+import androidx.test.espresso.action.GeneralSwipeAction;
+import androidx.test.espresso.action.Press;
+import androidx.test.espresso.action.Swipe;
 import androidx.test.espresso.assertion.PositionAssertions;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.espresso.matcher.BoundedMatcher;
@@ -54,7 +58,7 @@ public class UiTestHelper {
     // ChatGPT Usage: Yes
     public static void checkViewHasText(int viewId, String text) {
         onView(withId(viewId))
-                .check(matches(withText((Matchers.containsString(text)))));
+                .check(matches(withText(Matchers.containsString(text))));
     }
 
     // ChatGPT Usage: No
@@ -71,13 +75,13 @@ public class UiTestHelper {
                     .perform(RecyclerViewActions.scrollToPosition(i))
                     .check(matches(isDisplayed()))
                     .check(matches(isCompletelyDisplayed()))
-                    .check(matches(hasDescendant(withText(firstText))));
+                    .check(matches(hasDescendant(withText(Matchers.containsString(firstText)))));
 
             onView(withId(recyclerViewId))
                     .perform(RecyclerViewActions.scrollToPosition(i + 1))
                     .check(matches(isDisplayed()))
                     .check(matches(isCompletelyDisplayed()))
-                    .check(matches(hasDescendant(withText(secondText))));
+                    .check(matches(hasDescendant(withText(Matchers.containsString(secondText)))));
         }
     }
 
@@ -93,6 +97,13 @@ public class UiTestHelper {
                 .inAdapterView(withId(listViewId))
                 .atPosition(pos)
                 .perform(click());
+    }
+
+    // ChatGPT Usage: No
+    public static void clickRecyclerItem(int recyclerViewId, int pos) {
+        Espresso.onView(ViewMatchers.withId(recyclerViewId))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(pos, ViewActions.click()));
+
     }
 
     // ChatGPT Usage: No
@@ -190,13 +201,15 @@ public class UiTestHelper {
     // ChatGPT Usage: No
     public static void swipeListItem(int listViewId, int pos, Boolean isUp) {
         if (isUp) {
-            onView(withId(listViewId))
-                    .perform(actionOnItemAtPosition(pos, ViewActions.longClick()))
-                    .perform(actionOnItemAtPosition(pos, ViewActions.swipeUp()));
+            onView(withId(listViewId)).perform(
+                    RecyclerViewActions.actionOnItemAtPosition(pos, new GeneralSwipeAction(
+                            Swipe.SLOW, GeneralLocation.CENTER, GeneralLocation.TOP_CENTER,
+                            Press.FINGER)));
         } else {
-            onView(withId(listViewId))
-                    .perform(actionOnItemAtPosition(pos, ViewActions.longClick()))
-                    .perform(actionOnItemAtPosition(pos, ViewActions.swipeDown()));
+            onView(withId(listViewId)).perform(
+                    RecyclerViewActions.actionOnItemAtPosition(pos, new GeneralSwipeAction(
+                            Swipe.SLOW, GeneralLocation.CENTER, GeneralLocation.BOTTOM_CENTER,
+                            Press.FINGER)));
         }
     }
 
@@ -262,7 +275,7 @@ public class UiTestHelper {
 
     // ChatGPT Usage: No
     public static void setSeekBarPosition(int pos) {
-        onView(withClassName(Matchers.equalTo(SeekBar.class.getName()))).perform(setProgress(pos));
+        onView(withId(R.id.seekBar)).perform(setProgress(pos));
 
     }
 

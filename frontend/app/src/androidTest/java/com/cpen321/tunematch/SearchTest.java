@@ -30,6 +30,7 @@ public class SearchTest {
         Intents.intended(IntentMatchers.hasComponent(MainActivity.class.getName()));
     }
 
+    // ChatGPT Usage: No
     @Test
     public void A_testOpenSearchPage() {
         // Move to search friends page
@@ -69,6 +70,7 @@ public class SearchTest {
         UiTestHelper.clickOnView(R.id.addButton);
     }
 
+    // ChatGPT Usage: No
     @Test
     public void D_testSearchFriend() {
         A_testOpenSearchPage();
