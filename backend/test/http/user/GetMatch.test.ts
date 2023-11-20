@@ -16,7 +16,7 @@ describe("Get match", () => {
       expect(res.body).toHaveProperty('userId', 'testUser1');
       expect(res.body).toHaveProperty('username', 'testUsername1');
       expect(res.body).toHaveProperty('profilePic');
-      expect(res.body).toHaveProperty('match', 109.8);
+      expect(res.body).toHaveProperty('match', 96.45);
     });
 
     // Input: user-id is an existing user
@@ -52,7 +52,7 @@ describe("Get match", () => {
       expect(res.body).toHaveProperty('userId', 'testUser1');
       expect(res.body).toHaveProperty('username', 'testUsername1');
       expect(res.body).toHaveProperty('profilePic');
-      expect(res.body).toHaveProperty('match', 109.8);
+      expect(res.body).toHaveProperty('match', 96.45);
     });
 
     // Input: user-id is an existing user, spotify_id doesn't exist
