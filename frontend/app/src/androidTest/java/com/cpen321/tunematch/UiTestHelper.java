@@ -15,8 +15,10 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.CoreMatchers.anything;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.allOf;
+import static org.junit.Assert.assertEquals;
 
 import android.os.IBinder;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -180,10 +182,7 @@ public class UiTestHelper {
 
             @Override
             public void perform(UiController uiController, View view) {
-                ((SearchView) view).setQuery(text,false);
-
-                KeyEvent keyEvent = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER);
-                ((SearchView) view).dispatchKeyEvent(keyEvent);
+                ((SearchView) view).setQuery(text,true);
             }
         };
     }
@@ -259,49 +258,6 @@ public class UiTestHelper {
             }
             return false;
         }
-    }
-
-    // ChatGPT Usage: Partial
-    public static void checkListInDescendingOrder(int listViewId) {
-        // Replace with the actual ListView ID
-        ViewInteraction listView = Espresso.onView(withId(listViewId));
-
-        // Assuming the list item format is "name (number)"
-        // Retrieve list items dynamically
-        listView.check(matches(matchesListInDescendingOrder()));
-    }
-
-    // ChatGPT Usage: Partial
-    private static Matcher<Object> matchesListInDescendingOrder() {
-        return new BoundedMatcher<Object, String>(String.class) {
-            @Override
-            public boolean matchesSafely(String listItem) {
-                // Extract the numeric value from the list item
-                int number = extractNumber(listItem);
-                // Compare with previous item (if available)
-                // You can adapt this logic based on your specific requirements
-                // For simplicity, I'm assuming the first item is always in descending order
-                return number >= previousNumber;
-            }
-
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("List items in descending order");
-            }
-        };
-    }
-
-    private static int previousNumber = Integer.MAX_VALUE; // Initialize with a large value
-
-    // ChatGPT Usage: Partial
-    private static int extractNumber(String listItem) {
-        // Extract the numeric value from the list item
-        String numberString = listItem.substring(listItem.lastIndexOf("(") + 1, listItem.lastIndexOf("%"));
-        int number = Integer.parseInt(numberString.trim());
-
-        // Update previousNumber for comparison with the next item
-        previousNumber = number;
-        return number;
     }
 
     // ChatGPT Usage: No

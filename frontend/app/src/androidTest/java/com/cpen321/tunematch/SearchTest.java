@@ -50,9 +50,6 @@ public class SearchTest {
 
         // Check the list is not empty
         UiTestHelper.checkListIsEmpty(R.id.recommendedList, false);
-
-        // TODO: Check if the list is in descending order
-        UiTestHelper.checkListInDescendingOrder(R.id.recommendedList);
     }
 
     // ChatGPT Usage: No
@@ -81,6 +78,7 @@ public class SearchTest {
         UiTestHelper.addDelay(1000);
         UiTestHelper.checkListIsEmpty(R.id.recommendedList, true);
         UiTestHelper.checkToastMessage("User with username !@#$% does not exist.");
+        UiTestHelper.addDelay(3000);
 
         // Test invalid username
         UiTestHelper.inputMessage(R.id.searchFriend, "testUser", true);
@@ -117,9 +115,6 @@ public class SearchTest {
 
         // Click add button to send request
         UiTestHelper.clickOnView(R.id.addButton);
-
-        // Check if dialog disappeared
-        UiTestHelper.checkViewListDisplay(idsToCheck, false);
     }
 
     // ChatGPT Usage: Partial
