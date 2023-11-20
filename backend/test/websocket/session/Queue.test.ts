@@ -41,11 +41,17 @@ describe("Session Queue", () => {
     });
 
 
+    // Input: none
+    // Expected behavior: see the it statement
+    // Expected output: none
     it("should create with an empty queue", async () => {
         expect(await sessionService.getQueue(1)).toHaveProperty("running", false);
         expect(await sessionService.getQueue(1)).toHaveProperty("queue", []);
     });
 
+    // Input: none
+    // Expected behavior: see the it statement
+    // Expected output: none
     it("should pop songs after the correct amount of time", async () => {
         let queueData;
         for (let i = 0; i < 5; i++) {
@@ -72,6 +78,9 @@ describe("Session Queue", () => {
         expect(queueData.queue).toHaveLength(1);
     });
 
+    // Input: queue replace
+    // Expected behavior: see the it statement
+    // Expected output: none
     it("should replace the entire queue while paused", async () => {
         await socket1.sendJson({
             method: "SESSION",
@@ -85,6 +94,9 @@ describe("Session Queue", () => {
         expect(queueData.queue).toStrictEqual(testQueue);
     });
 
+    // Input: queue replace
+    // Expected behavior: see the it statement
+    // Expected output: none
     it("should replace the entire queue while playing", async () => {
         let queueData;
         for (let i = 0; i < 5; i++) {
@@ -118,6 +130,9 @@ describe("Session Queue", () => {
         expect(queueData.queue).toStrictEqual(testQueue);
     });
 
+    // Input: add songs
+    // Expected behavior: see the it statement
+    // Expected output: none
     it("should add songs while paused", async () => {
         let queueData;
         await socket1.sendJson({
@@ -177,6 +192,9 @@ describe("Session Queue", () => {
         expect(queueData.queue).toHaveLength(6);
     });
 
+    // Input: add songs
+    // Expected behavior: see the it statement
+    // Expected output: none
     it("should add songs while playing", async () => {
         let queueData;
         for (let i = 0; i < 3; i++) {
@@ -243,6 +261,9 @@ describe("Session Queue", () => {
         expect(queueData.queue).toHaveLength(6);
     });
 
+    // Input: skip
+    // Expected behavior: see the it statement
+    // Expected output: none
     it("should skip the currently playing song", async () => {
         for (let i = 0; i < 5; i++) {
             await socket1.sendJson({
@@ -271,6 +292,9 @@ describe("Session Queue", () => {
         expect(queueData.queue).toHaveLength(2);
     });
 
+    // Input: skip
+    // Expected behavior: see the it statement
+    // Expected output: none
     it("should skip the first song in the queue", async () => {
         await socket1.sendJson({
             method: "SESSION",
@@ -293,6 +317,9 @@ describe("Session Queue", () => {
         expect(queueData.queue).toHaveLength(2);
     });
 
+    // Input: drag
+    // Expected behavior: see the it statement
+    // Expected output: none
     it("should drag songs", async () => {
         await socket1.sendJson({
             method: "SESSION",
@@ -331,6 +358,9 @@ describe("Session Queue", () => {
         expect(queueData.queue).toHaveLength(3);
     });
 
+    // Input: drag with an end index of -1
+    // Expected behavior: see the it statement
+    // Expected output: none
     it("should drag songs to the back", async () => {
         await socket1.sendJson({
             method: "SESSION",
@@ -353,6 +383,9 @@ describe("Session Queue", () => {
         expect(queueData.queue).toHaveLength(3);
     });
 
+    // Input: drag with an end index of 0
+    // Expected behavior: see the it statement
+    // Expected output: none
     it("should drag songs to the front", async () => {
         await socket1.sendJson({
             method: "SESSION",
@@ -375,6 +408,9 @@ describe("Session Queue", () => {
         expect(queueData.queue).toHaveLength(3);
     });
 
+    // Input: pause and resume
+    // Expected behavior: see the it statement
+    // Expected output: none
     it("should pause and resume from the same place", async () => {
         let queueData;
         for (let i = 0; i < 2; i++) {
@@ -412,6 +448,9 @@ describe("Session Queue", () => {
         expect(queueData.queue[0].title).toBe("5 second song #2");
     }, 15000);
 
+    // Input: seek method
+    // Expected behavior: see the it statement
+    // Expected output: none
     it("should seek inside the current song", async () => {
         let queueData;
         await socket1.sendJson({

@@ -37,13 +37,13 @@ describe("Get top matches", () => {
     // Input: user-id is an existing user but computationsComputed is false
     // Expected status code: 400
     // Expected behavior: Return error message
-    // Expected output: User connections were not computed within 60 seconds
+    // Expected output: User connections were not computed within 60000 milliseconds
     test("Timeout", async () => {
       const res = await request(server)
         .get('/me/matches')
         .set('user-id', 'testUser2');
 
       expect(res.statusCode).toBe(400);
-      expect(res.body).toEqual({ error : "User connections were not computed within 60 seconds." });
+      expect(res.body).toEqual({ error : "User connections were not computed within 60000 milliseconds." });
     }, 70000);
   });

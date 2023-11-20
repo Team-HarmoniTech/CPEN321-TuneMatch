@@ -20,6 +20,9 @@ describe("Session Message", () => {
         }
     }
 
+    // Input: The user is in a session
+    // Expected behavior: The message is passed to all other members of the session
+    // Expected output: None
     it("should pass messages between session members", async () => {
         const socket1 = request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
         .expectJson()
@@ -54,7 +57,10 @@ describe("Session Message", () => {
         await socket2.close();
     });
 
-    it("should pass messages between session members", async () => {
+    // Input: The user is not in a session
+    // Expected behavior: Nothing changes
+    // Expected output: returns an error with the message "User is not in a session."
+    it("should do nothing when not in a session", async () => {
         const socket1 = request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
         .expectJson()
         .expectJson();

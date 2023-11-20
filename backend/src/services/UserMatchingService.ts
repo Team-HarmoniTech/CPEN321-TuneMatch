@@ -116,7 +116,7 @@ export class UserMatchingService {
   async matchNewUser(userId: number, maxComputed?: number) {
     const matchedUsers: number[] = [];
     const maxMatches: number = (maxComputed ?? 80) + matchedUsers.length;
-    const matchThreshold: number = 80;
+    const matchThreshold: number = 50;
     const matchQueue: User[] = [];
 
     while (matchedUsers.length < maxMatches) {
@@ -177,7 +177,7 @@ export class UserMatchingService {
 
     while (!(await userService.getUserById(userId)).connectionComputed) {
       if (Date.now() - startTime >= timeoutMs) {
-        throw { message: `User connections were not computed within 60 seconds.`, statusCode: 400 };
+        throw { message: `User connections were not computed within ${timeoutMs} milliseconds.`, statusCode: 400 };
       }
   
       /* Check every second until complete */

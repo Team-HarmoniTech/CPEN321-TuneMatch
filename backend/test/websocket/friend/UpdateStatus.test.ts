@@ -10,6 +10,9 @@ describe("Update Status", () => {
         await userService.addFriend(2, 1);
     });
 
+    // Input: The body only contains a song
+    // Expected behavior: the user's status is updated in the database and friends receive the update
+    // Expected output: None
     it("should update status with song only", async () => {
         let user = await database.user.update({
             where: { spotify_id: "testUser1" },
@@ -56,6 +59,9 @@ describe("Update Status", () => {
         await socket2.close();
     });
 
+    // Input: The body only contains a source
+    // Expected behavior: the user's status is updated in the database and friends receive the update
+    // Expected output: None
     it("should update status with source only", async () => {
         let user = await database.user.update({
             where: { spotify_id: "testUser1" },
@@ -102,6 +108,9 @@ describe("Update Status", () => {
         await socket2.close();
     });
 
+    // Input: The body contains a song and source
+    // Expected behavior: the user's status is updated in the database and friends receive the update
+    // Expected output: None
     it("should update status with song and source", async () => {
         let user = await database.user.update({
             where: { spotify_id: "testUser1" },
@@ -149,6 +158,9 @@ describe("Update Status", () => {
         await socket2.close();
     });
 
+    // Input: The body contains a source and the user is in a session
+    // Expected behavior: The user's source is not updated
+    // Expected output: None
     it("should not update source during a session", async () => {
         await database.user.update({
             where: { spotify_id: "testUser1" },
@@ -202,6 +214,9 @@ describe("Update Status", () => {
         await socket2.close();
     });
 
+    // Input: The socket disconnects
+    // Expected behavior: the user's status is set to null
+    // Expected output: None
     it("should remove status on disconnect", async () => {
         let user = await database.user.update({
             where: { spotify_id: "testUser1" },
@@ -238,6 +253,9 @@ describe("Update Status", () => {
         await socket2.close();
     });
 
+    // Input: The user has not uet connected
+    // Expected behavior: the user's status is null
+    // Expected output: None
     it("should have null status before connect", async () => {
         expect(await userService.getUserBySpotifyId("testUser1")).toHaveProperty("current_song", null);
     });

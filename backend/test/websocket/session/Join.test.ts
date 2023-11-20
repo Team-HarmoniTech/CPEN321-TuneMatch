@@ -3,6 +3,10 @@ import { userService } from "@src/services";
 import request from "superwstest";
 
 describe("Session Join", () => {
+
+    // Input: The body is empty
+    // Expected behavior: a new session is created with the user
+    // Expected output: None
     it("should create a new session on empty join", async () => {
         const socket1 = request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
         .expectJson()
@@ -19,8 +23,7 @@ describe("Session Join", () => {
                 expect((await userService.getUserBySpotifyId("testUser1")).session).toBeDefined();
                 break;
             }
-        
-            // Poll every 500 milliseconds (adjust as needed)
+         
             await new Promise(resolve => setTimeout(resolve, 500));
         }
         expect((await userService.getUserBySpotifyId("testUser1")).session).toBeDefined();
@@ -28,6 +31,9 @@ describe("Session Join", () => {
         await socket1.close();
     });
 
+    // Input: The body contains a valid user id
+    // Expected behavior: the user is added to the other user's session
+    // Expected output: None
     it("should join another user's session", async () => {
         const socket1 = await request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
         .expectJson()
@@ -55,6 +61,9 @@ describe("Session Join", () => {
         await socket2.close();
     });
 
+    // Input: The body contains a valid user id of a user not in the current user's session
+    // Expected behavior: the user is removed from their original session and added to the other user's session
+    // Expected output: None
     it("should leave previous session to join other user", async () => {
         await userService.createUser({
             spotify_id: "testUser3",
@@ -133,6 +142,9 @@ describe("Session Join", () => {
         await socket2.close();
     });
 
+    // Input: The body contains a valid user id of a user in the current user's session
+    // Expected behavior: nothing happens
+    // Expected output: None
     it("should do nothing on join user in same session", async () => {
         const socket1 = await request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
         .expectJson()
@@ -167,6 +179,9 @@ describe("Session Join", () => {
         await socket2.close();
     });
 
+    // Input: The body contains a valid user id of a user not in a session
+    // Expected behavior: nothing happens
+    // Expected output: returns an error with the message "User is not in a session."
     it("should error on join another user who is not in a session", async () => {
         const socket2 = request(server).ws("/socket", { headers: { "user-id": "testUser2" } });
         const socket1 = request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
@@ -187,6 +202,9 @@ describe("Session Join", () => {
         await socket2.close();
     });
 
+    // Input: The body contains an invalid user id
+    // Expected behavior: nothing happens
+    // Expected output: returns an error with the message "User does not exist"
     it("should error join another user who does not exist", async () => {
         await request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
         .expectJson()
@@ -204,6 +222,9 @@ describe("Session Join", () => {
         .close();
     });
 
+    // Input: A user joins a session
+    // Expected behavior: All members in the session receive an update that the user has join
+    // Expected output: None
     it("should update session on join", async () => {
         const socket1 = request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
         .expectJson()
@@ -242,6 +263,9 @@ describe("Session Join", () => {
         await socket2.close();
     });
 
+    // Input: A user joins a session
+    // Expected behavior: All friends of the user get an update that the user is now in a session
+    // Expected output: None
     it("should update friends on join", async () => {
         await userService.addFriend(1, 2);
         await userService.addFriend(2, 1);
@@ -276,6 +300,9 @@ describe("Session Join", () => {
         await socket2.close();
     });
 
+    // Input: A user joins a session
+    // Expected behavior: The user receives information on the current queue and other members of the session
+    // Expected output: Information on the current queue and other members of the session
     it("should receive refresh on join", async () => {
         const socket1 = request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
         .expectJson()

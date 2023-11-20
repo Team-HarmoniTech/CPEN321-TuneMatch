@@ -49,8 +49,7 @@ describe("Delete user", () => {
                 expect((await userService.getUserBySpotifyId("testUser1")).session).toBeDefined();
                 break;
             }
-        
-            // Poll every 500 milliseconds (adjust as needed)
+         
             await new Promise(resolve => setTimeout(resolve, 500));
         }
       expect((await userService.getUserBySpotifyId("testUser1")).session).toBeDefined();

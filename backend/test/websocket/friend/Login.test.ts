@@ -3,16 +3,26 @@ import { userService } from "@src/services";
 import request from "superwstest";
 
 describe("Login", () => {
+
+    // Input: no authentication header is provided
+    // Expected behavior: Nothing changes internally
+    // Expected output: socket is closed with the message "No Authentication Provided"
     it("should require a user-id header", async () => {
         await request(server).ws("/socket")
         .expectClosed(1008, "No Authentication Provided").close();
     });
     
+    // Input: the user-id provided is invalid
+    // Expected behavior: Nothing changes internally
+    // Expected output: socket is closed with the message "User {user-id} does not exist"
     it("should reject a non-existent user", async () => {
         await request(server).ws("/socket", { headers: { "user-id": "fakeUser" } })
         .expectClosed(1008, "User fakeUser does not exist").close();
     });
 
+    // Input: the user-id provided is invalid
+    // Expected behavior: The user is added to the list of connections
+    // Expected output: socket is connected as normal
     it("should accept an existing user", async () => {
         await request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
         .expectUpgrade(x => true)
@@ -20,12 +30,20 @@ describe("Login", () => {
         .close();
     });
 
+    // Input: the user-id provided is valid but the user has already connected
+    // Expected behavior: Nothing changes internally
+    // Expected output: socket is closed with the message ""Duplicate User {id} tried to connect"
     it("should reject an user's second connection", async () => {
         const socket1 = request(server).ws("/socket", { headers: { "user-id": "testUser1" } });
-        await request(server).ws("/socket", { headers: { "user-id": "testUser1" } }).expectClosed(1008, "Duplicate User 1 tried to connect").close();
+        await request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
+        .expectClosed(1008, "Duplicate User 1 tried to connect")
+        .close();
         await socket1.close();
     });
 
+    // Input: the user-id provided is valid
+    // Expected behavior: Nothing changes internally
+    // Expected output: A list of all the user's friend requests
     it("should refresh with a user's requests on login", async () => {
         await userService.createUser({
             spotify_id: "testUser3",
@@ -61,6 +79,9 @@ describe("Login", () => {
         });
     });
 
+    // Input: the user-id provided is valid
+    // Expected behavior: Nothing changes internally
+    // Expected output: A list of all the user's friends and their statuses
     it("should refresh with a user's friends on login", async () => {
         await userService.addFriend(1, 2);
         await userService.addFriend(2, 1);
