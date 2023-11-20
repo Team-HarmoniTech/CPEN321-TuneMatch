@@ -6,6 +6,7 @@ describe("Websocket", () => {
     // Input: A user connects
     // Expected behavior: They are added to the socketService
     // Expected output: None
+    // ChatGPT usage: None
     it("should add websocket to map", async () => {
         expect(await socketService.retrieveById(1)).toBeUndefined();
         const socket = await request(server).ws("/socket", { headers: { "user-id": "testUser1" } });
@@ -16,6 +17,7 @@ describe("Websocket", () => {
     // Input: Multiple users connect
     // Expected behavior: They are added to the socketService
     // Expected output: None
+    // ChatGPT usage: None
     it("should sustain websocket connections simultaneously", async () => {
         expect(await socketService.retrieveById(1)).toBeUndefined();
         expect(await socketService.retrieveById(2)).toBeUndefined();
@@ -30,6 +32,7 @@ describe("Websocket", () => {
     // Input: The user provides an invalid method
     // Expected behavior: Nothing changes
     // Expected output: returns an error with the message "Received data has an invalid method"
+    // ChatGPT usage: None
     it("should error on incorrect method", async () => {
         await request(server).ws("/socket", { headers: { "user-id": "testUser1" } }).expectJson().expectJson()
         .sendJson({ method: "invalid method" })
@@ -40,6 +43,7 @@ describe("Websocket", () => {
     // Input: The user doesn't provide a method
     // Expected behavior: Nothing changes
     // Expected output: returns an error with the message "Received data is missing fields"
+    // ChatGPT usage: None
     it("should error on missing fields", async () => {
         await request(server).ws("/socket", { headers: { "user-id": "testUser1" } }).expectJson().expectJson()
         .sendJson({})
@@ -50,6 +54,7 @@ describe("Websocket", () => {
     // Input: The user provides an invalid action
     // Expected behavior: Nothing changes
     // Expected output: returns an error with the message "{method} endpoint {invalid action} does not exist."
+    // ChatGPT usage: None
     it("should error on incorrect action", async () => {
         await request(server).ws("/socket", { headers: { "user-id": "testUser1" } }).expectJson().expectJson()
         .sendJson({
@@ -73,6 +78,7 @@ describe("Websocket", () => {
     // Input: The user provides invalid json
     // Expected behavior: Nothing changes
     // Expected output: returns an error with the message "Received data is not formatted correctly"
+    // ChatGPT usage: None
     it("should error on invalid json", async () => {
         await request(server).ws("/socket", { headers: { "user-id": "testUser1" } }).expectJson().expectJson()
         .sendText("{ {{]/test: 10")
@@ -83,6 +89,7 @@ describe("Websocket", () => {
     // Input: The user connects
     // Expected behavior: Nothing changes
     // Expected output: received a ping
+    // ChatGPT usage: None
     it("should start ping pong", async () => {
         let pingCount = 0;
         const socket = await request(server).ws("/socket", { headers: { "user-id": "testUser1" } });
@@ -98,6 +105,7 @@ describe("Websocket", () => {
     // Input: The user sends a pong
     // Expected behavior: Nothing changes
     // Expected output: received a ping after 20 seconds
+    // ChatGPT usage: None
     it("should reply ping to a pong", async () => {
         let pingCount = 0;
         const socket = await request(server).ws("/socket", { headers: { "user-id": "testUser1" } });

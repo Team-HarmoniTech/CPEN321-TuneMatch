@@ -6,6 +6,7 @@ describe("Get report", () => {
     // Expected status code: 200
     // Expected behavior: Return list of reports
     // Expected output: List of reports
+    // ChatGPT usage: None
     test("Valid user data with data query", async () => {
         const dateFrom = new Date(2023, 10, 1).toISOString();
         const dateTo = new Date(2023, 11, 31).toISOString();
@@ -33,6 +34,7 @@ describe("Get report", () => {
     // Expected status code: 200
     // Expected behavior: Return list of reports
     // Expected output: List of reports
+    // ChatGPT usage: None
     test("Valid user data without date query", async () => {
         const res = await request(server)
             .get('/reports');

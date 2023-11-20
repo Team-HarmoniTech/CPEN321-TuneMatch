@@ -6,6 +6,7 @@ describe("Create report", () => {
     // Expected status code: 200
     // Expected behavior: Return generated report
     // Expected output: Generated report
+    // ChatGPT usage: None
     test("Valid user data", async () => {
         const res = await request(server)
             .post('/reports/create')
@@ -31,6 +32,7 @@ describe("Create report", () => {
     // Expected status code: 200
     // Expected behavior: Return error message
     // Expected output: Generated report
+    // ChatGPT usage: None
     test("Valid user data", async () => {
         const res = await request(server)
             .post('/reports/create')

@@ -6,6 +6,7 @@ describe("Get top matches", () => {
     // Expected status code: 200
     // Expected behavior: Return list of matched users
     // Expected output: {userId, username, profile-pic, match}[]
+    // ChatGPT usage: None
     test("Existing user", async () => {
       const res = await request(server)
         .get('/me/matches')
@@ -25,6 +26,7 @@ describe("Get top matches", () => {
     // Expected status code: 401
     // Expected behavior: Return error message
     // Expected output: This executing user does not exist
+    // ChatGPT usage: None
     test("Non-existing user", async () => {
       const res = await request(server)
         .get('/me/matches')
@@ -38,6 +40,7 @@ describe("Get top matches", () => {
     // Expected status code: 400
     // Expected behavior: Return error message
     // Expected output: User connections were not computed within 60000 milliseconds
+    // ChatGPT usage: None
     test("Timeout", async () => {
       const res = await request(server)
         .get('/me/matches')

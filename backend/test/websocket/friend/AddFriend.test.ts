@@ -7,6 +7,7 @@ describe("Adding Friends", () => {
     // Input: userId is a valid user id
     // Expected behavior: The requested user receives the request, the request is reflected in the database
     // Expected output: None
+    // ChatGPT usage: None
     it("should send a friend request", async () => {
         const socket1 = request(server).ws("/socket", { headers: { "user-id": "testUser1" } }).expectJson().expectJson();
         const socket2 = request(server).ws("/socket", { headers: { "user-id": "testUser2" } }).expectJson().expectJson();
@@ -41,6 +42,7 @@ describe("Adding Friends", () => {
     // Input: userId is a valid user id
     // Expected behavior: The acceptance is reflected in the database
     // Expected output: None
+    // ChatGPT usage: None
     it("should accept a friend request", async () => {
         await userService.addFriend(2, 1);
 
@@ -64,6 +66,7 @@ describe("Adding Friends", () => {
     // Input: userId is a valid user id
     // Expected behavior: The acceptance is reflected in the database
     // Expected output: An update from the user who was just accepted
+    // ChatGPT usage: None
     it("should update sender on accept friend request", async () => {
         await userService.addFriend(2, 1);
         await userService.updateUserStatus(1, {
@@ -122,6 +125,7 @@ describe("Adding Friends", () => {
     // Input: userId is an invalid user id
     // Expected behavior: Nothing changes internally
     // Expected output: An error message with the body "User to add does not exist"
+    // ChatGPT usage: None
     it("should reject the addition of a user that doesn't exist", async () => {
         expect(await userService.getUserById(-1)).toBe(null);
         await request(server).ws("/socket", { headers: { "user-id": "testUser1" } })

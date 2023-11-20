@@ -7,6 +7,7 @@ describe("Login", () => {
     // Input: no authentication header is provided
     // Expected behavior: Nothing changes internally
     // Expected output: socket is closed with the message "No Authentication Provided"
+    // ChatGPT usage: None
     it("should require a user-id header", async () => {
         await request(server).ws("/socket")
         .expectClosed(1008, "No Authentication Provided").close();
@@ -15,6 +16,7 @@ describe("Login", () => {
     // Input: the user-id provided is invalid
     // Expected behavior: Nothing changes internally
     // Expected output: socket is closed with the message "User {user-id} does not exist"
+    // ChatGPT usage: None
     it("should reject a non-existent user", async () => {
         await request(server).ws("/socket", { headers: { "user-id": "fakeUser" } })
         .expectClosed(1008, "User fakeUser does not exist").close();
@@ -23,6 +25,7 @@ describe("Login", () => {
     // Input: the user-id provided is invalid
     // Expected behavior: The user is added to the list of connections
     // Expected output: socket is connected as normal
+    // ChatGPT usage: None
     it("should accept an existing user", async () => {
         await request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
         .expectUpgrade(x => true)
@@ -33,6 +36,7 @@ describe("Login", () => {
     // Input: the user-id provided is valid but the user has already connected
     // Expected behavior: Nothing changes internally
     // Expected output: socket is closed with the message ""Duplicate User {id} tried to connect"
+    // ChatGPT usage: None
     it("should reject an user's second connection", async () => {
         const socket1 = request(server).ws("/socket", { headers: { "user-id": "testUser1" } });
         await request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
@@ -44,6 +48,7 @@ describe("Login", () => {
     // Input: the user-id provided is valid
     // Expected behavior: Nothing changes internally
     // Expected output: A list of all the user's friend requests
+    // ChatGPT usage: None
     it("should refresh with a user's requests on login", async () => {
         await userService.createUser({
             spotify_id: "testUser3",
@@ -82,6 +87,7 @@ describe("Login", () => {
     // Input: the user-id provided is valid
     // Expected behavior: Nothing changes internally
     // Expected output: A list of all the user's friends and their statuses
+    // ChatGPT usage: None
     it("should refresh with a user's friends on login", async () => {
         await userService.addFriend(1, 2);
         await userService.addFriend(2, 1);

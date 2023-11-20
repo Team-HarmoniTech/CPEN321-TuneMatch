@@ -35,6 +35,7 @@ describe("Get top matches", () => {
     // Expected status code: 200
     // Expected behavior: Matches will be computed as expected
     // Expected output: Match with user1: 109.8, user2: 96.45, user3: 77.45
+    // ChatGPT usage: None
     test("Matching Algorithm", async () => {
         const validUserData1 = {
           spotify_id: 'newUser1',
@@ -93,6 +94,7 @@ describe("Get top matches", () => {
     // Expected status code: 200
     // Expected behavior: testUser1 should only have 1 matches
     // Expected output: Match with userX: 109.8
+    // ChatGPT usage: None
     test("Matching Algorithm", async () => {
         const executingUser = await userService.getUserBySpotifyId("testUser1");
         await userMatchingService.matchNewUser(executingUser.id, 1);
@@ -112,6 +114,7 @@ describe("Get top matches", () => {
     // Expected output: Test passes when we check to make sure our algorithm is 60% accurate
     const NUM_USERS = 200;
     const MAX_COMPUTED = 50;
+    // ChatGPT usage: None
     test("Matching Algorithm NFR1 Test", async () => {
       (database as any).reset();
       
@@ -158,6 +161,7 @@ describe("Get top matches", () => {
     // Expected behavior: NFR2: The amortized computation of a user's connections must be under 
     //                    15 seconds
     // Expected output: The average computation time is under 15s
+    // ChatGPT usage: None
     test("Matching Algorithm NFR1 Test", async () => {
       (database as any).reset();
       let totalMs = 0;

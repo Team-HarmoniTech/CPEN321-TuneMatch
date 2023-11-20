@@ -7,6 +7,7 @@ describe("Removing Friends", () => {
     // Input: the userId provided is valid
     // Expected behavior: The provided user is removed from the user's friend requests
     // Expected output: None
+    // ChatGPT usage: None
     it("should remove a friend request", async () => {
         await userService.addFriend(1, 2);
 
@@ -52,6 +53,7 @@ describe("Removing Friends", () => {
     // Input: the userId provided is valid
     // Expected behavior: The provided user is removed from the user's friends
     // Expected output: None
+    // ChatGPT usage: None
     it("should remove a friend", async () => {
         await userService.addFriend(1, 2);
         await userService.addFriend(2, 1);
@@ -113,6 +115,7 @@ describe("Removing Friends", () => {
     // Input: the userId provided is invalid
     // Expected behavior: Nothing changes internally
     // Expected output: An error with the message "User to remove does not exist"
+    // ChatGPT usage: None
     it("should reject the removal of a user that doesn't exist", async () => {
         await request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
         .expectJson()
