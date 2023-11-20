@@ -155,8 +155,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-
         // Retrieve the Spotify User ID from the Intent
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("spotifyUserId")) {
@@ -248,8 +246,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        webSocketClient.stop();
-
+        if (webSocketClient != null) {
+            webSocketClient.stop();
+        }
     }
 
     // ChatGPT Usage: No

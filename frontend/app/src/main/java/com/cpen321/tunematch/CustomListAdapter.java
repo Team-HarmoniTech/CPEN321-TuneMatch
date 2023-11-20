@@ -86,7 +86,6 @@ public class CustomListAdapter extends BaseAdapter {
             String ownerText = model.getFriendName(ownerId);
             roomNameText.setText(String.format("%s's room", ownerText));
             Button joinBtn = view.findViewById(R.id.joinBtn);
-            // TODO: Whatever is required to join to existing listening session, need to send info through itemlist
 
             joinBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
