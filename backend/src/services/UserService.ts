@@ -196,7 +196,7 @@ export class UserService {
 
     /* If they are in a session don't update the source */
     if ((source !== undefined && ((await this.getUserById(userId)).current_source as any)?.type !== "session") || source === null) {
-        updateData["current_source"] = source === null ? Prisma.DbNull : source;
+      updateData["current_source"] = source === null ? Prisma.DbNull : source;
     }
     if (song !== undefined) {
       updateData["current_song"] = song === null ? Prisma.DbNull : song;
