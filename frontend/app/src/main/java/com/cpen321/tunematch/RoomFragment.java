@@ -586,6 +586,7 @@ public class RoomFragment extends Fragment {
         });
     }
     private void showErrorToUser(Exception e) {
+        Log.e(TAG, "showErrorToUser: ", e);
         // Implement user-friendly error handling
     }
 

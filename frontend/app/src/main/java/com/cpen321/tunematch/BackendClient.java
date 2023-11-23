@@ -14,7 +14,6 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.List;
 
-import okhttp3.HttpUrl;
 import retrofit2.Call;
 
 public class BackendClient extends ApiClient<BackendInterface> {

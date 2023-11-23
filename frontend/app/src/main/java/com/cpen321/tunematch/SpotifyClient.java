@@ -12,7 +12,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import okhttp3.HttpUrl;
 import retrofit2.Call;
 
 public class SpotifyClient extends ApiClient<SpotifyInterface> {
