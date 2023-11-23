@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private SearchFragment searchFrag;
     private ProfileFragment profileFrag;
     private BackendClient backend;
-    private WebSocketClient webSocketClient;
+
     private ReduxStore model;
     public boolean isServiceBound = false;
     private WebSocketService webSocketService;
@@ -145,7 +145,10 @@ public class MainActivity extends AppCompatActivity {
                             messageToSend.put("method", "FRIENDS");
                             messageToSend.put("action", "update");
                             JSONObject body = new JSONObject();
-                            body.put("song", song.getSongName());
+                            JSONObject songInfo = new JSONObject();
+                            songInfo.put("uri", song.getSongID());
+                            songInfo.put("name", song.getSongName());
+                            body.put("song", songInfo);
                             messageToSend.put("body", body);
                             webSocketService.sendMessage(messageToSend.toString());
                         } catch (JSONException e) {
@@ -250,15 +253,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        webSocketClient.stop();
-
     }
 
     // ChatGPT Usage: No
     public BackendClient getBackend() {return backend;}
 
-    // ChatGPT Usage: No
-    public WebSocketClient getWebSocketClient() {return webSocketClient;}
 
     // ChatGPT Usage: No
     public ReduxStore getModel() {return model;}

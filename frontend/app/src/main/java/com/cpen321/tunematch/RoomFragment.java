@@ -34,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.spotify.protocol.types.Track;
@@ -44,6 +45,9 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import jp.wasabeef.blurry.Blurry;
 import kotlin.text.Charsets;
 
@@ -72,7 +76,7 @@ public class RoomFragment extends Fragment {
 
     private ArrayAdapter<String> searchAdapter; // Changed to ArrayAdapter<String>
     private String authToken;
-
+    private long currentSongTotalDuration=0;
 
     private SpotifyClient spotifyClient;
     private ReduxStore model;
@@ -81,13 +85,16 @@ public class RoomFragment extends Fragment {
     private SpotifyService mSpotifyService;
     private List<JSONObject> fullSongDataList = new ArrayList<>();
     private long currentPosition = 0;
-
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable searchRunnable;
+    final Handler handler = new Handler(Looper.getMainLooper());
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
     // ChatGPT Usage: Partial
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initServices();
-
     }
 
     // ChatGPT Usage: No
@@ -107,6 +114,11 @@ public class RoomFragment extends Fragment {
         initializeObservers();
         setUpPlayerControls();
         lastSongState = model.getCurrentSong().getValue();
+        if(lastSongState == null){
+            currentSongTotalDuration = 0;
+        }else {
+            currentSongTotalDuration = Long.parseLong(model.getCurrentSong().getValue().getDuration());
+        }
     }
 
     // ChatGPT Usage: Partial
@@ -184,19 +196,28 @@ public class RoomFragment extends Fragment {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 suggestionListView.setVisibility(View.GONE);
+                // Consider calling filterSuggestions(query) here if you want to search immediately on submit
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
+                // User input changed, cancel the previous searchRunnable if it exists
+                searchHandler.removeCallbacks(searchRunnable);
+
                 if (TextUtils.isEmpty(newText)) {
                     suggestionListView.setVisibility(View.GONE);
                 } else {
-                    filterSuggestions(newText);
+                    // Define a new searchRunnable with the updated text
+                    searchRunnable = () -> filterSuggestions(newText);
+
+                    // Schedule the searchRunnable to run after a delay (e.g., 500ms)
+                    searchHandler.postDelayed(searchRunnable, 200);
                 }
-                return false;
+                return true; // Return true since the listener has handled the query text change
             }
         });
+
 
         exitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -238,49 +259,48 @@ public class RoomFragment extends Fragment {
 
 
     // ChatGPT Usage: Partial
-
-    private void setUpPlayerControls(){
-        final long[] trackDuration = {0};
-        final Handler handler = new Handler(Looper.getMainLooper());
-        if(lastSongState != null){
-            currentPosition = Long.parseLong(lastSongState.getCurrentPosition());
-        }
-        else{
-            currentPosition = 0;
-        }
-        final Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                synchronized (this){
+    final Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            synchronized (this){
                 if(lastSongState != null) {
-                    long totalDuration = Long.parseLong(lastSongState.getDuration());
+//                    Log.e(TAG, "run: current position: " + currentSongTotalDuration);
                     currentDuration.setText(formatDuration(currentPosition));
-                    int progress = (int) ((float) currentPosition / (float) totalDuration * 100);
+                    int progress = (int) ((float) currentPosition / (float) currentSongTotalDuration * 100);
                     seekBar.setProgress(progress);
-                    if (totalDuration - currentPosition < 3000) {
+                    if (currentSongTotalDuration - currentPosition < 3000) {
                         playNextSong();
                     }
                     currentPosition += 1000; // Assumes that this is run every second
                     lastSongState.setCurrentPosition(String.valueOf(currentPosition));
                 }
-                    handler.postDelayed(this, 1000);
-                }
-
+                handler.postDelayed(this, 1000);
             }
 
-        };
+        }
 
-//        if(lastSongState != null) {
-            handler.post(runnable);
+    };
+    private void setUpPlayerControls(){
+//        final long[] trackDuration = {0};
+
+//        if(lastSongState != null){
+//            currentPosition = Long.parseLong(lastSongState.getCurrentPosition());
+//        }
+//        else{
+//            currentPosition = 0;
 //        }
 
+        if(model.getCurrentSong().getValue() != null) {
+            handler.post(runnable);
+        }
+
         songBanner.setImageResource(R.color.darkGray);
-        songTitle.setText(lastSongState == null ? "No Song" : lastSongState.getSongName());
-        songArtist.setText(lastSongState == null ? "No Artist" : lastSongState.getSongArtist());
-        totalDuration.setText(lastSongState == null ? "0:00" : formatDuration(Long.parseLong(lastSongState.getDuration())));
-//        currentDuration.setText(lastSongState == null ? "0:00" : formatDuration(Long.parseLong(lastSongState.getCurrentPosition())));
-//        seekBar.setProgress(lastSongState == null ? 0 : (int) ((float) Long.parseLong(lastSongState.getCurrentPosition()) / Long.parseLong(lastSongState.getDuration()) * 100));
-        playpauseButton.setBackgroundResource(lastSongState == null || !lastSongState.isPlaying() ? R.drawable.play_btn : R.drawable.pause_btn);
+        songTitle.setText(model.getCurrentSong().getValue() == null ? "No Song" : model.getCurrentSong().getValue().getSongName());
+        songArtist.setText(model.getCurrentSong().getValue() == null ? "No Artist" : model.getCurrentSong().getValue().getSongArtist());
+        totalDuration.setText(model.getCurrentSong().getValue() == null ? "0:00" : formatDuration(Long.parseLong(model.getCurrentSong().getValue().getDuration())));
+        currentDuration.setText(lastSongState == null ? "0:00" : formatDuration(Long.parseLong(lastSongState.getCurrentPosition())));
+        seekBar.setProgress(lastSongState == null ? 0 : (int) ((float) Long.parseLong(lastSongState.getCurrentPosition()) / Long.parseLong(lastSongState.getDuration()) * 100));
+        playpauseButton.setBackgroundResource(model.getCurrentSong().getValue() == null || !model.getCurrentSong().getValue().isPlaying() ? R.drawable.play_btn : R.drawable.pause_btn);
 
 
         //
@@ -338,33 +358,25 @@ public class RoomFragment extends Fragment {
 //                        handler.post(runnable);
 //                    }
 //                });
-
-
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int progressChangedValue = 0;
             long newProgress = 0;
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 progressChangedValue = progress;
-                newProgress = (long) (trackDuration[0] * (progress / 100.0));
-                currentDuration.setText(formatDuration(newProgress));
+                newProgress = (long) (currentSongTotalDuration * (progress / 100.0));
+//                currentDuration.setText(formatDuration(newProgress));
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-//                handler.removeCallbacks(runnable);
+                handler.removeCallbacks(runnable);
             }
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-//                mSpotifyAppRemote.getPlayerApi().seekTo(newProgress);
                 handler.removeCallbacks(runnable);
                 Song currSong = model.getCurrentSong().getValue();
                 currSong.setCurrentPosition(String.valueOf(newProgress));
                 model.getCurrentSong().postValue(currSong);
-//                handler.removeCallbacks(runnable);
-//                set handler based on curr song state
-
-
-
                 if(webSocketService!=null && model.checkSessionActive().getValue()){
                     JSONObject messageToSend = new JSONObject();
                     try {
@@ -397,7 +409,6 @@ public class RoomFragment extends Fragment {
                         webSocketService.sendMessage(messageToSend.toString());
                     }
                     currSong.setIsPLaying(true);
-//                    handler.post(runnable);
                 } else {
                     if(webSocketService!=null && model.checkSessionActive().getValue()){
                         JSONObject messageToSend = new JSONObject();
@@ -410,7 +421,6 @@ public class RoomFragment extends Fragment {
                         webSocketService.sendMessage(messageToSend.toString());
                     }
                     currSong.setIsPLaying(false);
-//                    handler.removeCallbacks(runnable);
                 }
                 model.getCurrentSong().postValue(currSong);
             }
@@ -444,10 +454,10 @@ public class RoomFragment extends Fragment {
 
     private Song lastSongState = null;
 
-
     // ChatGPT Usage: Partial
     private void initializeObservers() {
         model.getCurrentSong().observe(this, newSong -> {
+                currentSongTotalDuration = Long.parseLong(newSong.getDuration());
                 if (newSong != null) {
                     if (lastSongState == null || !lastSongState.getSongID().equals(newSong.getSongID())) {
                         currentPosition = 0;
@@ -459,9 +469,11 @@ public class RoomFragment extends Fragment {
                     }
                     if (lastSongState == null || lastSongState.isPlaying() !=  newSong.isPlaying()) {
                         if (newSong.isPlaying()) {
+                            handler.post(runnable);
                             mSpotifyAppRemote.getPlayerApi().resume();
                             playpauseButton.setBackgroundResource(R.drawable.pause_btn);
                         } else {
+                            handler.removeCallbacks(runnable);
                             mSpotifyAppRemote.getPlayerApi().pause();
                             playpauseButton.setBackgroundResource(R.drawable.play_btn);
                         }
@@ -478,7 +490,6 @@ public class RoomFragment extends Fragment {
                     lastSongState.setIsPLaying(newSong.isPlaying());
                     lastSongState.setCurrentPosition(newSong.getCurrentPosition());
                 }
-
         });
 
         // Observe the song queue LiveData
@@ -510,7 +521,6 @@ public class RoomFragment extends Fragment {
     private String formatDuration(long duration) {
         int seconds = (int) (duration / 1000) % 60;
         int minutes = (int) ((duration / (1000 * 60)) % 60);
-
         return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
     }
 
@@ -522,62 +532,62 @@ public class RoomFragment extends Fragment {
                 .addToBackStack(null)
                 .commit();
     }
-
-    // ChatGPT Usage: No
     private void filterSuggestions(String newText) {
-        ArrayList<String> filteredSuggestions = new ArrayList<>();
-        fullSongDataList.clear(); // Clear the full song data list
-
         String query = "track:" + encodeSongTitle(newText);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    JsonObject rawResponse = spotifyClient.getSong(query);
-                    JsonArray songItems = rawResponse.get("tracks").getAsJsonObject().get("items").getAsJsonArray();
-                    fullSongDataList.clear();
-                    for (int i = 0; i < songItems.size(); i++) {
-                        JsonObject song = songItems.get(i).getAsJsonObject();
-                        JsonArray artists = song.get("artists").getAsJsonArray();
-                        JSONObject newSong = new JSONObject();
-                        newSong.put("id", song.get("id").getAsString());
-                        newSong.put("name", song.get("name").getAsString());
-                        newSong.put("artist", artists.get(0).getAsJsonObject().get("name").getAsString());
-                        newSong.put("duration", song.get("duration_ms").getAsString());
-                        // Add the formatted string to the display list
-                        String displayString = newSong.getString("name") + " - " + newSong.getString("artist");
-                        filteredSuggestions.add(displayString);
 
-                        // Add the full JSON object to the full song data list
-                        fullSongDataList.add(newSong);
-                    }
+        // Use an executor service to perform network operations
+        executorService.execute(() -> {
+            try {
+                JsonObject rawResponse = spotifyClient.getSong(query);
+                JsonArray songItems = rawResponse.get("tracks").getAsJsonObject().get("items").getAsJsonArray();
 
-                    Handler mainHandler = new Handler(Looper.getMainLooper());
-                    mainHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            // After obtaining the filtered suggestions, update the adapter
-                            searchAdapter.clear();
-                            searchAdapter.addAll(filteredSuggestions);
-                            searchAdapter.notifyDataSetChanged();
+                // Only clear the list when new data is being added
+                ArrayList<String> filteredSuggestions = new ArrayList<>();
+                ArrayList<JSONObject> newSongDataList = new ArrayList<>();
 
-                            // Show/hide the suggestion list based on whether suggestions are available
-                            if (filteredSuggestions.isEmpty()) {
-                                suggestionListView.setVisibility(View.GONE);
-                            } else {
-                                suggestionListView.setVisibility(View.VISIBLE);
-                                suggestionListView.bringToFront();
-                            }
-                        }
-                    });
+                for (JsonElement item : songItems) {
+                    JsonObject song = item.getAsJsonObject();
+                    JsonObject artists = song.get("artists").getAsJsonArray().get(0).getAsJsonObject();
 
-                } catch (ApiException | JSONException e) {
-                    e.printStackTrace();
+                    JSONObject newSong = new JSONObject();
+                    newSong.put("id", song.get("id").getAsString());
+                    newSong.put("name", song.get("name").getAsString());
+                    newSong.put("artist", artists.get("name").getAsString());
+                    newSong.put("duration", song.get("duration_ms").getAsString());
+
+                    // Add the formatted string to the display list
+                    String displayString = newSong.getString("name") + " - " + newSong.getString("artist");
+                    filteredSuggestions.add(displayString);
+
+                    // Add the full JSON object to the new song data list
+                    newSongDataList.add(newSong);
                 }
-            }
-        }).start();
-    }
 
+                mainHandler.post(() -> {
+                    fullSongDataList.clear();
+                    fullSongDataList.addAll(newSongDataList);
+
+                    // After obtaining the filtered suggestions, update the adapter
+                    searchAdapter.clear();
+                    searchAdapter.addAll(filteredSuggestions);
+                    searchAdapter.notifyDataSetChanged();
+
+                    // Show/hide the suggestion list based on whether suggestions are available
+                    suggestionListView.setVisibility(filteredSuggestions.isEmpty() ? View.GONE : View.VISIBLE);
+                    if (!filteredSuggestions.isEmpty()) {
+                        suggestionListView.bringToFront();
+                    }
+                });
+
+            } catch (ApiException | JSONException e) {
+                // Handle errors appropriately (e.g., display a message to the user)
+                mainHandler.post(() -> showErrorToUser(e));
+            }
+        });
+    }
+    private void showErrorToUser(Exception e) {
+        // Implement user-friendly error handling
+    }
 
     // ChatGPT Usage: No
     private String encodeSongTitle(String title) {
@@ -628,10 +638,7 @@ public class RoomFragment extends Fragment {
         songSearchBar.setQuery("", false);
         songSearchBar.clearFocus();
     }
-
-
     // ChatGPT Usage: No
-
     private void playNextSong() {
         List<Song> songQueue = model.getSongQueue().getValue();
         if (songQueue == null || songQueue.isEmpty()) {
