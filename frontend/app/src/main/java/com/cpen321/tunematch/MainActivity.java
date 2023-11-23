@@ -2,19 +2,26 @@ package com.cpen321.tunematch;
 
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
+import java.util.ArrayList;
+import java.util.logging.Handler;
+
+import javax.naming.Context;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 import android.view.MenuItem;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,20 +29,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-
 public class MainActivity extends AppCompatActivity {
     private HomeFragment homeFrag;
     private RoomFragment roomFrag;
     private SearchFragment searchFrag;
     private ProfileFragment profileFrag;
     private BackendClient backend;
-    private WebSocketClient webSocketClient;
+
     private ReduxStore model;
     public boolean isServiceBound = false;
     private WebSocketService webSocketService;
@@ -139,7 +139,10 @@ public class MainActivity extends AppCompatActivity {
                             messageToSend.put("method", "FRIENDS");
                             messageToSend.put("action", "update");
                             JSONObject body = new JSONObject();
-                            body.put("song", song.getSongName());
+                            JSONObject songInfo = new JSONObject();
+                            songInfo.put("uri", song.getSongID());
+                            songInfo.put("name", song.getSongName());
+                            body.put("song", songInfo);
                             messageToSend.put("body", body);
                             webSocketService.sendMessage(messageToSend.toString());
                         } catch (JSONException e) {
@@ -254,8 +257,6 @@ public class MainActivity extends AppCompatActivity {
     // ChatGPT Usage: No
     public BackendClient getBackend() {return backend;}
 
-    // ChatGPT Usage: No
-    public WebSocketClient getWebSocketClient() {return webSocketClient;}
 
     // ChatGPT Usage: No
     public ReduxStore getModel() {return model;}

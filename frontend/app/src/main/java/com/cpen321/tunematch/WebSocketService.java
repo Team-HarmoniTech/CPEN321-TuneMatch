@@ -6,6 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+<<<<<<< HEAD
+=======
+import android.util.Log;
+>>>>>>> c9f7044b072594cf84a51a4f35c208f5e81fc61a
 
 import okhttp3.Headers;
 
@@ -29,6 +33,7 @@ public class WebSocketService extends Service {
     // ChatGPT Usage: No
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.e("WebsocketServicebruh", "Service is being started");
         // You can initialize your WebSocketClient here and start the connection.
         // Assuming you get your ReduxStore instance from MainActivity or another source:
         if (intent != null) {
@@ -44,6 +49,7 @@ public class WebSocketService extends Service {
     // ChatGPT Usage: No
     @Override
     public void onDestroy() {
+        Log.e("WebsocketService", "our app has been closed:( ");
         super.onDestroy();
         if (webSocketClient != null) {
             webSocketClient.stop();

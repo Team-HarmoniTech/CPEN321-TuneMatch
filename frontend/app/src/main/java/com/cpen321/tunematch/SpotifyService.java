@@ -37,6 +37,7 @@ public class SpotifyService extends Service {
     // ChatGPT Usage: Partial
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.e("SpotifyService", "Service is being started");
         // Initialize and connect to Spotify here.
         // Consider checking if mSpotifyAppRemote is already initialized before trying to reconnect.
         CLIENT_ID = intent.getStringExtra("clientID");
@@ -80,11 +81,14 @@ public class SpotifyService extends Service {
     // ChatGPT Usage: No
     @Override
     public void onDestroy() {
+        Log.e("SpotifyService", "Service is being destroyed");
         super.onDestroy();
         if (mSpotifyAppRemote != null && mSpotifyAppRemote.isConnected()) {
+            mSpotifyAppRemote.getPlayerApi().pause();
             SpotifyAppRemote.disconnect(mSpotifyAppRemote);
             mSpotifyAppRemote = null;
         }
+
     }
 
     // ChatGPT Usage: No

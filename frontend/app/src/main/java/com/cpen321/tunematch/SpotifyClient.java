@@ -18,7 +18,7 @@ public class SpotifyClient extends ApiClient<SpotifyInterface> {
     // ChatGPT Usage: No
     @Override
     protected String getBaseUrl() {
-        return "https://api.spotify.com/";
+        return "https://api.spotify.com/v1/";
     }
 
     // ChatGPT Usage: No

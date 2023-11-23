@@ -13,19 +13,19 @@ import retrofit2.http.Query;
 
 public interface BackendInterface {
 
-    @GET("/v1/users/{userId}")
+    @GET("users/{userId}")
     Call<String> getUser(@Path("userId") String userId, @Query("fullProfile") boolean full);
-    @POST("/v1/users/create")
+    @POST("users/create")
     Call<String> createUser(@Body JsonObject body);
-    @GET("/v1/users/search")
+    @GET("users/search")
     Call<String> searchUser(@Query("q") String searchTerm, @Header("user-id") String currentUserId);
-    @GET("/v1/me")
+    @GET("me")
     Call<String> getMe(@Header("user-id") String currentUserId, @Query("fullProfile") boolean full);
-    @GET("/v1/me/matches")
+    @GET("me/matches")
     Call<String> getMatches(@Header("user-id") String currentUserId);
-    @PUT("/v1/me/update")
+    @PUT("me/update")
     Call<String> updateMe(@Body JsonObject body, @Header("user-id") String currentUserId);
-    @POST("/v1/reports/create")
+    @POST("reports/create")
     Call<String> createReport(@Body JsonObject body, @Header("user-id") String currentUserId);
 
 }

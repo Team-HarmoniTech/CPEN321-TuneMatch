@@ -47,7 +47,7 @@ public class WebSocketClient {
     private Handler handler;
     private Context context;
     private NotificationManager notification;
-    private static final int PING_INTERVAL = 20000;  // 30 seconds
+    private static final int PING_INTERVAL = 1000;  // 30 seconds
 
     // ChatGPT Usage: Partial
     public WebSocketClient(ReduxStore model, Context context, NotificationManager notification) {
@@ -60,6 +60,7 @@ public class WebSocketClient {
 
     // ChatGPT Usage: Partial
     public void start(Headers customHeader) {
+//        String url = "wss://localhost:80/socket";
         String url = "wss://tunematch-api.bhairawaryan.com/socket";
         Request request = new Request.Builder().url(url).build();
         if (customHeader != null) {
@@ -70,6 +71,7 @@ public class WebSocketClient {
             public void onOpen(WebSocket webSocket, Response response) {
                 // Handle when the WebSocket connection is opened.
                 super.onOpen(webSocket, response);
+                Log.d("WebSocketClient", "onOpen: starting ping");
                 startPing();
             }
 
@@ -141,7 +143,7 @@ public class WebSocketClient {
                     String id = friendJson.get("userId").getAsString();
                     String username = friendJson.get("username").getAsString();
                     String profilePic = getStringOrNull(friendJson.get("profilePic"));
-                    String currentSong = getStringOrNull(friendJson.get("currentSong"));
+                    String currentSong = getStringOrNull(friendJson.get("currentSong").getAsJsonObject().get("name"));
                     JsonElement currentSource = friendJson.get("currentSource");
 
                     Friend friend = new Friend(id, username, profilePic);
@@ -177,7 +179,7 @@ public class WebSocketClient {
                 for (Friend f : existingFriendList) {
                     if (f.getId().equals(from)) {
                         JsonObject body = json.get("body").getAsJsonObject();
-                        String currentSong = getStringOrNull(body.get("currentSong"));
+                        String currentSong = getStringOrNull(body.get("currentSong").getAsJsonObject().get("name"));
                         JsonElement currentSource = body.get("currentSource");
                         f.setCurrentSong(currentSong);
                         f.setCurrentSource(currentSource);
@@ -640,6 +642,7 @@ public class WebSocketClient {
 
     // ChatGPT Usage: Partial
     private void startPing() {
+
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
