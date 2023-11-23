@@ -1,4 +1,4 @@
-# TO RUN - docker-compose -f docker-compose.test.yml up -d
+# TO RUN - docker-compose -f docker-compose.local.yml up -d
 
 # ChatGPT Usage: No
 
@@ -6,10 +6,8 @@ version: "3"
 services:
   mysql:
     image: mysql:8.0.17
-    restart: always
-    container_name: integration-test-database
     environment:
       MYSQL_ROOT_PASSWORD: 5KvX9bzs8x8VSAmwcD9S
-      MYSQL_DATABASE: TuneMatchTestDB
+      MYSQL_DATABASE: TuneMatchDB
     ports:
       - "3306:3306"

@@ -4,9 +4,10 @@ import { UserController } from "@controller/UserController";
 import {
   FriendsMessage,
   RequestsMessage,
+  transformObject,
   transformUsers
 } from "@models/UserModels";
-import { SocketMessage } from "@models/WebsocketModels";
+import logger from "@src/logger";
 import {
   database,
   sessionService,
@@ -19,7 +20,7 @@ import { WebSocket } from "ws";
 // ChatGPT Usage: No
 async function authenticateSocket(socket, req): Promise<number> {
   if (!req.headers["user-id"]) {
-    socket.close();
+    socket.close(1008, 'No Authentication Provided');
     return;
   }
 
@@ -43,8 +44,8 @@ async function authenticateSocket(socket, req): Promise<number> {
         "refresh",
         await transformUsers(friends, async (user) => {
           return {
-            currentSong: user.current_song,
-            currentSource: user.current_source,
+            currentSong: transformObject(user.current_song),
+            currentSource: transformObject(user.current_source),
           };
         }),
       ),
@@ -59,24 +60,28 @@ async function authenticateSocket(socket, req): Promise<number> {
       }),
     ),
   );
+  /* Start ping pong */
+  socket.ping();
 
   return user.id;
 }
 
 // ChatGPT Usage: No
 export async function handleConnection(ws: WebSocket, req: Request) {
-  // Authenticate and add to our persistant set of connections
+  /* Authenticate and add to our persistant set of connections */
   const currentUserId = await authenticateSocket(ws, req);
 
-  ws.on("error", console.error);
+  ws.on("error", logger.err);
+
+  ws.on("pong", async () => {
+    /* Reply to the pong after 20s */
+    await setTimeout(() => ws.ping(), 20000);
+  });
 
   // ChatGPT Usage: No
   ws.on("message", function message(data) {
-    if (data.toString() === "") {
-      return;
-    }
     try {
-      const req: SocketMessage = JSON.parse(data.toString());
+      const req = JSON.parse(data.toString());
       if (!req.method) {
         ws.send(JSON.stringify({ Error: "Received data is missing fields" }));
       } else {
@@ -105,7 +110,7 @@ export async function handleConnection(ws: WebSocket, req: Request) {
 
   // ChatGPT Usage: No
   ws.on("close", async function close(code, reason) {
-    console.error(`Socket Closed: ${reason.toString()}`);
+    logger.log(`Socket Closed: ${reason.toString()}`);
     const userId = await socketService.retrieveBySocket(ws);
     try {
       if (userId) {

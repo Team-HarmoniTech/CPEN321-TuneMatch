@@ -1,22 +1,23 @@
-import { FriendsMessage, transformUser } from "@models/UserModels";
-import { Prisma, Session, User } from "@prisma/client";
+import { FriendsMessage, transformObject, transformUser } from "@models/UserModels";
+import { Friend, Prisma, Session, User } from "@prisma/client";
 import { database, socketService, userService } from "@src/services";
 
 export class UserService {
   private userDB = database.user;
+  private friendDB = database.friend;
 
   // ChatGPT Usage: Partial
   async getUserFriends(userId: number): Promise<User[]> {
     const user = await this.userDB.findUnique({
       where: { id: userId },
       include: {
-        requested: true,
-        requesting: true,
+        requested: { include: { requesting: true } },
+        requesting: { include: { requested: true, } },
       },
     });
     // Only keep overlapping values
-    return user.requested.filter((requested) =>
-      user.requesting.some((requesting) => requesting.id === requested.id),
+    return user.requested.map(f => f.requesting).filter((requested) =>
+      user.requesting.map(f => f.requested).some((requesting) => requesting.id === requested.id),
     );
   }
 
@@ -27,18 +28,20 @@ export class UserService {
     const user = await this.userDB.findUnique({
       where: { id: userId },
       include: {
-        requested: true,
-        requesting: true,
+        requested: { include: { requesting: true } },
+        requesting: { include: { requested: true, } },
       },
     });
+    const allRequesting = user.requesting.map(f => f.requested);
+    const allRequested = user.requested.map(f => f.requesting);
     // Filter out overlapping users
-    const requesting = user.requesting.filter(
+    const requesting = allRequesting.filter(
       (requesting) =>
-        !user.requested.some((requested) => requested.id === requesting.id),
+        !allRequested.some((requested) => requested.id === requesting.id),
     );
-    const requested = user.requested.filter(
+    const requested = allRequested.filter(
       (requested) =>
-        !user.requesting.some((requesting) => requesting.id === requested.id),
+        !allRequesting.some((requesting) => requesting.id === requested.id),
     );
 
     return { requesting, requested };
@@ -47,25 +50,37 @@ export class UserService {
   // ChatGPT Usage: No
   async addFriend(userId: number, requestedId: number): Promise<User> {
     try {
-      return await this.userDB.update({
-        where: { id: userId },
-        data: { requested: { connect: { id: requestedId } } },
+      const friend = await this.friendDB.create({
+        data: { 
+          requested: { connect: { id: requestedId } }, 
+          requesting: { connect: { id: userId } }
+        },
+        include: {
+          requesting: true
+        }
       });
+      return this.userDB.findUnique({ where: { id: userId } });
     } catch {
       throw { message: "User does not exist", statusCode: 400 };
     }
   }
 
   // ChatGPT Usage: No
-  async removeFriend(userId: number, requestedId: number): Promise<User> {
+  async removeFriend(userId: number, otherId: number): Promise<User> {
     try {
-      return await this.userDB.update({
-        where: { id: userId },
-        data: {
-          requesting: { disconnect: { id: requestedId } },
-          requested: { disconnect: { id: requestedId } },
-        },
+      await this.friendDB.deleteMany({
+        where:  {
+          requested_id: userId,
+          requesting_id: otherId,
+        }
       });
+      await this.friendDB.deleteMany({
+        where:  {
+          requested_id: otherId,
+          requesting_id: userId,
+        }
+      });
+      return this.userDB.findUnique({ where: { id: userId } });
     } catch {
       throw { message: "User does not exist", statusCode: 400 };
     }
@@ -85,16 +100,23 @@ export class UserService {
   async getUserBySpotifyId(
     spotify_id: string,
   ): Promise<
-    User & { requesting: User[]; requested: User[]; session: Session }
+    User & { requesting: Friend[]; requested: Friend[]; session: Session }
   > {
-    return await this.userDB.findUnique({
-      where: { spotify_id: spotify_id },
-      include: {
-        requested: true,
-        requesting: true,
-        session: true,
-      },
-    });
+    try {
+      const user = await database.user.findUnique({
+        where: { spotify_id: spotify_id },
+        include: {
+          requested: { include: { requesting: true } },
+          requesting: { include: { requested: true } },
+          session: true,
+        },
+      });
+      user.requested.map(f => f.requesting);
+      user.requesting.map(f => f.requested);
+      return user as any;
+    } catch {
+      return null;
+    }
   }
 
   // ChatGPT Usage: No
@@ -103,14 +125,21 @@ export class UserService {
   ): Promise<
     User & { requesting: User[]; requested: User[]; session: Session }
   > {
-    return await this.userDB.findUnique({
-      where: { id: id },
-      include: {
-        requested: true,
-        requesting: true,
-        session: true,
-      },
-    });
+    try {
+      const user = await database.user.findUnique({
+        where: { id: id },
+        include: {
+          requested: { include: { requesting: true } },
+          requesting: { include: { requested: true } },
+          session: true,
+        },
+      });
+      user.requested.map(f => f.requesting);
+      user.requesting.map(f => f.requested);
+      return user as any;
+    } catch {
+      return null;
+    }
   }
 
   // ChatGPT Usage: No
@@ -168,16 +197,17 @@ export class UserService {
   // ChatGPT Usage: No
   async updateUserStatus(
     userId: number,
-    song?: string,
-    source?: { type: string; uri?: string },
+    song?: { name: string, uri: string },
+    source?: { type: string; [key: string]: any },
   ): Promise<User> {
     let updateData: any = {};
+
     /* If they are in a session don't update the source */
-    if (source !== undefined) {
+    if ((source !== undefined && ((await this.getUserById(userId)).current_source as any)?.type !== "session") || source === null) {
         updateData["current_source"] = source === null ? Prisma.DbNull : source;
     }
     if (song !== undefined) {
-      updateData["current_song"] = song;
+      updateData["current_song"] = song === null ? Prisma.DbNull : song;
     }
 
     /* Update user */
@@ -190,8 +220,8 @@ export class UserService {
         "update",
         await transformUser(user, async (user) => {
           return {
-            currentSong: user.current_song,
-            currentSource: user.current_source,
+            currentSong: transformObject(user.current_song),
+            currentSource: transformObject(user.current_source),
           };
         }),
       ),

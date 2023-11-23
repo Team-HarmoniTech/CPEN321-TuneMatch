@@ -1,5 +1,6 @@
 import { BiMap } from "@jsdsl/bimap";
 import { SocketMessage } from "@models/WebsocketModels";
+import logger from "@src/logger";
 import { Mutex } from "async-mutex";
 import WebSocket = require("ws");
 
@@ -16,15 +17,7 @@ export class WebSocketService {
         return;
       }
       this.connections.set(userId, socket);
-      console.log(`WEBSOCKET: User ${userId} connected`);
-    });
-  }
-
-  // ChatGPT Usage: No
-  async removeConnectionById(userId: number) {
-    await this.connectionsLock.runExclusive(() => {
-      this.connections.removeByKey(userId);
-      console.log(`WEBSOCKET: User ${userId} disconnected`);
+      logger.log(`WEBSOCKET: User ${userId} connected`);
     });
   }
 
@@ -33,7 +26,7 @@ export class WebSocketService {
     await this.connectionsLock.runExclusive(() => {
       const id = this.connections.getFromValue(socket);
       this.connections.removeByValue(socket);
-      console.log(`WEBSOCKET: User ${id} disconnected`);
+      logger.log(`WEBSOCKET: User ${id} disconnected`);
     });
   }
 

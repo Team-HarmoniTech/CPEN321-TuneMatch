@@ -14,7 +14,20 @@ export class SessionService {
     userId: number,
     otherUserId?: string,
   ): Promise<SessionWithMembers> {
-    // Leave old session if exists
+    if (otherUserId) {
+      const otherSession = await this.sessionDB.findFirst({
+        where: { members: { some: { spotify_id: otherUserId } } },
+        include: { members: true },
+      });
+
+      if (otherSession && otherSession.members.some(m => m.id === userId)) {
+        /* We are already in the user's session */
+        return otherSession;
+      }
+    }
+    
+
+    /* Leave old session if exists */
     await this.leaveSession(userId);
 
     let session;
@@ -23,7 +36,7 @@ export class SessionService {
       if (!otherUser) {
         throw { message: `User does not exist`, statusCode: 400 };
       }
-      // Add user to the other session
+      /* Add user to the other session */
       const otherSession = await this.sessionDB.findFirst({
         where: { members: { some: { spotify_id: otherUserId } } },
       });
@@ -36,7 +49,7 @@ export class SessionService {
         include: { members: true },
       });
     } else {
-      // Create new session for user
+      /* Create new session for user */
       session = await this.sessionDB.create({
         data: { members: { connect: { id: userId } } },
         include: { members: true },
@@ -58,7 +71,7 @@ export class SessionService {
       ),
     );
 
-    /* update session before returning */
+    /* Update session before returning */
     session = await this.sessionDB.findFirstOrThrow({
       where: { id: session.id },
       include: { members: true },
@@ -69,7 +82,7 @@ export class SessionService {
 
   // ChatGPT Usage: No
   async leaveSession(userId: number): Promise<void> {
-    // Find user's session if it exists
+    /* Find user's session if it exists */
     const session = await this.sessionDB.findFirst({
       where: { members: { some: { id: userId } } },
       include: { members: true },
@@ -78,8 +91,8 @@ export class SessionService {
     if (!session) {
       return undefined;
     }
-
-    // If session will be empty delete, otherwise leave
+    
+    /* If session will be empty delete, otherwise leave */
     const toDelete = session.members.length <= 1;
     if (toDelete) {
       await this.sessionDB.delete({
@@ -88,15 +101,14 @@ export class SessionService {
     } else {
       await this.sessionDB.update({
         where: { id: session.id },
-        data: { members: { disconnect: { id: userId } } },
-        include: { members: true },
+        data: { members: { disconnect: { id: userId } } }
       });
     }
 
-    /* update user */
+    /* Update user */
     const user = await userService.updateUserStatus(userId, undefined, null);
     if (!toDelete) {
-      /* inform old session */
+      /* Inform old session */
       await this.messageSession(
         session.id,
         userId,
@@ -208,15 +220,8 @@ export class SessionService {
     return await queueData.lock.runExclusive(() => {
       const q = queueData.queue;
       return {
-        currentlyPlaying: q.currentlyPlaying
-          ? {
-              uri: q.currentlyPlaying.uri,
-              durationMs: q.currentlyPlaying.durationMs,
-              timeStarted: q.currentlyPlaying.timeStarted.toISOString(),
-              title: q.currentlyPlaying.title,
-              artist: q.currentlyPlaying.artist
-            }
-          : null,
+        running: q.running,
+        timeStarted: q[0]?.timeStarted?.toISOString(),
         queue: [...q.songs].map((val) => {
           return { uri: val.uri, durationMs: val.durationMs, title: val.title, artist: val.artist };
         }),

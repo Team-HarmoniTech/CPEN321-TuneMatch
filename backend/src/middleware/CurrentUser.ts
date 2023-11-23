@@ -8,21 +8,21 @@ export async function findCurrentUser(
   res: Response,
   next: NextFunction,
 ) {
-  const userId: string = req.headers["user-id"] || "";
+  const userId: string = req.headers["user-id"] as string || "";
   const user: User = await database.user.findUnique({
     where: { spotify_id: userId },
   });
   if (!user && userId !== "") {
-    res.status(400).send({ error: "This executing user does not exist" });
+    res.status(401).send({ error: "This executing user does not exist" });
     return;
   }
   if (user && user.is_banned) {
-    res.status(400).send({ error: "This executing user is banned" });
+    res.status(403).send({ error: "This executing user is banned" });
     return;
   }
   if (user) {
-    req.currentUserId = user.id;
-    req.currentUserSpotifyId = user.spotify_id;
+    req.headers.currentUserId = user.id.toString();
+    req.headers.currentUserSpotifyId = user.spotify_id;
   }
   next();
 }

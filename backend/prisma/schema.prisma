@@ -16,7 +16,7 @@ model User {
   username       String
   top_artists    Json
   top_genres     Json
-  current_song   String?
+  current_song   Json?
   current_source Json? //Could be album or playlist
   is_banned      Boolean @default(false)
   pfp_url        String? @db.VarChar(500)
@@ -28,8 +28,8 @@ model User {
 
   // Friends
   // If a User is in requested and requesting then they are considered friends
-  requested  User[] @relation("friends")
-  requesting User[] @relation("friends")
+  requested  Friend[] @relation("Requested")
+  requesting Friend[] @relation("Requesting")
 
   // Connections
   connectionComputed Boolean      @default(false)
@@ -39,6 +39,18 @@ model User {
   // Reports
   reports_as_offender Report[] @relation("Offender Reports")
   reports_as_reporter Report[] @relation("Reporter Reports")
+}
+
+model Friend {
+  id            Int @id @default(autoincrement())
+  requesting_id     Int
+  requested_id     Int
+
+  // Constraints
+  requesting User @relation("Requesting", fields: [requesting_id], references: [id], onDelete: Cascade)
+  requested User @relation("Requested", fields: [requested_id], references: [id], onDelete: Cascade)
+
+  @@unique([requesting_id, requested_id])
 }
 
 model Connection {

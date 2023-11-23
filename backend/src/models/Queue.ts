@@ -18,15 +18,13 @@ export class Song {
 }
 
 export class Queue {
-  private running: boolean;
+  public running: boolean;
   public songs: Song[];
-  public currentlyPlaying: Song;
   private runQueue: NodeJS.Timeout;
 
   constructor() {
     this.running = false;
     this.songs = [];
-    this.currentlyPlaying = null;
     this.runQueue = null;
   }
 
@@ -37,21 +35,21 @@ export class Queue {
   start() {
     if (this.songs.length !== 0 && !this.running) {
       this.running = true;
-      this.playNext();
+      this.playNext(true);
     }
   }
 
   // ChatGPT Usage: No
-  private playNext() {
+  private playNext(resuming: boolean = false) {
     if (this.songs.length !== 0) {
-      this.currentlyPlaying = this.songs.shift();
-      this.currentlyPlaying.timeStarted = new Date();
+      const upNext = this.songs[0];
+      upNext.timeStarted = new Date();
       this.runQueue = setTimeout(() => {
+        this.songs.shift();
         this.playNext();
-      }, this.currentlyPlaying.leftMs);
+      }, resuming ? upNext.leftMs : upNext.durationMs);
     } else {
       this.running = false;
-      this.currentlyPlaying = null;
     }
   }
 
@@ -63,15 +61,11 @@ export class Queue {
     if (this.running) {
       this.running = false;
       clearTimeout(this.runQueue);
-      const elapsedMs =
-        new Date().getTime() - this.currentlyPlaying.timeStarted.getTime();
-      this.currentlyPlaying.leftMs -= elapsedMs;
-      this.currentlyPlaying.timeStarted = null;
-      /* Add back to the queue if not finished */
-      if (this.currentlyPlaying.leftMs > 0) {
-        this.songs.unshift(this.currentlyPlaying);
-      }
-      this.currentlyPlaying = null;
+      const currentlyPlaying = this.songs[0];
+      const elapsedMs = new Date().getTime() - currentlyPlaying.timeStarted.getTime();
+      currentlyPlaying.leftMs -= elapsedMs;
+      currentlyPlaying.leftMs = Math.max(currentlyPlaying.leftMs, 0);
+      currentlyPlaying.timeStarted = null;
     }
   }
 
@@ -81,27 +75,32 @@ export class Queue {
    */
   // ChatGPT Usage: No
   replace(songs: Song[]) {
-    if (this.currentlyPlaying) {
+    if (this.running) {
       clearTimeout(this.runQueue);
     }
     this.songs = songs;
     this.running = false;
-    this.currentlyPlaying = null;
   }
 
   /**
    * Add a song after the given index or at the end of the queue if index is 
    * null.
    * @param song the song to add
-   * @param index the index to add after
+   * @param index the index to add at
    */
   // ChatGPT Usage: No
   addAfter(song: Song, index?: number) {
-    const splicePos = index ? index : Infinity;
-    song.leftMs = song.durationMs;
-    this.songs.splice(splicePos, 0, song);
+    const splicePos =
+      (index === undefined || index === null || index === -1) ?
+        Infinity :
+          (index < 0 ? index + 1 : index);
+    
+    const queue = this.songs.splice(this.running ? 1 : 0);
+    queue.splice(splicePos, 0, song);
+    this.songs.push(...queue);
+
     /* Start Automatically but only if the song is added to an empty queue */
-    if (!this.currentlyPlaying && this.songs.length === 1) {
+    if (!this.running && this.songs.length === 1) {
       this.start();
     }
   }
@@ -111,10 +110,12 @@ export class Queue {
    */
   // ChatGPT Usage: No
   skip() {
-    if (this.currentlyPlaying != null) {
+    if (this.running) {
       clearTimeout(this.runQueue);
       this.songs.shift();
       this.playNext();
+    } else {
+      this.songs.shift();
     }
   }
 
@@ -137,10 +138,8 @@ export class Queue {
    */
   // ChatGPT Usage: No
   seek(seekPosition: number) {
-    if (this.currentlyPlaying) {
+    if (this.running) {
       clearTimeout(this.runQueue);
-      this.songs.unshift(this.currentlyPlaying);
-      this.currentlyPlaying = null;
     }
 
     const song = this.songs[0];
@@ -151,12 +150,10 @@ export class Queue {
         song.durationMs -
           Math.min(seekPosition, song.durationMs),
       );
-      if (song.leftMs <= 0) {
-        this.songs.shift();
-      }
+      song.leftMs = Math.max(song.leftMs, 0);
     }
 
     this.running = true;
-    this.playNext();
+    this.playNext(true);
   }
 }

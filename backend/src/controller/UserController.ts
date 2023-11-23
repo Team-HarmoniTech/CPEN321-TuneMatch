@@ -1,5 +1,6 @@
 import {
   FriendsMessage,
+  transformObject,
   transformUser,
   transformUsers,
 } from "@models/UserModels";
@@ -13,7 +14,7 @@ export class UserController {
   async getUser(req: Request, res: Response, next: NextFunction) {
     /* Use currentUserId for the /me endpoint */
     const userId = req.url.startsWith("/me")
-      ? req.currentUserSpotifyId
+      ? req.headers.currentUserSpotifyId as string
       : req.params.spotify_id;
     const user = await userService.getUserBySpotifyId(userId);
     if (!user) {
@@ -34,7 +35,7 @@ export class UserController {
 
   // ChatGPT Usage: No
   async topMatches(req: Request, res: Response, next: NextFunction) {
-    const matches = await userMatchingService.getTopMatches(req.currentUserId);
+    const matches = await userMatchingService.getTopMatches(Number(req.headers.currentUserId));
     res.send(
       await transformUsers(matches, async (user) => {
         return { match: user.match };
@@ -51,7 +52,7 @@ export class UserController {
       throw { message: `User not found.`, statusCode: 400 };
     }
     const match = await userMatchingService.getMatch(
-      req.currentUserId,
+      Number(req.headers.currentUserId),
       otherUser.id,
     );
     res.send(
@@ -79,7 +80,7 @@ export class UserController {
   async updateUser(req: Request, res: Response, next: NextFunction) {
     const user = await userService.updateUser(
       req.body.userData,
-      req.currentUserId,
+      Number(req.headers.currentUserId),
     );
     res.send(
       await transformUser(user, async (user) => {
@@ -90,14 +91,14 @@ export class UserController {
 
   // ChatGPT Usage: No
   async deleteUser(req: Request, res: Response, next: NextFunction) {
-    await userService.deleteUser(req.currentUserId);
+    await userService.deleteUser(Number(req.headers.currentUserId));
   }
 
   // ChatGPT Usage: No
   async searchUsers(req: Request, res: Response, next: NextFunction) {
     const users = await userService.searchUsers(
-      req.currentUserId,
-      req.query.q,
+      Number(req.headers.currentUserId),
+      req.query.q as string,
       Number(req.query.max),
     );
     res.send(
@@ -105,7 +106,7 @@ export class UserController {
         return {
           match: await userMatchingService.getMatch(
             user.id,
-            req.currentUserId,
+            Number(req.headers.currentUserId),
           ),
         };
       }),
@@ -146,8 +147,8 @@ export class UserController {
           "refresh",
           await transformUsers(friends, async (user) => {
             return {
-              currentSong: user.current_song,
-              currentSource: user.current_source,
+              currentSong: transformObject(user.current_song),
+              currentSource: transformObject(user.current_source),
             };
           }),
         ),
@@ -160,7 +161,7 @@ export class UserController {
     const user = await userService.updateUserStatus(
       currentUserId,
       message?.body?.song,
-      undefined,
+      message?.body?.source,
     );
   }
 }
