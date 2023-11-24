@@ -21,7 +21,6 @@ import android.view.WindowManager;
 import android.widget.SeekBar;
 
 import androidx.appcompat.widget.SearchView;
-import androidx.test.espresso.Espresso;
 import androidx.test.espresso.Root;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
@@ -95,7 +94,7 @@ public class UiTestHelper {
     // ChatGPT Usage: No
     public static void clickRecyclerItem(int recyclerViewId, int pos) {
         onView(withId(recyclerViewId))
-                .perform(actionOnItemAtPosition(pos, ViewActions.click()));
+                .perform(actionOnItemAtPosition(pos, click()));
 
     }
 

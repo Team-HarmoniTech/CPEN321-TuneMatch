@@ -1,7 +1,13 @@
 import { server } from "@src/index";
 import request from 'superwstest';
+import { originalDate } from "../../globalSetup";
 
 describe("Get report", () => {
+    beforeEach(async () => {
+        global.Date = originalDate;
+        global.Date.now = originalDate.now;
+    });
+
     // Input: Valid dates
     // Expected status code: 200
     // Expected behavior: Return list of reports

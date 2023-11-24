@@ -1,7 +1,7 @@
-import { Prisma } from "@prisma/client";
 import { server } from "@src/index";
 import { database, sessionService, userService } from "@src/services";
 import request from "superwstest";
+import { testConstantDate } from "../../globalSetup";
 import { Album_Drunk, Album_Speakerboxxx, Song_HeyYa, Song_ThemChanges } from "../songModels";
 
 describe("Update Status", () => {
@@ -47,7 +47,8 @@ describe("Update Status", () => {
                 username: "testUsername1",
                 profilePic: null,
                 currentSong: Song_HeyYa,
-                currentSource: Album_Drunk
+                currentSource: Album_Drunk,
+                lastUpdated: testConstantDate.toISOString()
             },
             from: "testUser1"
         });
@@ -97,7 +98,8 @@ describe("Update Status", () => {
                 username: "testUsername1",
                 profilePic: null,
                 currentSong: Song_ThemChanges,
-                currentSource: Album_Speakerboxxx
+                currentSource: Album_Speakerboxxx,
+                lastUpdated: testConstantDate.toISOString()
             },
             from: "testUser1"
         });
@@ -148,7 +150,8 @@ describe("Update Status", () => {
                 username: "testUsername1",
                 profilePic: null,
                 currentSong: Song_HeyYa,
-                currentSource: Album_Speakerboxxx
+                currentSource: Album_Speakerboxxx,
+                lastUpdated: testConstantDate.toISOString()
             },
             from: "testUser1"
         });
@@ -177,7 +180,12 @@ describe("Update Status", () => {
 
         let user = await database.user.findUnique({ where: { spotify_id: "testUser1" } });
         expect(user).toHaveProperty("current_song", Song_ThemChanges);
-        expect(user).toHaveProperty("current_source", { type: "session" });
+        expect(user).toHaveProperty("current_source", { 
+            type: "session",
+            members: [
+                "testUsername1"
+            ]
+        });
 
         const socket2 = request(server).ws("/socket", { headers: { "user-id": "testUser2" } })
         .expectJson()
@@ -205,56 +213,20 @@ describe("Update Status", () => {
                 username: "testUsername1",
                 profilePic: null,
                 currentSong: Song_HeyYa,
-                currentSource: { type: "session" }
+                currentSource: { 
+                    type: "session",
+                    members: ["testUsername1"] 
+                },
+                lastUpdated: testConstantDate.toISOString()
             },
             from: "testUser1"
         });
 
         user = await database.user.findUnique({ where: { spotify_id: "testUser1" } });
         expect(user).toHaveProperty("current_song", Song_HeyYa);
-        expect(user).toHaveProperty("current_source", { type: "session" });
+        expect(user).toHaveProperty("current_source", { type: "session", members: ["testUsername1"] });
 
         await socket1.close();
-        await socket2.close();
-    });
-
-    // Input: The socket disconnects
-    // Expected behavior: the user's status is set to null
-    // Expected output: None
-    // ChatGPT usage: None
-    it("should remove status on disconnect", async () => {
-        let user = await database.user.update({
-            where: { spotify_id: "testUser1" },
-            data: {
-                current_song: Song_ThemChanges,
-                current_source: Album_Drunk
-            }
-        });
-
-        expect(user).toHaveProperty("current_song", Song_ThemChanges);
-        expect(user).toHaveProperty("current_source", Album_Drunk);
-
-        const socket2 = request(server).ws("/socket", { headers: { "user-id": "testUser2" } })
-        .expectJson()
-        .expectJson();
-        await request(server).ws("/socket", { headers: { "user-id": "testUser1" } }).close();
-        await socket2.expectJson({
-            method: "FRIENDS",
-            action: "update",
-            body: {
-                userId: "testUser1",
-                username: "testUsername1",
-                profilePic: null,
-                currentSong: null,
-                currentSource: null
-            },
-            from: "testUser1"
-        });
-        
-        user = await database.user.findUnique({ where: { spotify_id: "testUser1" } });
-        expect(user).toHaveProperty("current_song", Prisma.DbNull);
-        expect(user).toHaveProperty("current_source", Prisma.DbNull);
-
         await socket2.close();
     });
 

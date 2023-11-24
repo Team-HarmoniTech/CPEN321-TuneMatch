@@ -3,7 +3,10 @@
 const sharedConfig = {
   preset: "ts-jest",
   testEnvironment: "node",
-  setupFiles: ["dotenv/config"],
+  setupFiles: [
+    "dotenv/config",
+    "<rootDir>/test/globalSetup.ts"
+  ],
   moduleNameMapper: {
     "\\.(css|less|scss|sass)$": "identity-obj-proxy",
     "^@src/(.*)$": "<rootDir>/src/$1",

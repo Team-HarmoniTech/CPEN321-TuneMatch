@@ -2,6 +2,7 @@ import { server } from "@src/index";
 import { database, userService } from "@src/services";
 import { SessionService } from "@src/services/SessionService";
 import request from "superwstest";
+import { testConstantDate } from "../../globalSetup";
 import { Song_ThemChanges } from "../songModels";
 
 describe("Session Leave", () => {
@@ -177,6 +178,7 @@ describe("Session Leave", () => {
                 profilePic: null,
                 currentSong: Song_ThemChanges,
                 currentSource: null,
+                lastUpdated: testConstantDate.toISOString()
             },
             from:"testUser1"
         });

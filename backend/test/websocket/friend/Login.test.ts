@@ -1,6 +1,7 @@
 import { server } from "@src/index";
 import { userService } from "@src/services";
 import request from "superwstest";
+import { testConstantDate } from "../../globalSetup";
 
 describe("Login", () => {
 
@@ -116,7 +117,8 @@ describe("Login", () => {
                         type: "album",
                         name: "Drunk",
                         uri: "spotify:album:7vHBQDqwzB7uDvoE5bncMM"
-                    }
+                    },
+                    lastUpdated: testConstantDate.toISOString()
                 }
             ]
         }).close();

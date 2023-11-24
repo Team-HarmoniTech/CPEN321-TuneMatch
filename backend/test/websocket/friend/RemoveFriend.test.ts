@@ -1,6 +1,7 @@
 import { server } from "@src/index";
 import { userService } from "@src/services";
 import request from "superwstest";
+import { testConstantDate } from "../../globalSetup";
 
 describe("Removing Friends", () => {
 
@@ -74,7 +75,8 @@ describe("Removing Friends", () => {
                     username: "testUsername2",
                     profilePic: null,
                     currentSong: null,
-                    currentSource: null
+                    currentSource: null,
+                    lastUpdated: testConstantDate.toISOString()
                 }
             ]
         })
@@ -128,9 +130,7 @@ describe("Removing Friends", () => {
             }
         })
         .expectJson({
-            method: "REQUESTS",
-            action: "error",
-            body: "User to remove does not exist"
+            Error: "User to remove does not exist"
         })
         .close();
     });

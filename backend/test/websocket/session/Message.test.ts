@@ -69,9 +69,7 @@ describe("Session Message", () => {
 
         await socket1.sendJson(message)
         .expectJson({
-            method: "SESSION",
-            action: "error",
-            body: "User is not in a session."
+            Error: "User is not in a session."
         });
 
         await socket1.close();

@@ -220,10 +220,10 @@ export class SessionService {
       const q = queueData.queue;
       return {
         running: q.running,
-        initialPosition: q.running ? (new Date().getTime() - q[0].timeStarted.getTime()) : (q[0] ? q[0].durationMs - q[0].leftMs : undefined),
+        initialPosition: q.running ? (new Date().getTime() - q.songs[0].timeStarted.getTime()) : (q.songs[0] ? q.songs[0].durationMs - q.songs[0].leftMs : undefined),
         timeStamp: new Date().toISOString(),
         queue: [...q.songs].map((val) => {
-          return { uri: val.uri, durationMs: val.durationMs, title: val.title, artist: val.artist };
+          return { uri: val.uri, durationMs: val.durationMs, title: val.title, artist: val.artist, leftMs: val.leftMs };
         }),
       };
     });

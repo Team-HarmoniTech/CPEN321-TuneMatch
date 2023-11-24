@@ -61,17 +61,17 @@ describe("Websocket", () => {
             method: "SESSION",
             action: "invalid action"
         })
-        .expectJson({ Error: "Session endpoint invalid action does not exist." })
+        .expectJson({ Error: "SESSION endpoint invalid action does not exist." })
         .sendJson({
             method: "FRIENDS",
             action: "invalid action"
         })
-        .expectJson({ Error: "Friends endpoint invalid action does not exist." })
+        .expectJson({ Error: "FRIENDS endpoint invalid action does not exist." })
         .sendJson({
             method: "REQUESTS",
             action: "invalid action"
         })
-        .expectJson({ Error: "Requests endpoint invalid action does not exist." })
+        .expectJson({ Error: "REQUESTS endpoint invalid action does not exist." })
         .close();
     });
 

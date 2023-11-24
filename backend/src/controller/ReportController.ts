@@ -16,6 +16,7 @@ export class ReportController {
   // ChatGPT usage: No
   async viewReports(req: Request, res: Response, next: NextFunction) {
     const { dateFrom, dateTo } = req.query;
+    console.log(new Date(dateFrom as string), new Date(dateTo as string));
     const reports = await reportService.viewReports(new Date(dateFrom as string), new Date(dateTo as string));
     res.send(reports);
   }

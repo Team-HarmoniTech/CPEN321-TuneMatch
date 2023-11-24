@@ -31,14 +31,13 @@ describe('Global Test', () => {
     // ChatGPT usage: None
     it('should log', async () => {
       const logSpy = jest.spyOn(console, "log");
-      const debugSpy = jest.spyOn(console, "debug");
       const errSpy = jest.spyOn(console, "error");
       
       logger.log("test log");
       expect(logSpy).toHaveBeenCalledWith("test log");
 
       logger.dev("test debug");
-      expect(debugSpy).toHaveBeenCalledWith("test debug");
+      expect(logSpy).toHaveBeenCalledWith("test debug");
 
       logger.err("test err");
       expect(errSpy).toHaveBeenCalledWith("test err");

@@ -4,7 +4,6 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 
@@ -12,8 +11,8 @@ public class WaveView extends View {
     private static final int NUM_LINES = 5; // Adjust the number of lines as needed
     private final Paint paint;
     private final float amplitude;
-    private float phase;
     private final float frequency;
+    private float phase;
 
     public WaveView(Context context) {
         super(context);

@@ -1,6 +1,7 @@
 import { server } from "@src/index";
 import { userService } from "@src/services";
 import request from "superwstest";
+import { testConstantDate } from "../../globalSetup";
 
 describe("Session Join", () => {
 
@@ -198,9 +199,7 @@ describe("Session Join", () => {
             body: { userId: "testUser2" }
         })
         .expectJson({
-            method: "SESSION",
-            action: "error",
-            body: "User is not in a session."
+            Error: "User is not in a session."
         });
 
         await socket1.close();
@@ -221,9 +220,7 @@ describe("Session Join", () => {
             body: { userId: "fakeUser" }
         })
         .expectJson({ 
-            method: "SESSION",
-            action: "error",
-            body: "User does not exist"
+            Error: "User does not exist"
         })
         .close();
     });
@@ -293,8 +290,10 @@ describe("Session Join", () => {
                 profilePic: null,
                 currentSong: null,
                 currentSource: { 
-                    type: "session"
-                }
+                    type: "session",
+                    members: ["testUsername1"]
+                },
+                lastUpdated: testConstantDate.toISOString()
             },
             from: "testUser1"
         });
@@ -342,6 +341,7 @@ describe("Session Join", () => {
                     }
                 ],
                 running: false,
+                timeStamp: testConstantDate.toISOString(),
                 queue: []
             }
         });

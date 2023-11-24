@@ -1,6 +1,7 @@
 import { server } from "@src/index";
 import { sessionService } from "@src/services";
 import request from "superwstest";
+import { originalDate } from "test/globalSetup";
 
 describe("Session Queue", () => {
     const testQueue = [
@@ -34,6 +35,9 @@ describe("Session Queue", () => {
             method: "SESSION",
             action: "join"
         }).expectJson();
+
+        global.Date = originalDate;
+        global.Date.now = originalDate.now;
     });
 
     afterEach(async () => {
@@ -446,6 +450,7 @@ describe("Session Queue", () => {
         
         await new Promise(f => setTimeout(f, 3000));
         queueData = await sessionService.getQueue(1);
+        expect(queueData).toBe({});
         expect(queueData.queue[0].title).toBe("5 second song #2");
     }, 15000);
 

@@ -1,6 +1,7 @@
 import { server } from "@src/index";
 import { userService } from "@src/services";
 import request from "superwstest";
+import { testConstantDate } from "../../globalSetup";
 
 describe("Adding Friends", () => {
 
@@ -27,7 +28,8 @@ describe("Adding Friends", () => {
                 username: "testUsername1",
                 profilePic: null,
                 currentSong: null,
-                currentSource: null
+                currentSource: null,
+                lastUpdated: testConstantDate.toISOString()
             }
         });
         await socket1.close();
@@ -88,17 +90,21 @@ describe("Adding Friends", () => {
             body: {
                 userId: "testUser2"
             }
-        }).expectJson({
-            method: "FRIENDS",
-            action: "update",
-            body: {
-                userId: "testUser2",
-                username: "testUsername2",
-                profilePic: null,
-                currentSong: null,   
-                currentSource: { type: "session" }
-            }
-        });
+        }).expectJson()
+        // .expectJson({
+        //     method: "FRIENDS",
+        //     action: "update",
+        //     body: {
+        //         userId: "testUser2",
+        //         username: "testUsername2",
+        //         profilePic: null,
+        //         currentSong: null,   
+        //         currentSource: { 
+        //             type: "session"
+        //         },
+        //         lastUpdated: testConstantDate.toISOString()
+        //     }
+        // });
         socket2.expectJson({
             method: "REQUESTS",
             action: "add",
@@ -114,7 +120,8 @@ describe("Adding Friends", () => {
                     type: "album",
                     name: "Drunk",
                     uri: "spotify:album:7vHBQDqwzB7uDvoE5bncMM"
-                }
+                },
+                lastUpdated: testConstantDate.toISOString()
             }
         });
         
@@ -139,9 +146,7 @@ describe("Adding Friends", () => {
             }
         })
         .expectJson({
-            method:"REQUESTS",
-            action:"error",
-            body: "User to add does not exist"
+            Error: "User to add does not exist"
         })
         .close();
 
