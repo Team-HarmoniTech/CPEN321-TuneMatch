@@ -104,18 +104,8 @@ public class SearchFragment extends Fragment {
                             String profileUrl = user.getProfilePic();
                             friend[0] = user;
                             if (profileUrl != null) {
-                                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        // Update your UI components here
-                                        ImageView profilePic = dialogView.findViewById(R.id.profileImage);
-                                        Picasso.get()
-                                                .load(profileUrl)
-                                                .placeholder(R.drawable.default_profile_image) // Set the default image
-                                                .error(R.drawable.default_profile_image) // Use the default image in case of an error
-                                                .into(profilePic);
-                                    }
-                                });
+                                ImageView profilePic = dialogView.findViewById(R.id.profileImage);
+                                new DownloadProfilePicture(profilePic, profileUrl).run();
                             }
 
                         } catch (ApiException | RuntimeException e) {

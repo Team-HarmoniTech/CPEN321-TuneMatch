@@ -68,20 +68,22 @@ public class BackendClient extends ApiClient<BackendInterface> {
         JsonObject me = spotifyClient.getMe();
         SpotifyClient.SpotifyTopResult topResult = spotifyClient.getMeTopArtistsAndGenres();
 
-        JsonArray spotifyImage = me.get("images").getAsJsonArray();
-        JsonElement profilePicture = spotifyImage.get(0).getAsJsonObject().get("url");
-
         JsonObject createUserBody = new JsonObject();
         JsonObject userInfo = new JsonObject();
         userInfo.add("spotify_id", me.get("id"));
         userInfo.add("username", me.get("display_name"));
         userInfo.add("top_artists", gson.toJsonTree(topResult.topArtists));
         userInfo.add("top_genres", gson.toJsonTree(topResult.topGenres));
-        if (profilePicture.toString().length() < MAX_PROFILE_URL) {
+
+        JsonArray spotifyImages = me.get("images").getAsJsonArray();
+        JsonElement profilePicture;
+        if (spotifyImages.size() > 0 &&
+                (profilePicture = spotifyImages.get(spotifyImages.size() - 1)
+                        .getAsJsonObject().get("url")).toString().length() < MAX_PROFILE_URL) {
             userInfo.add("pfp_url", profilePicture);
         }
-        createUserBody.add("userData", userInfo);
 
+        createUserBody.add("userData", userInfo);
         Call<String> call = api.createUser(createUserBody);
         JsonObject response = call(call).getAsJsonObject();
         return new User(

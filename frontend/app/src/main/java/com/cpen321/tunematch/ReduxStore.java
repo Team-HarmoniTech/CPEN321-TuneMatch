@@ -26,16 +26,16 @@ public class ReduxStore extends ViewModel {
 
     // ChatGPT Usage: Partial
     public ReduxStore() {
-        currentSongForFriends = new MutableLiveData<>();
+        currentSongForFriends = new MutableLiveData<>(null);
         friendsList = new MutableLiveData<>(new ArrayList<>());
         sentRequests = new MutableLiveData<>(new ArrayList<>());
         receivedRequests = new MutableLiveData<>(new ArrayList<>());
-        sessionList = new MutableLiveData<>();
-        songQueue = new MutableLiveData<>();
-        searchList = new MutableLiveData<>();
-        currentSession = new MutableLiveData<>();
+        sessionList = new MutableLiveData<>(new ArrayList<>());
+        songQueue = new MutableLiveData<>(new ArrayList<>());
+        searchList = new MutableLiveData<>(new ArrayList<>());
+        currentSession = new MutableLiveData<>(null);
         chatMessages = new MutableLiveData<>(new ArrayList<>());
-        currentSong = new MutableLiveData<>();
+        currentSong = new MutableLiveData<>(null);
         sessionActive = new MutableLiveData<>(false);
         currentUser = new MutableLiveData<>(null);
         sessionCreatedByMe = new MutableLiveData<>(true);
@@ -72,19 +72,9 @@ public class ReduxStore extends ViewModel {
         return friendsList;
     }
 
-    // ChatGPT Usage: Partial
-    public void setFriendsList(List<Friend> friends) {
-        friendsList.setValue(friends);
-    }
-
     // ChatGPT Usage: No
     public MutableLiveData<List<Session>> getSessionList() {
         return sessionList;
-    }
-
-    // ChatGPT Usage: Partial
-    public void setSessionList(List<Session> sessions) {
-        sessionList.setValue(sessions);
     }
 
     // ChatGPT Usage: No
@@ -92,10 +82,6 @@ public class ReduxStore extends ViewModel {
         return songQueue;
     }
 
-    // ChatGPT Usage: Partial
-    public void setSongQueue(List<Song> songs) {
-        songQueue.setValue(songs);
-    }
 
     // ChatGPT Usage: No
     public MutableLiveData<Song> getCurrentSong() {
@@ -138,11 +124,6 @@ public class ReduxStore extends ViewModel {
     }
 
     // ChatGPT Usage: No
-    public void setReceivedRequestsList(List<SearchUser> newRequests) {
-        receivedRequests.postValue(newRequests);
-    }
-
-    // ChatGPT Usage: No
     public MutableLiveData<Boolean> checkSessionActive() {
         return sessionActive;
     }
@@ -160,9 +141,6 @@ public class ReduxStore extends ViewModel {
     // ChatGPT Usage: No
     public void addMessage(Message message, boolean background) {
         List<Message> currentMessages = chatMessages.getValue();
-        if (currentMessages == null) {
-            currentMessages = new ArrayList<Message>();
-        }
         currentMessages.add(message);
         if (background) {
             chatMessages.postValue(currentMessages);

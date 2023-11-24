@@ -448,8 +448,8 @@ public class RoomFragment extends Fragment {
     // ChatGPT Usage: Partial
     private void initializeObservers() {
         model.getCurrentSong().observe(this, newSong -> {
-            currentSongTotalDuration = newSong.getDuration();
             if (newSong != null) {
+                currentSongTotalDuration = newSong.getDuration();
                 if (lastSongState == null || !lastSongState.getSongID().equals(newSong.getSongID())) {
                     currentPosition = 0;
                     songTitle.setText(newSong.getSongName());

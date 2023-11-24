@@ -1,7 +1,6 @@
 package com.cpen321.tunematch;
 
 import android.os.Handler;
-import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,23 +13,19 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-public class FriendsListAdapter extends RecyclerView.Adapter<FriendsListAdapter.FriendViewHolder> {
+public class FriendActivityListAdapter extends RecyclerView.Adapter<FriendActivityListAdapter.FriendViewHolder> {
     private List<Friend> friends;
     private final Handler handler;
     private static final long MIN_IN_MS = 60000;
     private final long REFRESH_MS = MIN_IN_MS;
 
     // ChatGPT Usage: No
-    public FriendsListAdapter(List<Friend> friends, Handler handler) {
+    public FriendActivityListAdapter(List<Friend> friends, Handler handler) {
         this.friends = friends;
         this.handler = handler;
 

@@ -25,7 +25,6 @@ export class SessionService {
         return otherSession;
       }
     }
-    
 
     /* Leave old session if exists */
     await this.leaveSession(userId);
@@ -43,7 +42,7 @@ export class SessionService {
       if (!otherSession) {
         throw { message: `User is not in a session.`, statusCode: 400 };
       }
-      let session = await this.sessionDB.update({
+      session = await this.sessionDB.update({
         where: { id: otherSession.id },
         data: { members: { connect: { id: userId } } },
         include: { members: true },

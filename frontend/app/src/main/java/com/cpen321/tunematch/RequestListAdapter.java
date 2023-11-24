@@ -10,7 +10,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
+import androidx.annotation.NonNull;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,7 +33,7 @@ public class RequestListAdapter extends ArrayAdapter<SearchUser> {
 
     // ChatGPT Usage: Partial
     @Override
-    public View getView(final int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View rowView = inflater.inflate(R.layout.request_list_item, parent, false);
 
@@ -44,11 +44,7 @@ public class RequestListAdapter extends ArrayAdapter<SearchUser> {
 
         // Set data for each item
         SearchUser currentItem = dataList.get(position);
-        Picasso.get()
-                .load(currentItem.getProfilePic())
-                .placeholder(R.drawable.default_profile_image)      // Set the default image
-                .error(R.drawable.default_profile_image)            // Use the default image in case of an error
-                .into(imageView);
+        new DownloadProfilePicture(imageView, currentItem.getProfilePic()).run();
         textView.setText(currentItem.getName());
 
         acceptBtn.setOnClickListener(new View.OnClickListener() {

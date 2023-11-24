@@ -171,7 +171,7 @@ public class WebSocketClient {
                     if (!currentSource.isJsonNull()) {
                         String sourceType = getStringOrNull(currentSource.getAsJsonObject().get("type"));
                         if (sourceType.equals("session")) {
-                            sessions.add(new Session(friend.getUserId(), friend.getUserName() + "'s Room"));
+                            sessions.add(new Session(friend.getUserId(), friend));
                         }
                     }
                 }
@@ -222,7 +222,7 @@ public class WebSocketClient {
                                     }
                                 }
                                 if (!sessionExists) {
-                                    existingSessionList.add(new Session(f.getUserId(), f.getUserName() + "'s Room"));
+                                    existingSessionList.add(new Session(f.getUserId(), f));
                                 }
                             }
                         } else {

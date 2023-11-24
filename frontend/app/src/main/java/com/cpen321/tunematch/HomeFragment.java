@@ -13,6 +13,7 @@ import android.widget.ListView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -58,24 +59,19 @@ public class HomeFragment extends Fragment {
         createSessionButton = view.findViewById(R.id.createListeningSessionBtn);
 
         RecyclerView friendsActivityList = view.findViewById(R.id.friendsList);
-        FriendsListAdapter friendsAdapter = new FriendsListAdapter(new ArrayList<>(), handler);
+        MutableLiveData<List<Friend>> friendsList = model.getFriendsList();
+        FriendActivityListAdapter friendsAdapter = new FriendActivityListAdapter(friendsList.getValue(), handler);
         friendsActivityList.setAdapter(friendsAdapter);
         friendsActivityList.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        model.getFriendsList().observe(getViewLifecycleOwner(), friendsAdapter::updateData);
+        friendsList.observe(getViewLifecycleOwner(), friendsAdapter::updateData);
 
         // Add existing listening session
         ListView sessionList = view.findViewById(R.id.listeningSessionList);
-        List<String> sessionListItems = new ArrayList<>();
-        CustomListAdapter sessionAdapter = new CustomListAdapter(getContext(), getActivity(), "SessionsList", sessionListItems, webSocketService);
-        model.getSessionList().observe(getViewLifecycleOwner(), sessions -> {
-            sessionListItems.clear();
-            for (Session s : sessions) {
-                sessionListItems.add(s.getSessionId());
-            }
-            sessionList.setAdapter(sessionAdapter);
-        });
-
+        MutableLiveData<List<Session>> sessions = model.getSessionList();
+        SessionListAdapter sessionAdapter = new SessionListAdapter(getContext(), getActivity(), sessions.getValue(), webSocketService);
+        sessionList.setAdapter(sessionAdapter);
+        model.getSessionList().observe(getViewLifecycleOwner(), sessionAdapter::updateData);
 
         createSessionButton.setOnClickListener(new View.OnClickListener() {
             @Override

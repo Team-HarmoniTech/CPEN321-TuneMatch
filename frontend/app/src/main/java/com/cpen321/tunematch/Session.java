@@ -2,11 +2,11 @@ package com.cpen321.tunematch;
 
 public class Session {
     private final String sessionId;
-    private final String roomName;
+    private final Friend member;
 
     // ChatGPT Usage: No
-    public Session(String sessionId, String roomName) {
-        this.roomName = roomName;
+    public Session(String sessionId, Friend member) {
+        this.member = member;
         this.sessionId = sessionId;
     }
 
@@ -16,8 +16,7 @@ public class Session {
     }
 
     // ChatGPT Usage: No
-    public String getRoomName() {
-        return roomName;
+    public Friend getSessionMember() {
+        return member;
     }
-
 }

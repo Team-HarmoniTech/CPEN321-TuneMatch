@@ -48,7 +48,7 @@ public class ProfileFragment extends Fragment {
         friendsListBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ListFragment friendsListFragment = ListFragment.newInstance(new ArrayList<>(), "Friends List");
+                FriendListFragment friendsListFragment = new FriendListFragment(model.getFriendsList().getValue(), "Friends List");
 
                 ft = fm.beginTransaction();
 
@@ -63,7 +63,7 @@ public class ProfileFragment extends Fragment {
         requestListBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ListFragment requestListFragment = ListFragment.newInstance(new ArrayList<>(), "Request List");
+                RequestListFragment requestListFragment = new RequestListFragment(model.getReceivedRequests().getValue(), "Request List");
 
                 ft = fm.beginTransaction();
                 ft.replace(R.id.mainFrame, requestListFragment);
@@ -78,7 +78,7 @@ public class ProfileFragment extends Fragment {
             public void onClick(View v) {
                 ArrayList<String> topArtistsList = model.getCurrentUser().getValue().getTopArtists();
                 Log.d("ProfileFragment", "topArtistsList:" + topArtistsList);
-                ListFragment topArtistFragment = ListFragment.newInstance(topArtistsList, "Top Artists");
+                ListFragment<String> topArtistFragment = new ListFragment<>(topArtistsList, "Top Artists");
 
                 // Begin a fragment transaction
                 ft = fm.beginTransaction();
@@ -95,7 +95,7 @@ public class ProfileFragment extends Fragment {
             public void onClick(View v) {
                 ArrayList<String> topGenreList = model.getCurrentUser().getValue().getTopGenres();
                 Log.d("ProfileFragment", "topGenresList:" + topGenreList);
-                ListFragment topArtistFragment = ListFragment.newInstance(topGenreList, "Top Genres");
+                ListFragment<String> topArtistFragment = new ListFragment<>(topGenreList, "Top Genres");
 
                 // Begin a fragment transaction
                 ft = fm.beginTransaction();
@@ -118,10 +118,6 @@ public class ProfileFragment extends Fragment {
         idView.setText(current.getUserId());
 
         ImageView profileView = view.findViewById(R.id.pfpImageView);
-        Picasso.get()
-                .load(current.getProfileImageUrl())
-                .placeholder(R.drawable.default_profile_image)      // Set the default image
-                .error(R.drawable.default_profile_image)            // Use the default image in case of an error
-                .into(profileView);
+        new DownloadProfilePicture(profileView, current.getProfileImageUrl()).run();
     }
 }

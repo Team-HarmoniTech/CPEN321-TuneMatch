@@ -63,13 +63,13 @@ public class MessageAdapter extends RecyclerView.Adapter {
         Message message = messages.get(position);
         if (getItemViewType(position) == MESSAGE_TYPE_SENT) {
             MessageViewHolder view = (MessageViewHolder) holder;
-            view.getMessageText().setText(message.getMessageText());
+            view.messageText.setText(message.getMessageText());
         } else {
             MessageViewHolderWithImage view = (MessageViewHolderWithImage) holder;
-            view.getMessageText().setText(message.getMessageText());
+            view.messageText.setText(message.getMessageText());
 
-            //Add Report OnLongClickListener
-            view.getMessageText().setOnLongClickListener(new OnLongClickReportListener(position));
+            //Add Report OnClickListener
+            view.messageText.setOnClickListener(new OnClickReportListener(position));
         }
         recalculateView(holder, position);
     }
@@ -86,7 +86,7 @@ public class MessageAdapter extends RecyclerView.Adapter {
         if (getItemViewType(position) == MESSAGE_TYPE_SENT) {
             MessageViewHolder view = (MessageViewHolder) holder;
             // Set padding to 0 if next to message from same user
-            ConstraintLayout container = view.getContainer();
+            ConstraintLayout container = view.container;
             container.setPadding(
                     container.getPaddingLeft(),
                     2,
@@ -95,7 +95,7 @@ public class MessageAdapter extends RecyclerView.Adapter {
         } else {
             MessageViewHolderWithImage view = (MessageViewHolderWithImage) holder;
             // Set padding to 0 if next to message from same user
-            ConstraintLayout container = view.getContainer();
+            ConstraintLayout container = view.container;
             container.setPadding(
                     container.getPaddingLeft(),
                     2,
@@ -104,13 +104,9 @@ public class MessageAdapter extends RecyclerView.Adapter {
 
             // Only render image if first
             if (isFirstMessage(position)) {
-                new Thread(new DownloadImage(
-                        view.getProfileImage(),
-                        message.getSenderProfileImageUrl(),
-                        R.drawable.default_profile_image
-                )).start();
+                new DownloadProfilePicture(view.profileImage, message.getSenderProfileImageUrl()).run();
             } else {
-                view.getProfileImage().setVisibility(View.INVISIBLE);
+                view.profileImage.setVisibility(View.INVISIBLE);
             }
         }
     }
@@ -152,49 +148,36 @@ public class MessageAdapter extends RecyclerView.Adapter {
 
     // ChatGPT Usage: No
     static class MessageViewHolder extends RecyclerView.ViewHolder {
-        private final TextView messageText;
-        private final ConstraintLayout container;
+        protected final TextView messageText;
+        protected final ConstraintLayout container;
 
         public MessageViewHolder(@NonNull View view) {
             super(view);
             container = view.findViewById(R.id.container);
             messageText = view.findViewById(R.id.textMessage);
         }
-
-        public TextView getMessageText() {
-            return messageText;
-        }
-
-        public ConstraintLayout getContainer() {
-            return container;
-        }
     }
 
     // ChatGPT Usage: No
     static class MessageViewHolderWithImage extends MessageViewHolder {
-        private final ImageView profileImage;
-
+        protected final ImageView profileImage;
         public MessageViewHolderWithImage(@NonNull View view) {
             super(view);
             profileImage = view.findViewById(R.id.profileImage);
         }
-
-        public ImageView getProfileImage() {
-            return profileImage;
-        }
     }
 
     // ChatGPT Usage: No
-    public class OnLongClickReportListener implements View.OnLongClickListener {
+    public class OnClickReportListener implements View.OnClickListener {
         private final int position;
 
-        public OnLongClickReportListener(int position) {
+        public OnClickReportListener(int position) {
             super();
             this.position = position;
         }
 
         @Override
-        public boolean onLongClick(View view) {
+        public void onClick(View view) {
             // Create the dialog
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
             View dialogView = inflater.inflate(R.layout.report_user_dialogue, null);
@@ -267,7 +250,6 @@ public class MessageAdapter extends RecyclerView.Adapter {
 
             // Finally show dialog
             alertDialog.show();
-            return true;
         }
     }
 }

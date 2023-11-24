@@ -63,7 +63,7 @@ public class SearchTest {
 
         // Check if request dialog is displayed
         UiTestHelper.addDelay(1000);
-        List<Integer> idsToCheck = Arrays.asList(R.id.addButton, R.id.nameText, R.id.profileImage);
+        List<Integer> idsToCheck = Arrays.asList(R.id.pro, R.id.nameText, R.id.profileImage);
         UiTestHelper.checkViewListDisplay(idsToCheck, true);
 
         // Click add button to send request

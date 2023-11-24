@@ -41,11 +41,6 @@ public class User {
     }
 
     // ChatGPT Usage: No
-    public String getProfilePic() {
-        return profileImageUrl;
-    }
-
-    // ChatGPT Usage: No
     public String getProfileImageUrl() {
         return profileImageUrl;
     }
@@ -56,18 +51,8 @@ public class User {
     }
 
     // ChatGPT Usage: No
-    public void setTopArtists(ArrayList<String> topArtists) {
-        this.topArtists = topArtists;
-    }
-
-    // ChatGPT Usage: No
     public ArrayList<String> getTopGenres() {
         return topGenres;
-    }
-
-    // ChatGPT Usage: No
-    public void setTopGenres(ArrayList<String> topGenres) {
-        this.topGenres = topGenres;
     }
 
     // ChatGPT Usage: No
