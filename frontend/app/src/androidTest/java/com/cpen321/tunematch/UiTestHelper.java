@@ -4,22 +4,17 @@ import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.CoreMatchers.anything;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.allOf;
-import static org.junit.Assert.assertEquals;
 
 import android.os.IBinder;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.SeekBar;
@@ -29,16 +24,14 @@ import androidx.test.espresso.Espresso;
 import androidx.test.espresso.Root;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
-import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.action.GeneralLocation;
 import androidx.test.espresso.action.GeneralSwipeAction;
 import androidx.test.espresso.action.Press;
 import androidx.test.espresso.action.Swipe;
-import androidx.test.espresso.assertion.PositionAssertions;
+import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.espresso.matcher.BoundedMatcher;
 import androidx.test.espresso.matcher.ViewMatchers;
-import androidx.test.espresso.action.ViewActions;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -46,7 +39,6 @@ import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 
 import java.util.List;
-import java.util.Map;
 
 public class UiTestHelper {
 
@@ -178,8 +170,8 @@ public class UiTestHelper {
     }
 
     // ChatGPT Usage: Partial
-    public static ViewAction typeSearchViewText(final String text){
-        return new ViewAction(){
+    public static ViewAction typeSearchViewText(final String text) {
+        return new ViewAction() {
             @Override
             public Matcher<View> getConstraints() {
                 //Ensure that only apply if it is a SearchView and if it is visible.
@@ -193,7 +185,7 @@ public class UiTestHelper {
 
             @Override
             public void perform(UiController uiController, View view) {
-                ((SearchView) view).setQuery(text,true);
+                ((SearchView) view).setQuery(text, true);
             }
         };
     }
@@ -253,25 +245,6 @@ public class UiTestHelper {
     }
 
     // ChatGPT Usage: No
-    public static class ToastMatcher extends TypeSafeMatcher<Root> {
-        @Override
-        public void describeTo(Description description) {
-            description.appendText("is toast");
-        }
-
-        @Override
-        public boolean matchesSafely(Root root) {
-            int type = root.getWindowLayoutParams().get().type;
-            if ((type == WindowManager.LayoutParams.TYPE_TOAST)) {
-                IBinder windowToken = root.getDecorView().getWindowToken();
-                IBinder appToken = root.getDecorView().getApplicationWindowToken();
-                return windowToken == appToken;
-            }
-            return false;
-        }
-    }
-
-    // ChatGPT Usage: No
     public static void setSeekBarPosition(int pos) {
         onView(withId(R.id.seekBar)).perform(setProgress(pos));
 
@@ -285,10 +258,12 @@ public class UiTestHelper {
                 SeekBar seekBar = (SeekBar) view;
                 seekBar.setProgress(progress);
             }
+
             @Override
             public String getDescription() {
                 return "Set a progress on a SeekBar";
             }
+
             @Override
             public Matcher<View> getConstraints() {
                 return ViewMatchers.isAssignableFrom(SeekBar.class);
@@ -315,6 +290,25 @@ public class UiTestHelper {
                 return seekBar.getProgress() == expectedProgress;
             }
         };
+    }
+
+    // ChatGPT Usage: No
+    public static class ToastMatcher extends TypeSafeMatcher<Root> {
+        @Override
+        public void describeTo(Description description) {
+            description.appendText("is toast");
+        }
+
+        @Override
+        public boolean matchesSafely(Root root) {
+            int type = root.getWindowLayoutParams().get().type;
+            if ((type == WindowManager.LayoutParams.TYPE_TOAST)) {
+                IBinder windowToken = root.getDecorView().getWindowToken();
+                IBinder appToken = root.getDecorView().getApplicationWindowToken();
+                return windowToken == appToken;
+            }
+            return false;
+        }
     }
 }
 
