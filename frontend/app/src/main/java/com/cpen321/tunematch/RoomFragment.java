@@ -76,7 +76,6 @@ public class RoomFragment extends Fragment {
     private SpotifyClient spotifyClient;
     private ReduxStore model;
     private WebSocketService webSocketService;
-    private SpotifyService mSpotifyService;
     private long currentPosition = 0;
     private Runnable searchRunnable;
     private Song lastSongState = null;
@@ -142,7 +141,7 @@ public class RoomFragment extends Fragment {
         // Get instances of MainActivity, WebSocketService, and SpotifyService
         MainActivity mainActivity = (MainActivity) getActivity();
         webSocketService = mainActivity.getWebSocketService();
-        mSpotifyService = mainActivity.getSpotifyService();
+        SpotifyService mSpotifyService = mainActivity.getSpotifyService();
         mSpotifyAppRemote = mSpotifyService.getSpotifyAppRemote();
     }
 
@@ -170,9 +169,6 @@ public class RoomFragment extends Fragment {
         // Initially set chatBtn and exitBtn to GONE
         chatBtn.setVisibility(View.GONE);
         exitBtn.setVisibility(View.GONE);
-
-        // Get the current session
-        CurrentSession currentSession = model.getCurrentSession().getValue();
 
         // Set the queue fragment to be the default fragment in the subFrame
         switchFragment(R.id.subFrame, queueFrag);
@@ -241,7 +237,7 @@ public class RoomFragment extends Fragment {
                     messageToSend.put("method", "SESSION");
                     messageToSend.put("action", "leave");
                 } catch (JSONException e) {
-                    throw new RuntimeException(e);
+                    Log.d("RoomFragment", "Error: " + e.getMessage());
                 }
                 if (webSocketService != null) {
                     model.checkSessionActive().postValue(false);
@@ -264,7 +260,7 @@ public class RoomFragment extends Fragment {
                     Song song = new Song(songId, songName, songArtist, songDuration);
                     addSongToQueue(song);
                 } catch (JSONException e) {
-                    throw new RuntimeException(e);
+                    Log.d("RoomFragment", "Error: " + e.getMessage());
                 }
             }
         });
@@ -377,7 +373,7 @@ public class RoomFragment extends Fragment {
                         messageToSend.put("action", "queueSeek");
                         messageToSend.put("body", new JSONObject().put("seekPosition", newProgress));
                     } catch (JSONException e) {
-                        throw new RuntimeException(e);
+                        Log.d("RoomFragment", "Error: " + e.getMessage());
                     }
                     webSocketService.sendMessage(messageToSend.toString());
                 }
@@ -397,7 +393,7 @@ public class RoomFragment extends Fragment {
                             messageToSend.put("method", "SESSION");
                             messageToSend.put("action", "queueResume");
                         } catch (JSONException e) {
-                            throw new RuntimeException(e);
+                            Log.d("RoomFragment", "Error: " + e.getMessage());
                         }
                         webSocketService.sendMessage(messageToSend.toString());
                     }
@@ -409,7 +405,7 @@ public class RoomFragment extends Fragment {
                             messageToSend.put("method", "SESSION");
                             messageToSend.put("action", "queuePause");
                         } catch (JSONException e) {
-                            throw new RuntimeException(e);
+                            Log.d("RoomFragment", "Error: " + e.getMessage());
                         }
                         webSocketService.sendMessage(messageToSend.toString());
                     }
@@ -437,7 +433,7 @@ public class RoomFragment extends Fragment {
                         messageToSend.put("action", "queueSeek");
                         messageToSend.put("body", new JSONObject().put("seekPosition", 0));
                     } catch (JSONException e) {
-                        throw new RuntimeException(e);
+                        Log.d("RoomFragment", "Error: " + e.getMessage());
                     }
                     webSocketService.sendMessage(messageToSend.toString());
                 }
@@ -586,18 +582,18 @@ public class RoomFragment extends Fragment {
 
     // ChatGPT Usage: No
     private String encodeSongTitle(String title) {
-        String encoded;
+        String encoded = null;
         try {
             encoded = URLEncoder.encode(title, Charsets.UTF_8.toString());
         } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+            Log.d("RoomFragment", "Error: " + e.getMessage());
         }
         return encoded;
     }
 
     // ChatGPT Usage: No
     private void addSongToQueue(Song suggestion) {
-        if (model.checkSessionActive().getValue()) {
+        if (Boolean.TRUE.equals(model.checkSessionActive().getValue())) {
             JSONObject message = new JSONObject();
             try {
                 message.put("method", "SESSION");

@@ -4,6 +4,7 @@ import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
@@ -93,8 +94,8 @@ public class UiTestHelper {
 
     // ChatGPT Usage: No
     public static void clickRecyclerItem(int recyclerViewId, int pos) {
-        Espresso.onView(ViewMatchers.withId(recyclerViewId))
-                .perform(RecyclerViewActions.actionOnItemAtPosition(pos, ViewActions.click()));
+        onView(withId(recyclerViewId))
+                .perform(actionOnItemAtPosition(pos, ViewActions.click()));
 
     }
 
@@ -194,12 +195,12 @@ public class UiTestHelper {
     public static void swipeListItem(int listViewId, int pos, Boolean isUp) {
         if (isUp) {
             onView(withId(listViewId)).perform(
-                    RecyclerViewActions.actionOnItemAtPosition(pos, new GeneralSwipeAction(
+                    actionOnItemAtPosition(pos, new GeneralSwipeAction(
                             Swipe.SLOW, GeneralLocation.CENTER, GeneralLocation.TOP_CENTER,
                             Press.FINGER)));
         } else {
             onView(withId(listViewId)).perform(
-                    RecyclerViewActions.actionOnItemAtPosition(pos, new GeneralSwipeAction(
+                    actionOnItemAtPosition(pos, new GeneralSwipeAction(
                             Swipe.SLOW, GeneralLocation.CENTER, GeneralLocation.BOTTOM_CENTER,
                             Press.FINGER)));
         }
@@ -266,7 +267,7 @@ public class UiTestHelper {
 
             @Override
             public Matcher<View> getConstraints() {
-                return ViewMatchers.isAssignableFrom(SeekBar.class);
+                return isAssignableFrom(SeekBar.class);
             }
         };
     }

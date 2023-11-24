@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         Intent intent = getIntent();
         if (intent == null || !intent.hasExtra("spotifyUserId")) {
-            throw new RuntimeException("no spotify userID");
+            throw new RuntimeException();
         }
 
         Intent webSocketIntent = new Intent(this, WebSocketService.class);

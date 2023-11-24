@@ -9,27 +9,21 @@ import android.view.View;
 import android.view.animation.LinearInterpolator;
 
 public class WaveView extends View {
-
     private static final int NUM_LINES = 5; // Adjust the number of lines as needed
-    private Paint paint;
-    private int waveColor;
-    private float amplitude;
+    private final Paint paint;
+    private final float amplitude;
     private float phase;
-    private float frequency;
+    private final float frequency;
 
-    public WaveView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(attrs);
-    }
+    public WaveView(Context context) {
+        super(context);
 
-    private void init(AttributeSet attrs) {
-        waveColor = getResources().getColor(R.color.pointGreen);
         amplitude = dpToPx(10); // Default amplitude in dp
         frequency = 1.25f; // Default frequency
         phase = 0;
 
         paint = new Paint();
-        paint.setColor(waveColor);
+        paint.setColor(getResources().getColor(R.color.pointGreen));
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setStrokeWidth(10);

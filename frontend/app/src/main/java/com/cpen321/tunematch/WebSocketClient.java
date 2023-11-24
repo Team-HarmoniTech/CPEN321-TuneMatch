@@ -41,9 +41,7 @@ import okhttp3.WebSocketListener;
 import okio.ByteString;
 
 public class WebSocketClient {
-    private static final int PING_INTERVAL = 1000;  // 30 seconds
     private final OkHttpClient client;
-    private final Handler handler;
     private final Context context;
     private final NotificationManager notification;
     ReduxStore model;
@@ -54,7 +52,6 @@ public class WebSocketClient {
         this.context = context;
         this.client = new OkHttpClient();
         this.model = model;
-        this.handler = new Handler();
         this.notification = notification;
     }
 
@@ -244,10 +241,8 @@ public class WebSocketClient {
                 Log.w("WebSocketClient", "Unknown friend action: " + action);
             }
 
-        } catch (IllegalStateException e) {
+        } catch (IllegalStateException | ParseException e) {
             Log.e("WebSocketClient", "Error processing friend message", e);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -515,161 +510,163 @@ public class WebSocketClient {
             JsonObject body = json.get("body").getAsJsonObject();
 
             // Handling the refresh action
-            if (action.equals("refresh")) {
-                JsonArray requesting = body.get("requesting").getAsJsonArray();
-                JsonArray requested = body.get("requested").getAsJsonArray();
-                // TODO: Update the Redux store with the refreshed lists of requesting and requested users
-                List<SearchUser> newRequests = model.getReceivedRequests().getValue();
-                if (newRequests == null) {
-                    newRequests = new ArrayList<SearchUser>();
-                }
-                for (int i = 0; i < requesting.size(); i++) {
-                    JsonObject request = requesting.get(i).getAsJsonObject();
-                    String userId = request.get("userId").getAsString();
-                    String userName = request.get("username").getAsString();
-                    String profilePic = getStringOrNull(request.get("profilePic"));
-                    SearchUser requestingUser = new SearchUser(userName, userId, profilePic);
-                    newRequests.add(requestingUser);
-                }
-                model.getReceivedRequests().postValue(newRequests);
+            switch (action) {
+                case "refresh":
+                    JsonArray requesting = body.get("requesting").getAsJsonArray();
+                    JsonArray requested = body.get("requested").getAsJsonArray();
+                    // TODO: Update the Redux store with the refreshed lists of requesting and requested users
+                    List<SearchUser> newRequests = model.getReceivedRequests().getValue();
+                    if (newRequests == null) {
+                        newRequests = new ArrayList<SearchUser>();
+                    }
+                    for (int i = 0; i < requesting.size(); i++) {
+                        JsonObject request = requesting.get(i).getAsJsonObject();
+                        String userId = request.get("userId").getAsString();
+                        String userName = request.get("username").getAsString();
+                        String profilePic = getStringOrNull(request.get("profilePic"));
+                        SearchUser requestingUser = new SearchUser(userName, userId, profilePic);
+                        newRequests.add(requestingUser);
+                    }
+                    model.getReceivedRequests().postValue(newRequests);
 
-                List<SearchUser> sentRequests = model.getSentRequests().getValue();
-                if (sentRequests == null) {
-                    sentRequests = new ArrayList<SearchUser>();
-                }
-                for (int i = 0; i < requested.size(); i++) {
-                    JsonObject request = requested.get(i).getAsJsonObject();
-                    String userId = request.get("userId").getAsString();
-                    String userName = request.get("username").getAsString();
-                    String profilePic = getStringOrNull(request.get("profilePic"));
-                    SearchUser requestedUser = new SearchUser(userName, userId, profilePic);
-                    sentRequests.add(requestedUser);
-                }
-                model.getSentRequests().postValue(sentRequests);
-            }
+                    List<SearchUser> sentRequests = model.getSentRequests().getValue();
+                    if (sentRequests == null) {
+                        sentRequests = new ArrayList<SearchUser>();
+                    }
+                    for (int i = 0; i < requested.size(); i++) {
+                        JsonObject request = requested.get(i).getAsJsonObject();
+                        String userId = request.get("userId").getAsString();
+                        String userName = request.get("username").getAsString();
+                        String profilePic = getStringOrNull(request.get("profilePic"));
+                        SearchUser requestedUser = new SearchUser(userName, userId, profilePic);
+                        sentRequests.add(requestedUser);
+                    }
+                    model.getSentRequests().postValue(sentRequests);
+                    break;
 
-            // Handling the add action
-            else if (action.equals("add")) {
-                String userId = body.get("userId").getAsString();
-                String username = body.get("username").getAsString();
-                String profilePic = getStringOrNull(body.get("profilePic"));
-                JsonElement currentSong = body.get("currentSong");
-                JsonElement currentSource = body.get("currentSource");
-                Date lastUpdated = timestampFormat.parse(body.get("lastUpdated").getAsString());
+                // Handling the add action
+                case "add": {
+                    String userId = body.get("userId").getAsString();
+                    String username = body.get("username").getAsString();
+                    String profilePic = getStringOrNull(body.get("profilePic"));
+                    JsonElement currentSong = body.get("currentSong");
+                    JsonElement currentSource = body.get("currentSource");
+                    Date lastUpdated = timestampFormat.parse(body.get("lastUpdated").getAsString());
 
-                Log.d("WebSocketClient", "Add friend: " + username);
-                SearchUser newRequest = new SearchUser(username, userId, profilePic);
+                    Log.d("WebSocketClient", "Add friend: " + username);
+                    SearchUser newRequest = new SearchUser(username, userId, profilePic);
 
-                // If request is from user that I sent request before remove from sent
-                boolean friendAdded = false;
-                List<SearchUser> sent = model.getSentRequests().getValue();
-                if (sent != null) {
-                    List<SearchUser> updatedSent = sent
-                            .stream()
-                            .filter(u -> !u.getId().equals(userId))
-                            .collect(Collectors.toList());
-                    if (updatedSent.size() < sent.size()) {
-                        Log.d("WebSocketClient", "Friend " + username + " added");
-                        model.setSentRequestsList(updatedSent);
-                        friendAdded = true;
+                    // If request is from user that I sent request before remove from sent
+                    boolean friendAdded = false;
+                    List<SearchUser> sent = model.getSentRequests().getValue();
+                    if (sent != null) {
+                        List<SearchUser> updatedSent = sent
+                                .stream()
+                                .filter(u -> !u.getId().equals(userId))
+                                .collect(Collectors.toList());
+                        if (updatedSent.size() < sent.size()) {
+                            Log.d("WebSocketClient", "Friend " + username + " added");
+                            model.setSentRequestsList(updatedSent);
+                            friendAdded = true;
 
-                        Friend newFriend = new Friend(userId, username, profilePic);
-                        if (!currentSong.isJsonNull()) {
-                            Song song = new Song(
-                                    currentSong.getAsJsonObject().get("uri").getAsString(),
-                                    currentSong.getAsJsonObject().get("name").getAsString(),
-                                    currentSong.getAsJsonObject().get("artist").getAsString(),
-                                    currentSong.getAsJsonObject().get("durationMs").getAsLong()
-                            );
-                            song.setSongAlbum(currentSong.getAsJsonObject().get("album").getAsString());
-                            newFriend.setCurrentSong(song);
+                            Friend newFriend = new Friend(userId, username, profilePic);
+                            if (!currentSong.isJsonNull()) {
+                                Song song = new Song(
+                                        currentSong.getAsJsonObject().get("uri").getAsString(),
+                                        currentSong.getAsJsonObject().get("name").getAsString(),
+                                        currentSong.getAsJsonObject().get("artist").getAsString(),
+                                        currentSong.getAsJsonObject().get("durationMs").getAsLong()
+                                );
+                                song.setSongAlbum(currentSong.getAsJsonObject().get("album").getAsString());
+                                newFriend.setCurrentSong(song);
+                            }
+
+                            if (!currentSource.isJsonNull()) {
+                                newFriend.setCurrentSource(currentSource);
+                            }
+                            List<Friend> friendList = model.getFriendsList().getValue();
+                            if (friendList == null) {
+                                friendList = new ArrayList<>();
+                            }
+                            newFriend.setLastUpdated(lastUpdated);
+                            friendList.add(newFriend);
+                            model.getFriendsList().postValue(friendList);
+
+                            // Check permission
+                            if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                                CharSequence name = "New Friend";
+                                int importance = NotificationManager.IMPORTANCE_DEFAULT;
+                                NotificationChannel channel = new NotificationChannel("friend_request_channel", name, importance);
+                                notification.createNotificationChannel(channel);
+
+                                // Build the notification
+                                NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel.getId())
+                                        .setSmallIcon(R.drawable.default_profile_image)
+                                        .setContentTitle("New Friend")
+                                        .setContentText(username + " accepted your friend request")
+                                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                        .setAutoCancel(true); // Automatically removes the notification when the user taps it
+
+                                // Show the notification
+                                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+                                notificationManager.notify(1, builder.build());
+                            }
                         }
+                    }
 
-                        if (!currentSource.isJsonNull()) {
-                            newFriend.setCurrentSource(currentSource);
+                    // If request is from new user, add it to received request list
+                    if (!friendAdded && !model.inReceivedRequest(newRequest)) {
+                        Log.d("WebSocketClient", "Friends Requested from " + username);
+                        List<SearchUser> requestList = model.getReceivedRequests().getValue();
+                        if (requestList == null) {
+                            requestList = new ArrayList<SearchUser>();
                         }
-                        List<Friend> friendList = model.getFriendsList().getValue();
-                        if (friendList == null) {
-                            friendList = new ArrayList<>();
-                        }
-                        newFriend.setLastUpdated(lastUpdated);
-                        friendList.add(newFriend);
-                        model.getFriendsList().postValue(friendList);
+                        requestList.add(newRequest);
+                        model.getReceivedRequests().postValue(requestList);
 
                         // Check permission
-                        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-                            CharSequence name = "New Friend";
-                            int importance = NotificationManager.IMPORTANCE_DEFAULT;
-                            NotificationChannel channel = new NotificationChannel("friend_request_channel", name, importance);
-                            notification.createNotificationChannel(channel);
-
-                            // Build the notification
-                            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel.getId())
-                                    .setSmallIcon(R.drawable.default_profile_image)
-                                    .setContentTitle("New Friend")
-                                    .setContentText(username + " accepted your friend request")
-                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                                    .setAutoCancel(true); // Automatically removes the notification when the user taps it
-
-                            // Show the notification
-                            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-                            notificationManager.notify(1, builder.build());
+                        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                            return;
                         }
+
+                        CharSequence name = "New Friend";
+                        int importance = NotificationManager.IMPORTANCE_DEFAULT;
+                        NotificationChannel channel = new NotificationChannel("friend_request_channel", name, importance);
+                        notification.createNotificationChannel(channel);
+
+                        // Build the notification
+                        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel.getId())
+                                .setSmallIcon(R.drawable.default_profile_image)
+                                .setContentTitle("New Friend")
+                                .setContentText("You have received new request from " + username)
+                                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                .setAutoCancel(true); // Automatically removes the notification when the user taps it
+
+                        // Show the notification
+                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+                        notificationManager.notify(1, builder.build());
                     }
+                    break;
                 }
 
-                // If request is from new user, add it to received request list
-                if (!friendAdded && !model.inReceivedRequest(newRequest)) {
-                    Log.d("WebSocketClient", "Friends Requested from " + username);
-                    List<SearchUser> requestList = model.getReceivedRequests().getValue();
-                    if (requestList == null) {
-                        requestList = new ArrayList<SearchUser>();
-                    }
-                    requestList.add(newRequest);
-                    model.getReceivedRequests().postValue(requestList);
+                // Handling the remove action
+                case "remove": {
+                    String userId = body.get("userId").getAsString();
 
-                    // Check permission
-                    if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                        return;
-                    }
-
-                    CharSequence name = "New Friend";
-                    int importance = NotificationManager.IMPORTANCE_DEFAULT;
-                    NotificationChannel channel = new NotificationChannel("friend_request_channel", name, importance);
-                    notification.createNotificationChannel(channel);
-
-                    // Build the notification
-                    NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel.getId())
-                            .setSmallIcon(R.drawable.default_profile_image)
-                            .setContentTitle("New Friend")
-                            .setContentText("You have received new request from " + username)
-                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                            .setAutoCancel(true); // Automatically removes the notification when the user taps it
-
-                    // Show the notification
-                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-                    notificationManager.notify(1, builder.build());
+                    model.removeRequest(model.getSentRequests(), userId);
+                    model.removeRequest(model.getReceivedRequests(), userId);
+                    model.removeFriend(userId);
+                    break;
                 }
+
+                // Handling any other unexpected actions
+                default:
+                    Log.w("WebSocketClient", "Unknown request action: " + action);
+                    break;
             }
 
-            // Handling the remove action
-            else if (action.equals("remove")) {
-                String userId = body.get("userId").getAsString();
-
-                model.removeRequest(model.getSentRequests(), userId);
-                model.removeRequest(model.getReceivedRequests(), userId);
-                model.removeFriend(userId);
-            }
-
-            // Handling any other unexpected actions
-            else {
-                Log.w("WebSocketClient", "Unknown request action: " + action);
-            }
-
-        } catch (IllegalStateException e) {
+        } catch (IllegalStateException | ParseException e) {
             Log.e("WebSocketClient", "Error processing request message", e);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
         }
     }
 }
