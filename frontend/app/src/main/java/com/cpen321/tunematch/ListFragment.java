@@ -2,7 +2,6 @@
 package com.cpen321.tunematch;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,14 +11,12 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class ListFragment<T> extends Fragment {
 
-    protected ReduxStore model;
     protected final String listTitle;
+    protected ReduxStore model;
     protected List<T> listItems;
     protected WebSocketService webSocketService;
 

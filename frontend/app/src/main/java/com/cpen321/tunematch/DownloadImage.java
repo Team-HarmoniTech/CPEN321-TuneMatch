@@ -14,7 +14,7 @@ public class DownloadImage implements Runnable {
     private final ImageView image;
     private final String url;
     private final int placeholder;
-    private List<Transformation> transformations = new ArrayList<>();
+    private final List<Transformation> transformations = new ArrayList<>();
 
     // ChatGPT Usage: Partial
     public DownloadImage(ImageView image, String url, int placeholder) {

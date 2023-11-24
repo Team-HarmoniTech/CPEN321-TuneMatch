@@ -22,17 +22,16 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
+    private final Handler handler = new Handler(Looper.getMainLooper());
     ReduxStore model;
     Button createSessionButton;
     MainActivity mainActivity;
     BottomNavigationView bottomNavigationView;
     private View view;
     private WebSocketService webSocketService;
-    private final Handler handler = new Handler(Looper.getMainLooper());
 
     // ChatGPT Usage: Partial
     @Override

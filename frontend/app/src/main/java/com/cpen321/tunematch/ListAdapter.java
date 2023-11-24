@@ -2,19 +2,9 @@ package com.cpen321.tunematch;
 
 import android.app.Activity;
 import android.content.Context;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
-
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.List;
 
@@ -22,8 +12,8 @@ public abstract class ListAdapter<T> extends BaseAdapter {
     protected final ReduxStore model = ReduxStore.getInstance();
     protected final Context context;
     protected final Activity parentView;
-    protected List<T> itemList;
     protected final WebSocketService webSocketService;
+    protected List<T> itemList;
 
     // ChatGPT Usage: Partial
     public ListAdapter(Context context, Activity parentView, List<T> itemList, WebSocketService webSocketService) {

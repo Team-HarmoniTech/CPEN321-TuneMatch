@@ -13,8 +13,6 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
-import androidx.lifecycle.MutableLiveData;
-
 import com.spotify.android.appremote.api.ConnectionParams;
 import com.spotify.android.appremote.api.Connector;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
@@ -31,11 +29,11 @@ public class SpotifyService extends Service {
     private static final String CHANNEL_ID = "SpotifyService";
     private static final String REDIRECT_URI = "cpen321tunematch://callback"; // your redirect uri
     private final IBinder binder = new LocalBinder();
+    public boolean webSocketBound = false;
     ReduxStore model;
     private Song lastSong = null;
     private SpotifyAppRemote mSpotifyAppRemote;
     private String CLIENT_ID;
-    public boolean webSocketBound = false;
     private WebSocketService webSocketService;
     // ChatGPT Usage: Partial
     private final ServiceConnection webSocketConnection = new ServiceConnection() {

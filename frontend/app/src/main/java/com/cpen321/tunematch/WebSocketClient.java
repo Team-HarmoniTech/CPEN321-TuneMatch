@@ -42,12 +42,12 @@ import okio.ByteString;
 
 public class WebSocketClient {
     private static final int PING_INTERVAL = 1000;  // 30 seconds
-    ReduxStore model;
     private final OkHttpClient client;
-    private WebSocket webSocket;
     private final Handler handler;
     private final Context context;
     private final NotificationManager notification;
+    ReduxStore model;
+    private WebSocket webSocket;
 
     // ChatGPT Usage: Partial
     public WebSocketClient(ReduxStore model, Context context, NotificationManager notification) {

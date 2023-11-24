@@ -22,8 +22,6 @@ import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 
-import com.squareup.picasso.Picasso;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 

@@ -5,9 +5,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class CurrentSession {
-    private String sessionId;
     private final String sessionName;
     private final List<Message> messages;
+    private String sessionId;
     private List<User> sessionMembers;
     private List<Song> sessionQueue;
     private Song currentSong;

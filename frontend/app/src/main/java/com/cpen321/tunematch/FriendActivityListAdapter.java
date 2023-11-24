@@ -19,10 +19,10 @@ import java.util.Date;
 import java.util.List;
 
 public class FriendActivityListAdapter extends RecyclerView.Adapter<FriendActivityListAdapter.FriendViewHolder> {
-    private List<Friend> friends;
-    private final Handler handler;
     private static final long MIN_IN_MS = 60000;
+    private final Handler handler;
     private final long REFRESH_MS = MIN_IN_MS;
+    private List<Friend> friends;
 
     // ChatGPT Usage: No
     public FriendActivityListAdapter(List<Friend> friends, Handler handler) {

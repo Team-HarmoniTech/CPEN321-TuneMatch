@@ -27,11 +27,11 @@ import java.util.Objects;
 public class MessageAdapter extends RecyclerView.Adapter {
     public final static int MESSAGE_TYPE_RECEIVED = 1;
     public final static int MESSAGE_TYPE_SENT = 0;
-    private List<Message> messages;
     private final User currentUser;
     private final LayoutInflater inflater;
     private final Context context;
     private final BackendClient backend;
+    private List<Message> messages;
 
     // ChatGPT Usage: No
     public MessageAdapter(List<Message> messages, User currentUser, @NonNull LayoutInflater inflater, @NonNull Context context, @NonNull BackendClient backend) {
@@ -161,6 +161,7 @@ public class MessageAdapter extends RecyclerView.Adapter {
     // ChatGPT Usage: No
     static class MessageViewHolderWithImage extends MessageViewHolder {
         protected final ImageView profileImage;
+
         public MessageViewHolderWithImage(@NonNull View view) {
             super(view);
             profileImage = view.findViewById(R.id.profileImage);
@@ -227,7 +228,7 @@ public class MessageAdapter extends RecyclerView.Adapter {
                         @Override
                         public void run() {
                             try {
-                                List<Message> context = new ArrayList(messages);
+                                List<Message> context = new ArrayList<>(messages);
                                 BackendClient.ReportReason reason = (BackendClient.ReportReason) spinner.getSelectedItem();
                                 backend.generateReport(
                                         message.getSenderUserId(),

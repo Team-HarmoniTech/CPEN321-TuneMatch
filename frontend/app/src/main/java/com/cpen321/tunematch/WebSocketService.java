@@ -16,10 +16,10 @@ import java.util.Objects;
 import okhttp3.Headers;
 
 public class WebSocketService extends Service {
-    private final IBinder binder = new LocalBinder();
-    private WebSocketClient webSocketClient;
     private static final int NOTIFICATION_ID = 1;
     private static final String CHANNEL_ID = "WebSocketService";
+    private final IBinder binder = new LocalBinder();
+    private WebSocketClient webSocketClient;
 
     // ChatGPT Usage: No
     @Override

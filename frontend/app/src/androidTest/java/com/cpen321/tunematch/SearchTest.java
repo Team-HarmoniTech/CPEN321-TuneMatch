@@ -17,7 +17,7 @@ import java.util.List;
 public class SearchTest {
 
     private ActivityScenario<LoginActivity> loginActivityScenario;
-    private String VALID_USERNAME = "sojupapi";
+    private final String VALID_USERNAME = "sojupapi";
 
     // ChatGPT Usage: Partial
     @Before
