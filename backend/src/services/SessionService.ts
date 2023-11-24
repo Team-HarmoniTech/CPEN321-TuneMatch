@@ -43,7 +43,7 @@ export class SessionService {
       if (!otherSession) {
         throw { message: `User is not in a session.`, statusCode: 400 };
       }
-      session = await this.sessionDB.update({
+      let session = await this.sessionDB.update({
         where: { id: otherSession.id },
         data: { members: { connect: { id: userId } } },
         include: { members: true },
@@ -61,7 +61,7 @@ export class SessionService {
     }
 
     /* Update user with session */
-    const user = await userService.updateUserStatus(userId, undefined, { type: "session" });
+    const user = await userService.updateUserStatus(userId, undefined, { type: "session", members: session.members.map(m => m.username) });
     await this.messageSession(
       session.id,
       userId,

@@ -21,11 +21,11 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 public class ProfileFragment extends Fragment {
-    private View view;
     ReduxStore model;
     ApiClient apiClient;
     FragmentManager fm;
     FragmentTransaction ft;
+    private View view;
 
     // ChatGPT Usage: No
     @Override
@@ -33,7 +33,7 @@ public class ProfileFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         model = ReduxStore.getInstance();
-        apiClient = ((MainActivity) getActivity()).getBackend();;
+        apiClient = ((MainActivity) getActivity()).getBackend();
         fm = getActivity().getSupportFragmentManager();
     }
 
@@ -45,7 +45,7 @@ public class ProfileFragment extends Fragment {
         setupMyProfile();
 
         Button friendsListBtn = view.findViewById(R.id.friendsListBtn);
-        friendsListBtn.setOnClickListener(new View.OnClickListener(){
+        friendsListBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ListFragment friendsListFragment = ListFragment.newInstance(new ArrayList<>(), "Friends List");
@@ -73,11 +73,11 @@ public class ProfileFragment extends Fragment {
         });
 
         Button topArtistBtn = view.findViewById(R.id.topArtistsBtn);
-        topArtistBtn.setOnClickListener(new View.OnClickListener(){
+        topArtistBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ArrayList<String> topArtistsList = model.getCurrentUser().getValue().getTopArtists();
-                Log.d("ProfileFragment", "topArtistsList:"+topArtistsList);
+                Log.d("ProfileFragment", "topArtistsList:" + topArtistsList);
                 ListFragment topArtistFragment = ListFragment.newInstance(topArtistsList, "Top Artists");
 
                 // Begin a fragment transaction
@@ -90,11 +90,11 @@ public class ProfileFragment extends Fragment {
         });
 
         Button topGenresBtn = view.findViewById(R.id.topGenresBtn);
-        topGenresBtn.setOnClickListener(new View.OnClickListener(){
+        topGenresBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ArrayList<String> topGenreList = model.getCurrentUser().getValue().getTopGenres();
-                Log.d("ProfileFragment", "topGenresList:"+topGenreList);
+                Log.d("ProfileFragment", "topGenresList:" + topGenreList);
                 ListFragment topArtistFragment = ListFragment.newInstance(topGenreList, "Top Genres");
 
                 // Begin a fragment transaction
@@ -119,7 +119,7 @@ public class ProfileFragment extends Fragment {
 
         ImageView profileView = view.findViewById(R.id.pfpImageView);
         Picasso.get()
-                .load(current.getProfilePic())
+                .load(current.getProfileImageUrl())
                 .placeholder(R.drawable.default_profile_image)      // Set the default image
                 .error(R.drawable.default_profile_image)            // Use the default image in case of an error
                 .into(profileView);

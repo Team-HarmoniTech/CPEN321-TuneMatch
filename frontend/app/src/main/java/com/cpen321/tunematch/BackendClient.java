@@ -2,6 +2,7 @@ package com.cpen321.tunematch;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
@@ -17,16 +18,8 @@ import java.util.List;
 import retrofit2.Call;
 
 public class BackendClient extends ApiClient<BackendInterface> {
-    private @Nullable String currentUserId;
     private static final int MAX_PROFILE_URL = 500;
-
-    // ChatGPT Usage: No
-    @Override
-    protected String getBaseUrl() {
-        return
-                "https://zphy19my7b.execute-api.us-west-2.amazonaws.com/v1/";
-//                "http://10.0.2.2:80/";
-    }
+    private @Nullable String currentUserId;
 
     // ChatGPT Usage: No
     public BackendClient() {
@@ -34,9 +27,15 @@ public class BackendClient extends ApiClient<BackendInterface> {
     }
 
     // ChatGPT Usage: No
-    public BackendClient(String currentUserId) {
+    public BackendClient(@NonNull String currentUserId) {
         super(BackendInterface.class);
         this.currentUserId = currentUserId;
+    }
+
+    // ChatGPT Usage: No
+    @Override
+    protected String getBaseUrl() {
+        return "http://10.0.2.2:3000/"; //"https://zphy19my7b.execute-api.us-west-2.amazonaws.com/";
     }
 
     // ChatGPT Usage: No
@@ -101,10 +100,9 @@ public class BackendClient extends ApiClient<BackendInterface> {
             throw new ApiException(400, "userId is not set");
         }
         Call<String> call = api.searchUser(searchTerm, this.currentUserId);
-        JsonElement respons = call(call);
-        JsonArray response = respons.getAsJsonArray();
+        JsonArray response = call(call).getAsJsonArray();
         List<SearchUser> searchedUser = new ArrayList<>();
-        Log.d("", respons.toString());
+        Log.d("", response.toString());
         for (int i = 0; i < response.size(); i++) {
             JsonObject jsonObject = response.get(i).getAsJsonObject();
 
@@ -130,7 +128,7 @@ public class BackendClient extends ApiClient<BackendInterface> {
         }
         Call<String> call = api.getMe(this.currentUserId, fullProfile);
         JsonObject response = call(call).getAsJsonObject();
-        Log.d("backend", "getMe response: "+response);
+        Log.d("backend", "getMe response: " + response);
         User user;
         if (!fullProfile) {
             user = new User(
@@ -185,14 +183,6 @@ public class BackendClient extends ApiClient<BackendInterface> {
 //    }
 
     // ChatGPT Usage: No
-    enum ReportReason {
-        OFFENSIVE_LANGUAGE,
-        PLAYLIST_ABUSE,
-        SPAMING_CHAT,
-        OTHER
-    }
-
-    // ChatGPT Usage: No
     public void generateReport(String offenderId, ReportReason reason, List<Message> context, String text) throws ApiException {
         if (this.currentUserId == null) {
             throw new ApiException(400, "userId is not set");
@@ -206,5 +196,13 @@ public class BackendClient extends ApiClient<BackendInterface> {
 
         Call<String> call = api.createReport(body, this.currentUserId);
         call(call);
+    }
+
+    // ChatGPT Usage: No
+    enum ReportReason {
+        OFFENSIVE_LANGUAGE,
+        PLAYLIST_ABUSE,
+        SPAMING_CHAT,
+        OTHER
     }
 }

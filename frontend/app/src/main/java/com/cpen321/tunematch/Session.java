@@ -1,8 +1,8 @@
 package com.cpen321.tunematch;
 
 public class Session {
-    private String sessionId;
-    private String roomName;
+    private final String sessionId;
+    private final String roomName;
 
     // ChatGPT Usage: No
     public Session(String sessionId, String roomName) {

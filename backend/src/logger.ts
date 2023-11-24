@@ -5,7 +5,7 @@ const logger = {
     if (ENVIRONMENT !== "test") console.log(message, ...optionalParams) 
   },
   dev: (message?: any, ...optionalParams: any[]) => { 
-    if (ENVIRONMENT === "dev") console.debug(message, ...optionalParams) 
+    if (ENVIRONMENT === "dev") console.log(message, ...optionalParams) 
   },
   err: (message?: any, ...optionalParams: any[]) => {
     if (ENVIRONMENT !== "test") console.error(message, ...optionalParams) 

@@ -7,18 +7,10 @@
 
     <androidx.appcompat.widget.SearchView
         android:id="@+id/songSearchBar"
-<<<<<<< HEAD
-        android:layout_width="match_parent"
-        android:layout_height="54dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintTop_toTopOf="parent"
-=======
         android:layout_width="350dp"
         android:layout_height="56dp"
         android:background="@drawable/rounded_searchview_background"
         app:iconifiedByDefault="false"
->>>>>>> c9f7044b072594cf84a51a4f35c208f5e81fc61a
         app:layout_constraintBottom_toTopOf="@id/song_banner_imageview"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -20,15 +20,15 @@ import org.json.JSONObject;
 import java.util.List;
 
 public class CustomListAdapter extends BaseAdapter {
-    private Context context;
-    private Activity parentView;
-    private String listType;
-    ReduxStore model= ReduxStore.getInstance();
+    ReduxStore model = ReduxStore.getInstance();
+    private final Context context;
+    private final Activity parentView;
+    private final String listType;
     private List<String> itemList;
-    private WebSocketService webSocketService;
+    private final WebSocketService webSocketService;
 
     // ChatGPT Usage: Partial
-    public CustomListAdapter(Context context, Activity parentView, String listType, List<String> itemList, WebSocketService webSocketService){
+    public CustomListAdapter(Context context, Activity parentView, String listType, List<String> itemList, WebSocketService webSocketService) {
         this.context = context;
         this.parentView = parentView;
         this.listType = listType;
@@ -70,15 +70,15 @@ public class CustomListAdapter extends BaseAdapter {
         }
 
         if (listType.equals("FriendsList")) {                                               // in the HomeFragment
-            String[] item = itemList.get(position).split(";");                        // items = "name;song"
-
-            // Set friend name
-            TextView friendNameText = view.findViewById(R.id.requestNameText);
-            friendNameText.setText(item[0]);
-
-            // Set name of the song the friend is listening
-            TextView songText = view.findViewById(R.id.songTitleText);
-            songText.setText(item[1]);
+            //String[] item = itemList.get(position).split(";");                        // items = "name;song"
+            throw new RuntimeException("should not be here");
+//            // Set friend name
+//            TextView friendNameText = view.findViewById(R.id.requestNameText);
+//            friendNameText.setText(item[0]);
+//
+//            // Set name of the song the friend is listening
+//            TextView songText = view.findViewById(R.id.s);
+//            songText.setText(item[1]);
         } else if (listType.equals("SessionsList")) {                                       // in the HomeFragment
             // Set room name                                                                // items = "owner"
             TextView roomNameText = view.findViewById(R.id.roomNameText);
@@ -101,7 +101,7 @@ public class CustomListAdapter extends BaseAdapter {
                         messageToSend.put("action", "join");
                         messageToSend.put("body", body);
                     } catch (JSONException e) {
-                        Log.e("JSONException", "Exception message: "+e.getMessage());
+                        Log.e("JSONException", "Exception message: " + e.getMessage());
                     }
                     if (webSocketService != null) {
                         webSocketService.sendMessage(messageToSend.toString());
@@ -142,11 +142,11 @@ public class CustomListAdapter extends BaseAdapter {
                         body.put("userId", id);
                         messageToSend.put("body", body);
                     } catch (JSONException e) {
-                        Log.e("JSONException", "Exception message: "+e.getMessage());
+                        Log.e("JSONException", "Exception message: " + e.getMessage());
                     }
 
                     if (webSocketService != null) {
-                        Log.d("ProfileFragment", "Remove friend: "+id);
+                        Log.d("ProfileFragment", "Remove friend: " + id);
                         webSocketService.sendMessage(messageToSend.toString());
                         model.removeFriend(id);
                     }

@@ -24,14 +24,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class MessageAdapter extends RecyclerView.Adapter  {
-    private List<Message> messages;
-    private User currentUser;
-    private LayoutInflater inflater;
-    private Context context;
-    private BackendClient backend;
+public class MessageAdapter extends RecyclerView.Adapter {
     public final static int MESSAGE_TYPE_RECEIVED = 1;
     public final static int MESSAGE_TYPE_SENT = 0;
+    private List<Message> messages;
+    private final User currentUser;
+    private final LayoutInflater inflater;
+    private final Context context;
+    private final BackendClient backend;
 
     // ChatGPT Usage: No
     public MessageAdapter(List<Message> messages, User currentUser, @NonNull LayoutInflater inflater, @NonNull Context context, @NonNull BackendClient backend) {
@@ -47,9 +47,9 @@ public class MessageAdapter extends RecyclerView.Adapter  {
         if (viewType == MESSAGE_TYPE_SENT) {
             return new MessageViewHolder(
                     LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.chat_sent_message, parent, false)
+                            .inflate(R.layout.chat_sent_message, parent, false)
             );
-        } else  {
+        } else {
             return new MessageViewHolderWithImage(
                     LayoutInflater.from(parent.getContext())
                             .inflate(R.layout.chat_recieved_message, parent, false)
@@ -154,34 +154,39 @@ public class MessageAdapter extends RecyclerView.Adapter  {
     static class MessageViewHolder extends RecyclerView.ViewHolder {
         private final TextView messageText;
         private final ConstraintLayout container;
+
+        public MessageViewHolder(@NonNull View view) {
+            super(view);
+            container = view.findViewById(R.id.container);
+            messageText = view.findViewById(R.id.textMessage);
+        }
+
         public TextView getMessageText() {
             return messageText;
         }
+
         public ConstraintLayout getContainer() {
             return container;
-        }
-        public MessageViewHolder(@NonNull View view) {
-            super(view);
-            container = (ConstraintLayout) view.findViewById(R.id.container);
-            messageText = (TextView) view.findViewById(R.id.textMessage);
         }
     }
 
     // ChatGPT Usage: No
     static class MessageViewHolderWithImage extends MessageViewHolder {
         private final ImageView profileImage;
-        public ImageView getProfileImage() {
-            return profileImage;
-        }
+
         public MessageViewHolderWithImage(@NonNull View view) {
             super(view);
-            profileImage = (ImageView) view.findViewById(R.id.profileImage);
+            profileImage = view.findViewById(R.id.profileImage);
+        }
+
+        public ImageView getProfileImage() {
+            return profileImage;
         }
     }
 
     // ChatGPT Usage: No
     public class OnLongClickReportListener implements View.OnLongClickListener {
-        private int position;
+        private final int position;
 
         public OnLongClickReportListener(int position) {
             super();
@@ -223,6 +228,7 @@ public class MessageAdapter extends RecyclerView.Adapter  {
                         otherText.setVisibility(View.GONE);
                     }
                 }
+
                 @Override
                 public void onNothingSelected(AdapterView<?> adapterView) {
                     otherText.setVisibility(View.GONE);

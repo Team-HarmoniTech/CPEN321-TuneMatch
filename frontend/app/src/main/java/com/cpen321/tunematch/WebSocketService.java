@@ -1,28 +1,25 @@
 package com.cpen321.tunematch;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
-<<<<<<< HEAD
-=======
 import android.util.Log;
->>>>>>> c9f7044b072594cf84a51a4f35c208f5e81fc61a
+
+import java.util.Objects;
 
 import okhttp3.Headers;
 
 public class WebSocketService extends Service {
     private final IBinder binder = new LocalBinder();
     private WebSocketClient webSocketClient;
-
-    // ChatGPT Usage: No
-    public class LocalBinder extends Binder {
-        WebSocketService getService() {
-            return WebSocketService.this;
-        }
-    }
+    private static final int NOTIFICATION_ID = 1;
+    private static final String CHANNEL_ID = "WebSocketService";
 
     // ChatGPT Usage: No
     @Override
@@ -33,16 +30,30 @@ public class WebSocketService extends Service {
     // ChatGPT Usage: No
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.e("WebsocketServicebruh", "Service is being started");
-        // You can initialize your WebSocketClient here and start the connection.
-        // Assuming you get your ReduxStore instance from MainActivity or another source:
-        if (intent != null) {
-            ReduxStore model = ReduxStore.getInstance();
-            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            webSocketClient = new WebSocketClient(model, this, notificationManager);
-            Headers customheaders = new Headers.Builder().add("user-id", intent.getStringExtra("spotifyUserId")).build();
-            webSocketClient.start(customheaders); // You can provide custom headers if needed
+        Log.e("WebsocketService", "Service is being started");
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Your Channel Name",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
         }
+
+        Notification notification = new Notification.Builder(this, "WebSocketService")
+                .setContentTitle("WebSocketService")
+                .setContentText("Running in the foreground")
+                .build();
+        startForeground(NOTIFICATION_ID, notification);
+
+        ReduxStore model = ReduxStore.getInstance();
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        webSocketClient = new WebSocketClient(model, this, notificationManager);
+        Headers customheaders = new Headers.Builder().add("user-id", Objects.requireNonNull(intent.getStringExtra("spotifyUserId"))).build();
+        webSocketClient.start(customheaders); // You can provide custom headers if needed
+
         return START_STICKY;
     }
 
@@ -61,6 +72,13 @@ public class WebSocketService extends Service {
     public void sendMessage(String message) {
         if (webSocketClient != null) {
             webSocketClient.sendMessage(message);
+        }
+    }
+
+    // ChatGPT Usage: No
+    public class LocalBinder extends Binder {
+        WebSocketService getService() {
+            return WebSocketService.this;
         }
     }
 

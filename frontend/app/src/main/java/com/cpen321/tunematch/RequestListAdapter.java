@@ -18,10 +18,10 @@ import org.json.JSONObject;
 import java.util.List;
 
 public class RequestListAdapter extends ArrayAdapter<SearchUser> {
-    private List<SearchUser> dataList;
     private final Context context;
     private final WebSocketService webSocketService;
     ReduxStore model = ReduxStore.getInstance();
+    private List<SearchUser> dataList;
 
     // ChatGPT Usage: No
     public RequestListAdapter(Context context, List<SearchUser> dataList, WebSocketService webSocketService) {
@@ -63,7 +63,7 @@ public class RequestListAdapter extends ArrayAdapter<SearchUser> {
                     body.put("userId", currentItem.getId());
                     messageToSend.put("body", body);
                 } catch (JSONException e) {
-                    Log.e("JSONException", "Exception message: "+e.getMessage());
+                    Log.e("JSONException", "Exception message: " + e.getMessage());
                 }
 
                 if (webSocketService != null) {
@@ -87,7 +87,7 @@ public class RequestListAdapter extends ArrayAdapter<SearchUser> {
                     body.put("userId", currentItem.getId());
                     messageToSend.put("body", body);
                 } catch (JSONException e) {
-                    Log.e("JSONException", "Exception message: "+e.getMessage());
+                    Log.e("JSONException", "Exception message: " + e.getMessage());
                 }
 
                 if (webSocketService != null) {

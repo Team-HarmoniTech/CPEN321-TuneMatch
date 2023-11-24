@@ -1,11 +1,6 @@
 package com.cpen321.tunematch;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,11 +22,11 @@ import java.util.Date;
 import java.util.List;
 
 public class ChatFragment extends Fragment {
+    ReduxStore model;
     private RecyclerView chatWindow;
     private MessageAdapter chatAdapter;
     private TextInputEditText chatInput;
     private WebSocketService webSocketService;
-    ReduxStore model;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {

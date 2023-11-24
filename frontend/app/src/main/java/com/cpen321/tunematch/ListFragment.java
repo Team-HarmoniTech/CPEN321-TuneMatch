@@ -13,7 +13,7 @@ import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
 
-public class ListFragment extends Fragment{
+public class ListFragment extends Fragment {
 
     ReduxStore model;
     private String listTitle;
@@ -55,6 +55,8 @@ public class ListFragment extends Fragment{
 
         // Find the ListView and set the adapter
         ListView listView = view.findViewById(R.id.listView);
+        TextView emptyText = (TextView) view.findViewById(R.id.no_content);
+        listView.setEmptyView(emptyText);
 
         // Create an ArrayAdapter to populate the ListView
         if (listTitle.equals("Friends List")) {
@@ -65,7 +67,7 @@ public class ListFragment extends Fragment{
             model.getFriendsList().observe(getViewLifecycleOwner(), friends -> {
                 ArrayList<String> friendsListItems = new ArrayList<>();
                 for (Friend f : friends) {
-                    friendsListItems.add(f.getName()+";"+f.getId()+";"+f.getProfilePic());
+                    friendsListItems.add(f.getUserName() + ";" + f.getUserId() + ";" + f.getProfileImageUrl());
                 }
                 adapter.setData(friendsListItems);
                 adapter.notifyDataSetChanged();

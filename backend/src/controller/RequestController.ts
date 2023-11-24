@@ -1,38 +1,14 @@
 import {
   FriendsMessage,
   RequestsMessage,
-  transformObject,
+  transformFriend,
   transformUser,
-  transformUsers,
+  transformUsers
 } from "@models/UserModels";
-import { SocketMessage } from "@models/WebsocketModels";
 import { socketService, userService } from "@src/services";
 import WebSocket = require("ws");
 
 export class RequestController {
-  // Websocket Route Dispatcher
-  // ChatGPT Usage: No
-  async acceptRequest(
-    ws: WebSocket,
-    message: SocketMessage,
-    currentUserId: number,
-  ) {
-    const func = this[message.action];
-    if (!func) {
-      ws.send(
-        JSON.stringify({
-          Error: `Requests endpoint ${message.action} does not exist.`,
-        }),
-      );
-    } else {
-      try {
-        await func(ws, message, currentUserId);
-      } catch (err) {
-        ws.send(JSON.stringify(new RequestsMessage("error", err.message)));
-      }
-    }
-  }
-
   // WebSocket Routes
   // ChatGPT Usage: No
   async refresh(
@@ -67,12 +43,7 @@ export class RequestController {
         JSON.stringify(
           new RequestsMessage(
             "add",
-            await transformUser(user, async (user) => {
-              return {
-                currentSong: transformObject(user.current_song),
-                currentSource: transformObject(user.current_source),
-              };
-            }),
+            await transformFriend(user)
           ),
         ),
       );
@@ -86,12 +57,7 @@ export class RequestController {
         JSON.stringify(
           new FriendsMessage(
             "update",
-            await transformUser(otherUser, async (user) => {
-              return {
-                currentSong: transformObject(user.current_song),
-                currentSource: transformObject(user.current_source),
-              };
-            }),
+            await transformFriend(user)
           ),
         ),
       );

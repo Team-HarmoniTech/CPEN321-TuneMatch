@@ -3,26 +3,30 @@ package com.cpen321.tunematch;
 import java.util.Objects;
 
 public class Song {
-    private String songName;
-    private String songID;
-    private String duration;
-    private String songArtist;
-    private String currentPosition;
+    private final String songName;
+    private final String songID;
+    private final long duration;
+    private final String songArtist;
+    private String songAlbum;
+    private long currentPosition;
     private Boolean isPlaying;
 
     // ChatGPT Usage: No
-    public Song(String songID, String songName, String Artist, String duration) {
+    public Song(String songID, String songName, String artist, long duration) {
         this.songID = songID;
         this.songName = songName;
-        this.songArtist = Artist;
+        this.songArtist = artist;
         this.duration = duration;
         this.isPlaying = false;
-        this.currentPosition = "0";
+        this.currentPosition = 0;
     }
 
-    // ChatGPT Usage: No
-    public void setCurrentPosition(String timeStarted) {
-        this.currentPosition = timeStarted;
+    public String getSongAlbum() {
+        return songAlbum;
+    }
+
+    public void setSongAlbum(String songAlbum) {
+        this.songAlbum = songAlbum;
     }
 
     // ChatGPT Usage: No
@@ -36,7 +40,7 @@ public class Song {
     }
 
     // ChatGPT Usage: No
-    public String getDuration() {
+    public long getDuration() {
         return duration;
     }
 
@@ -51,13 +55,19 @@ public class Song {
     }
 
     // ChatGPT Usage: No
-    public String getCurrentPosition() {
+    public long getCurrentPosition() {
         return currentPosition;
+    }
+
+    // ChatGPT Usage: No
+    public void setCurrentPosition(long timeStarted) {
+        this.currentPosition = timeStarted;
     }
 
     public boolean isPlaying() {
         return isPlaying;
     }
+
     // Equals method to compare songs
     @Override
     public boolean equals(Object o) {
@@ -77,15 +87,11 @@ public class Song {
         return Objects.hash(songID, songName, songArtist, duration, currentPosition, isPlaying);
     }
 
-
     // ChatGPT Usage: No
-
     @Override
     public String toString() {
         return this.getSongName();
     }
-
-
 
 }
 

@@ -7,29 +7,6 @@ import { sessionService, userService } from "@src/services";
 import { WebSocket } from "ws";
 
 export class SessionController {
-  // Websocket Route Dispatcher
-  // ChatGPT Usage: No
-  async acceptRequest(
-    ws: WebSocket,
-    message: SessionMessage,
-    currentUserId: number,
-  ) {
-    const func = this[message.action];
-    if (!func) {
-      ws.send(
-        JSON.stringify({
-          Error: `Session endpoint ${message.action} does not exist.`,
-        }),
-      );
-    } else {
-      try {
-        await func(ws, message, currentUserId);
-      } catch (err) {
-        ws.send(JSON.stringify(new SessionMessage("error", err.message)));
-      }
-    }
-  }
-
   // WebSocket Routes
   // ChatGPT Usage: No
   async message(ws: WebSocket, message: SessionMessage, currentUserId: number) {

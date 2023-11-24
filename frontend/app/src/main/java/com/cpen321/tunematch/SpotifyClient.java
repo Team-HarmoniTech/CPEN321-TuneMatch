@@ -13,13 +13,7 @@ import java.util.Set;
 import retrofit2.Call;
 
 public class SpotifyClient extends ApiClient<SpotifyInterface> {
-    private String auth;
-
-    // ChatGPT Usage: No
-    @Override
-    protected String getBaseUrl() {
-        return "https://api.spotify.com/v1/";
-    }
+    private final String auth;
 
     // ChatGPT Usage: No
     public SpotifyClient(@NonNull String token) {
@@ -28,19 +22,15 @@ public class SpotifyClient extends ApiClient<SpotifyInterface> {
     }
 
     // ChatGPT Usage: No
-    public JsonObject getMe() throws ApiException {
-        Call<String> call = api.getUser(auth);
-        return call(call).getAsJsonObject();
+    @Override
+    protected String getBaseUrl() {
+        return "https://api.spotify.com/v1/";
     }
 
     // ChatGPT Usage: No
-    public class SpotifyTopResult {
-        public List<String> topArtists;
-        public List<String> topGenres;
-        public SpotifyTopResult(List<String> topArtists, List<String> topGenres) {
-            this.topArtists = topArtists;
-            this.topGenres = topGenres;
-        }
+    public JsonObject getMe() throws ApiException {
+        Call<String> call = api.getUser(auth);
+        return call(call).getAsJsonObject();
     }
 
     // ChatGPT Usage: No
@@ -70,5 +60,16 @@ public class SpotifyClient extends ApiClient<SpotifyInterface> {
         Call<String> call = api.getSong(auth, query, "track");
 //        Log.d("SpotifyClient", "getSong: " + call(call).getAsJsonObject());
         return call(call).getAsJsonObject();
+    }
+
+    // ChatGPT Usage: No
+    public class SpotifyTopResult {
+        public List<String> topArtists;
+        public List<String> topGenres;
+
+        public SpotifyTopResult(List<String> topArtists, List<String> topGenres) {
+            this.topArtists = topArtists;
+            this.topGenres = topGenres;
+        }
     }
 }

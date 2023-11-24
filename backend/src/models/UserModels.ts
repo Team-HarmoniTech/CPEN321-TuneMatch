@@ -8,6 +8,15 @@ export type VisibleUser = {
   [key: string]: any;
 };
 
+export type VisibleFriend = {
+  userId: String;
+  username: String;
+  profilePic: String;
+  currentSong: Object,
+  currentSource: Object,
+  lastUpdated: String
+};
+
 // ChatGPT Usage: Partial
 export async function transformUsers(
   users: User[],
@@ -29,6 +38,22 @@ export async function transformUser(
     profilePic: user.pfp_url,
     ...(extras ? await extras(user) : {}),
   };
+}
+
+export async function transformFriend(user: User): Promise<VisibleFriend> {
+  return await transformUser(user, async (user) => {
+    return {
+      currentSong: transformObject(user.current_song),
+      currentSource: transformObject(user.current_source),
+      lastUpdated: user.last_updated.toISOString()
+    };
+  }) as VisibleFriend;
+}
+
+export async function transformFriends(users: User[]): Promise<VisibleFriend[]> {
+  return await Promise.all(
+    users.map(async (user) => await transformFriend(user)),
+  ) as VisibleFriend[];
 }
 
 export function transformObject(input: any) {
