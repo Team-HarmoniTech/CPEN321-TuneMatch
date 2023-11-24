@@ -4,9 +4,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install -g pnpm
-
-RUN pnpm install
+RUN npm ci
 
 ENV DATABASE_URL="mysql://root:5KvX9bzs8x8VSAmwcD9S@mysql:3306/TuneMatchDB"
 

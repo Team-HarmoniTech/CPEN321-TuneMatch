@@ -22,6 +22,8 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
+      options:
+        timeout: 600s
     restart: always
     container_name: backend_app
     environment:
