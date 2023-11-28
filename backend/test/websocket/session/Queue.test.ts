@@ -1,7 +1,7 @@
 import { server } from "@src/index";
 import { sessionService } from "@src/services";
 import request from "superwstest";
-import { originalDate } from "test/globalSetup";
+import { originalDate } from "../../globalSetup";
 
 describe("Session Queue", () => {
     const testQueue = [
