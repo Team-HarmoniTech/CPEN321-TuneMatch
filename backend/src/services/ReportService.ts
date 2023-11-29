@@ -23,15 +23,14 @@ export class ReportService {
 
   // ChatGPT Usage: No
   async viewReports(dateFrom?: Date, dateTo?: Date): Promise<Report[]> {
-    return await this.reportDB.findMany({
-      // MIGHT NOT WOrk
-      where: {
-        timestamp: {
-          lte: dateTo,
-          gte: dateFrom,
-        },
-      },
+    const reports = (await this.reportDB.findMany()).filter(r => {
+      if (dateFrom && r.timestamp < dateFrom) 
+        return false;
+      if (dateTo && r.timestamp > dateTo)
+        return false;
+      return true;
     });
+    return reports
   }
 
   // ChatGPT Usage: No
