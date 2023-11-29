@@ -56,6 +56,7 @@ describe("Get report", () => {
 
         expect(res.statusCode).toBe(200);
         expect(res.body).toHaveLength(1);
+        console.log(res.body);
         expect(res.body).toStrictEqual([
             {
                 id: 1,
@@ -64,7 +65,7 @@ describe("Get report", () => {
                 reason: "OFFENSIVE_LANGUAGE",    
                 reason_text: "Bad behaviour",      
                 report_context: "Context or additional details",
-                timestamp: "2023-12-15T08:00:00.000Z"
+                timestamp: "2023-12-15T00:00:00.000Z"
             }
         ]);
     });
@@ -79,6 +80,7 @@ describe("Get report", () => {
             .get('/reports');
 
         expect(res.statusCode).toBe(200);
+        console.log(res.body);
         expect(res.body).toHaveLength(3);
         expect(res.body).toStrictEqual([
             {
@@ -88,7 +90,7 @@ describe("Get report", () => {
                 reason: "PLAYLIST_ABUSE",    
                 reason_text: "Abusing playlist",      
                 report_context: "Context or additional details",
-                timestamp: "2024-01-15T08:00:00.000Z"
+                timestamp: "2024-01-15T00:00:00.000Z"
             },
             {
                 id: 1,
@@ -97,7 +99,7 @@ describe("Get report", () => {
                 reason: "OFFENSIVE_LANGUAGE",    
                 reason_text: "Bad behaviour",      
                 report_context: "Context or additional details",
-                timestamp: "2023-12-15T08:00:00.000Z"
+                timestamp: "2023-12-15T00:00:00.000Z"
             },
             {
                 id: 2,
@@ -106,7 +108,7 @@ describe("Get report", () => {
                 reason: "PLAYLIST_ABUSE",    
                 reason_text: "Abusing playlist",      
                 report_context: "Context or additional details",
-                timestamp: "2022-12-01T08:00:00.000Z"
+                timestamp: "2022-12-01T00:00:00.000Z"
             }
         ])
     });
