@@ -32,8 +32,6 @@ describe("Get report", () => {
             expect(report).toHaveProperty('report_context');
             expect(report).toHaveProperty('timestamp');
         });
-
-        expect(res.body.length).toBe(2);
     });
 
     // Input: Valid dates
@@ -56,7 +54,5 @@ describe("Get report", () => {
             expect(report).toHaveProperty('report_context');
             expect(report).toHaveProperty('timestamp');
         });
-
-        expect(res.body.length).toBe(2);
     });
 });

@@ -450,7 +450,6 @@ describe("Session Queue", () => {
         
         await new Promise(f => setTimeout(f, 3000));
         queueData = await sessionService.getQueue(1);
-        expect(queueData).toBe({});
         expect(queueData.queue[0].title).toBe("5 second song #2");
     }, 15000);
 
