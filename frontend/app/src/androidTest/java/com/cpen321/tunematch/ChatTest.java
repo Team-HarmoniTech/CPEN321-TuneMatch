@@ -24,6 +24,7 @@ public class ChatTest {
     public void setUp() {
         Intents.init();
         loginActivityScenario = ActivityScenario.launch(LoginActivity.class);
+        UiTestHelper.clickOnView(R.id.spotify_login_button);
 
         UiTestHelper.addDelay(10000);
 

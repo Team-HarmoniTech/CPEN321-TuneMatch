@@ -80,7 +80,12 @@ public class SpotifyService extends Service {
         startForeground(NOTIFICATION_ID, notification);
 
         // Start spotify connection
-        CLIENT_ID = Objects.requireNonNull(intent.getStringExtra("clientID"));
+        try {
+            CLIENT_ID = Objects.requireNonNull(intent.getStringExtra("clientID"));
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            CLIENT_ID = LoginActivity.getClientId();
+        }
         model = ReduxStore.getInstance();
         if (mSpotifyAppRemote == null || !mSpotifyAppRemote.isConnected()) {
             connectToSpotify();

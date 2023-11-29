@@ -34,6 +34,16 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+//        spotifyLogin();
+
+        Button loginButton = findViewById(R.id.spotify_login_button);
+        loginButton.setOnClickListener(v -> {
+            spotifyLogin();
+        });
+    }
+
+    // ChatGPT Usage: Partial
+    public void spotifyLogin() {
         if (!SpotifyAppRemote.isSpotifyInstalled(this)) {
             Log.d(TAG, "onCreate: spotify is not installed");
             // Create an AlertDialog.Builder instance
@@ -55,31 +65,6 @@ public class LoginActivity extends AppCompatActivity {
             AuthorizationRequest request = builder.build();
             AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request);
         }
-
-        Button loginButton = findViewById(R.id.spotify_login_button);
-        loginButton.setOnClickListener(v -> {
-            if (!SpotifyAppRemote.isSpotifyInstalled(this)) {
-                Log.d(TAG, "onCreate: spotify is not installed");
-                // Create an AlertDialog.Builder instance
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage("Spotify app is not installed. Please download the Spotify app as it is required to run our app.")
-                        .setTitle("Spotify Not Installed")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // User clicked OK button
-                            }
-                        });
-                AlertDialog dialog = builder.create();
-                dialog.show();
-            } else {
-                AuthorizationRequest.Builder builder =
-                        new AuthorizationRequest.Builder(CLIENT_ID, AuthorizationResponse.Type.TOKEN, REDIRECT_URI);
-
-                builder.setScopes(new String[]{"user-read-private", "user-library-read", "user-top-read", "user-read-email", "playlist-read-private", "streaming"});
-                AuthorizationRequest request = builder.build();
-                AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request);
-            }
-        });
     }
 
     // ChatGPT Usage: Partial
@@ -221,5 +206,9 @@ public class LoginActivity extends AppCompatActivity {
                 dialog.show();
             }
         });
+    }
+
+    public static String getClientId() {
+        return CLIENT_ID;
     }
 }

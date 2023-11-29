@@ -4,6 +4,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 
@@ -14,8 +15,8 @@ public class WaveView extends View {
     private final float frequency;
     private float phase;
 
-    public WaveView(Context context) {
-        super(context);
+    public WaveView(Context context, AttributeSet attr) {
+        super(context, attr);
 
         amplitude = dpToPx(10); // Default amplitude in dp
         frequency = 1.25f; // Default frequency
