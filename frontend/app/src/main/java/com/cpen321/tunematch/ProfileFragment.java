@@ -24,6 +24,7 @@ public class ProfileFragment extends Fragment {
     private View view;
     ReduxStore model;
     ApiClient apiClient;
+    SpotifyService spotifyService;
     FragmentManager fm;
     FragmentTransaction ft;
 
@@ -33,7 +34,8 @@ public class ProfileFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         model = ReduxStore.getInstance();
-        apiClient = ((MainActivity) getActivity()).getBackend();;
+        apiClient = ((MainActivity) getActivity()).getBackend();
+        spotifyService = ((MainActivity) getActivity()).getSpotifyService();
         fm = getActivity().getSupportFragmentManager();
     }
 
@@ -102,6 +104,13 @@ public class ProfileFragment extends Fragment {
                 ft.replace(R.id.mainFrame, topArtistFragment);
                 ft.addToBackStack(null);
                 ft.commit();
+            }
+        });
+
+        view.findViewById(R.id.logoutBtn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                spotifyService.logoutSpotify();
             }
         });
 

@@ -1,7 +1,9 @@
 package com.cpen321.tunematch;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
@@ -93,4 +95,13 @@ public class SpotifyService extends Service {
     }
 
     // Additional methods related to Spotify functionality can be added here.
+    public void logoutSpotify() {
+        // Clear access token
+        SpotifyAppRemote.disconnect(mSpotifyAppRemote);
+
+        // Clear refresh token (if stored)
+        SharedPreferences.Editor editor = getSharedPreferences("my_preferences", Context.MODE_PRIVATE).edit();
+        editor.remove("SPOTIFY_REFRESH_TOKEN");
+        editor.apply();
+    }
 }
