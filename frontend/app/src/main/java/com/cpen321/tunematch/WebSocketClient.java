@@ -67,8 +67,8 @@ public class WebSocketClient {
 
     // ChatGPT Usage: Partial
     public void start(Headers customHeader) {
-        String url = "ws://10.0.2.2:3000/socket";
-        //String url = "wss://tunematch-api.bhairawaryan.com/socket";
+//        String url = "ws://10.0.2.2:3000/socket";
+        String url = "wss://tunematch-api.bhairawaryan.com/socket";
         Request request = new Request.Builder().url(url).build();
         if (customHeader != null) {
             request = new Request.Builder().url(url).headers(customHeader).build();

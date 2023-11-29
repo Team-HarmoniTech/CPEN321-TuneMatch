@@ -35,7 +35,7 @@ public class BackendClient extends ApiClient<BackendInterface> {
     // ChatGPT Usage: No
     @Override
     protected String getBaseUrl() {
-        return "http://10.0.2.2:3000/"; //"https://zphy19my7b.execute-api.us-west-2.amazonaws.com/";
+        return "https://zphy19my7b.execute-api.us-west-2.amazonaws.com/v1/";
     }
 
     // ChatGPT Usage: No
