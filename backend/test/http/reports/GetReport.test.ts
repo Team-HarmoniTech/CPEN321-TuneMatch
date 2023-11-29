@@ -56,6 +56,7 @@ describe("Get report", () => {
 
         expect(res.statusCode).toBe(200);
         expect(res.body).toHaveLength(1);
+        console.log(res.body);
         expect(res.body).toStrictEqual([
             {
                 id: 1,
@@ -79,6 +80,7 @@ describe("Get report", () => {
             .get('/reports');
 
         expect(res.statusCode).toBe(200);
+        console.log(res.body);
         expect(res.body).toHaveLength(3);
         expect(res.body).toStrictEqual([
             {
