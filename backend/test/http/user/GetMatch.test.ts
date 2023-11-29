@@ -7,6 +7,7 @@ describe("Get match", () => {
     // Expected status code: 200
     // Expected behavior: Return matched users data
     // Expected output: userId, username, profile-pic, match
+    // ChatGPT usage: None
     test("Existing executer and existing searched and match uncomputed", async () => {
       const res = await request(server)
         .get('/me/match/testUser1')
@@ -23,6 +24,7 @@ describe("Get match", () => {
     // Expected status code: 200
     // Expected behavior: Return matched users data
     // Expected output: userId, username, profile-pic, match
+    // ChatGPT usage: None
     test("User is trying to search for match with himself", async () => {
       const res = await request(server)
         .get('/me/match/testUser1')
@@ -39,6 +41,7 @@ describe("Get match", () => {
     // Expected status code: 200
     // Expected behavior: Return matched users data
     // Expected output: userId, username, profile-pic, match
+    // ChatGPT usage: None
     test("Existing executer and existing searched and match computed", async () => {
       const executingUser = await userService.getUserBySpotifyId("testUser1");
       const otherUser = await userService.getUserBySpotifyId("testUser2");
@@ -59,6 +62,7 @@ describe("Get match", () => {
     // Expected status code: 400
     // Expected behavior: Return error message
     // Expected output: User not found
+    // ChatGPT usage: None
     test("Existing executer and non existing searched", async () => {
       const res = await request(server)
         .get('/me/match/nonExistingSpotifyId')
@@ -72,6 +76,7 @@ describe("Get match", () => {
     // Expected status code: 401
     // Expected behavior: Return error message
     // Expected output: This executing user does not exist
+    // ChatGPT usage: None
     test("Non-existing executer", async () => {
       const res = await request(server)
         .get('/me/match/testUser1')

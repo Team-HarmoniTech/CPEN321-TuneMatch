@@ -10,10 +10,8 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
-import com.cpen321.tunematch.UiTestHelper;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PlaySongTest {
@@ -46,7 +44,7 @@ public class PlaySongTest {
         UiTestHelper.addDelay(1000);
 
         List<Integer> idsToCheck = Arrays.asList(R.id.songSearchBar, R.id.queueBtn, R.id.chatBtn,
-                                                    R.id.exitBtn, R.id.recycler_view);
+                R.id.exitBtn, R.id.recycler_view);
         UiTestHelper.checkViewListDisplay(idsToCheck, true);
     }
 
@@ -62,7 +60,7 @@ public class PlaySongTest {
 
         // Checks if in the session
         List<Integer> idsToCheck = Arrays.asList(R.id.songSearchBar, R.id.queueBtn, R.id.chatBtn,
-                                                    R.id.exitBtn, R.id.recycler_view);
+                R.id.exitBtn, R.id.recycler_view);
         UiTestHelper.checkViewListDisplay(idsToCheck, true);
     }
 
@@ -105,7 +103,7 @@ public class PlaySongTest {
         }
 
         // Check when next button is clicked, have pause button and queue length decrease
-        for (int size = songList.size()-2; size >= 0; size--) {
+        for (int size = songList.size() - 2; size >= 0; size--) {
             UiTestHelper.clickOnView(R.id.next_button);
 
             UiTestHelper.checkListSize(R.id.recycler_view, size);
@@ -124,7 +122,7 @@ public class PlaySongTest {
         for (int i = 0; i < 10; i++) {
             UiTestHelper.clickOnView(R.id.play_button);
             UiTestHelper.addDelay(1000);
-            UiTestHelper.checkSeekBarPosition(i+1);
+            UiTestHelper.checkSeekBarPosition(i + 1);
         }
     }
 
@@ -138,7 +136,7 @@ public class PlaySongTest {
         UiTestHelper.clickRecyclerItem(R.id.recycler_view, 0);
 
         for (int i = 0; i < 5; i++) {
-            UiTestHelper.addDelay(i*1000);
+            UiTestHelper.addDelay(i * 1000);
             UiTestHelper.clickOnView(R.id.previous_button);
 
             UiTestHelper.checkTextIsDisplayed("00:00");
@@ -196,8 +194,8 @@ public class PlaySongTest {
         A_testCreateSession();
 
         for (int i = 0; i < 10; i++) {
-            UiTestHelper.setSeekBarPosition(i*10);
-            UiTestHelper.checkSeekBarPosition(i*10);
+            UiTestHelper.setSeekBarPosition(i * 10);
+            UiTestHelper.checkSeekBarPosition(i * 10);
         }
 
     }

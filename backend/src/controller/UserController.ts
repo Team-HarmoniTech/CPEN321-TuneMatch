@@ -1,8 +1,8 @@
 import {
   FriendsMessage,
-  transformObject,
+  transformFriends,
   transformUser,
-  transformUsers,
+  transformUsers
 } from "@models/UserModels";
 import { userMatchingService, userService } from "@src/services";
 import { NextFunction, Request, Response } from "express";
@@ -114,46 +114,17 @@ export class UserController {
     );
   }
 
-  // Websocket Route Dispatcher
-  // ChatGPT Usage: No
-  async acceptRequest(
-    ws: WebSocket,
-    message: FriendsMessage,
-    currentUserId: number,
-  ) {
-    const func = this[message.action];
-    if (!func) {
-      ws.send(
-        JSON.stringify({
-          Error: `Friends endpoint ${message.action} does not exist.`,
-        }),
-      );
-    } else {
-      try {
-        await func(ws, message, currentUserId);
-      } catch (err) {
-        //ws.send(JSON.stringify(new FriendsMessage("error", err.message)));
-      }
-    }
-  }
-
   // Websocket Routes
   // ChatGPT Usage: No
   async refresh(ws: WebSocket, message: FriendsMessage, currentUserId: number) {
     const friends = await userService.getUserFriends(currentUserId);
-
     ws.send(
       JSON.stringify(
         new FriendsMessage(
           "refresh",
-          await transformUsers(friends, async (user) => {
-            return {
-              currentSong: transformObject(user.current_song),
-              currentSource: transformObject(user.current_source),
-            };
-          }),
+          await transformFriends(friends)
         ),
-      ),
+      )
     );
   }
 

@@ -2,6 +2,7 @@ import { server } from "@src/index";
 import { database, userService } from "@src/services";
 import { SessionService } from "@src/services/SessionService";
 import request from "superwstest";
+import { testConstantDate } from "../../globalSetup";
 import { Song_ThemChanges } from "../songModels";
 
 describe("Session Leave", () => {
@@ -17,6 +18,7 @@ describe("Session Leave", () => {
     // Input: The user leaves the session
     // Expected behavior: the user is removed from their current session
     // Expected output: None
+    // ChatGPT usage: None
     it("should leave a session", async () => {
         const updateSpy = jest.spyOn(database.session, 'update');
 
@@ -61,6 +63,7 @@ describe("Session Leave", () => {
     // Input: The leaving user is the last to leave the session
     // Expected behavior: the user is removed from their current session and it is destroyed
     // Expected output: None
+    // ChatGPT usage: None
     it("should destroy session on last leave", async () => {
         const deleteSpy = jest.spyOn(database.session, 'delete');
         await userService.addFriend(1, 2);
@@ -96,6 +99,7 @@ describe("Session Leave", () => {
     // Input: The user leaves the session
     // Expected behavior: The other members of the session are updated of the user's leaving
     // Expected output: None
+    // ChatGPT usage: None
     it("should update session on leave", async () => {
         const socket1 = request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
         .expectJson()
@@ -142,6 +146,7 @@ describe("Session Leave", () => {
     // Input: The user leaves the session
     // Expected behavior: The user's friends are updated of the user's leaving
     // Expected output: None
+    // ChatGPT usage: None
     it("should update friends on leave", async () => {
         await userService.addFriend(1, 2);
         await userService.addFriend(2, 1);
@@ -173,6 +178,7 @@ describe("Session Leave", () => {
                 profilePic: null,
                 currentSong: Song_ThemChanges,
                 currentSource: null,
+                lastUpdated: testConstantDate.toISOString()
             },
             from:"testUser1"
         });

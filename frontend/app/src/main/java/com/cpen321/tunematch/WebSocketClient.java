@@ -1,6 +1,5 @@
 package com.cpen321.tunematch;
 
-
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 import static com.cpen321.tunematch.Message.timestampFormat;
 
@@ -8,7 +7,6 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.os.Handler;
 import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
@@ -29,6 +27,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,25 +40,34 @@ import okhttp3.WebSocketListener;
 import okio.ByteString;
 
 public class WebSocketClient {
-    private OkHttpClient client;
-    private WebSocket webSocket;
+    private final OkHttpClient client;
+    private final Context context;
+    private final NotificationManager notification;
     ReduxStore model;
-    private Handler handler;
-    private Context context;
-    private NotificationManager notification;
-    private static final int PING_INTERVAL = 20000;  // 30 seconds
+    private WebSocket webSocket;
 
     // ChatGPT Usage: Partial
     public WebSocketClient(ReduxStore model, Context context, NotificationManager notification) {
         this.context = context;
         this.client = new OkHttpClient();
         this.model = model;
-        this.handler = new Handler();
         this.notification = notification;
     }
 
     // ChatGPT Usage: Partial
+    public static String getStringOrNull(JsonElement jsonElement) {
+        if (jsonElement != null && !jsonElement.isJsonNull() && jsonElement.isJsonPrimitive()) {
+            JsonPrimitive jsonPrimitive = jsonElement.getAsJsonPrimitive();
+            if (jsonPrimitive.isString()) {
+                return jsonPrimitive.getAsString();
+            }
+        }
+        return null;
+    }
+
+    // ChatGPT Usage: Partial
     public void start(Headers customHeader) {
+//        String url = "ws://10.0.2.2:3000/socket";
         String url = "wss://tunematch-api.bhairawaryan.com/socket";
         Request request = new Request.Builder().url(url).build();
         if (customHeader != null) {
@@ -70,25 +78,20 @@ public class WebSocketClient {
             public void onOpen(WebSocket webSocket, Response response) {
                 // Handle when the WebSocket connection is opened.
                 super.onOpen(webSocket, response);
-                startPing();
             }
 
             @Override
             public void onMessage(WebSocket webSocket, String text) {
                 Log.d("WebSocketClient", "Received message: " + text);
-                try {
-                    JsonParser parser = new JsonParser();
-                    JsonObject json = parser.parse(text).getAsJsonObject();
-                    String method = json.get("method").getAsString();
-                    if (method.equals("FRIENDS")) {
-                        handleFriends(json);
-                    } else if (method.equals("SESSION")) {
-                        handleSession(new JSONObject(text));
-                    } else if (method.equals("REQUESTS")) {
-                        handleRequests(json);
-                    }
-                } catch (JSONException e) {
-                    Log.e("WebSocketClient", "Failed to parse JSON", e);
+                JsonParser parser = new JsonParser();
+                JsonObject json = parser.parse(text).getAsJsonObject();
+                String method = json.get("method").getAsString();
+                if (method.equals("FRIENDS")) {
+                    handleFriends(json);
+                } else if (method.equals("SESSION")) {
+                    handleSession(json);
+                } else if (method.equals("REQUESTS")) {
+                    handleRequests(json);
                 }
             }
 
@@ -141,19 +144,30 @@ public class WebSocketClient {
                     String id = friendJson.get("userId").getAsString();
                     String username = friendJson.get("username").getAsString();
                     String profilePic = getStringOrNull(friendJson.get("profilePic"));
-                    String currentSong = getStringOrNull(friendJson.get("currentSong"));
+                    Date lastUpdated = timestampFormat.parse(friendJson.get("lastUpdated").getAsString());
+                    JsonElement currentSong = friendJson.get("currentSong");
                     JsonElement currentSource = friendJson.get("currentSource");
 
                     Friend friend = new Friend(id, username, profilePic);
+                    if (!currentSong.isJsonNull()) {
+                        Song song = new Song(
+                                currentSong.getAsJsonObject().get("uri").getAsString(),
+                                currentSong.getAsJsonObject().get("name").getAsString(),
+                                currentSong.getAsJsonObject().get("artist").getAsString(),
+                                currentSong.getAsJsonObject().get("durationMs").getAsLong()
+                        );
+                        song.setSongAlbum(currentSong.getAsJsonObject().get("album").getAsString());
+                        friend.setCurrentSong(song);
+                    }
 
-                    friend.setCurrentSong(currentSong);
                     friend.setCurrentSource(currentSource);
+                    friend.setLastUpdated(lastUpdated);
                     friends.add(friend);
 
                     if (!currentSource.isJsonNull()) {
                         String sourceType = getStringOrNull(currentSource.getAsJsonObject().get("type"));
                         if (sourceType.equals("session")) {
-                            sessions.add(new Session(friend.getId(), friend.getName() + "'s Room"));
+                            sessions.add(new Session(friend.getUserId(), friend));
                         }
                     }
                 }
@@ -170,17 +184,28 @@ public class WebSocketClient {
                 model.getSessionList().postValue(sessions);
 
             } else if (action.equals("update")) {
-//                check if from exists in the message
+//              check if from exists in the message
                 String from = json.get("from").getAsString();
                 List<Friend> existingFriendList = model.getFriendsList().getValue();
                 List<Session> existingSessionList = model.getSessionList().getValue();
                 for (Friend f : existingFriendList) {
-                    if (f.getId().equals(from)) {
+                    if (f.getUserId().equals(from)) {
                         JsonObject body = json.get("body").getAsJsonObject();
-                        String currentSong = getStringOrNull(body.get("currentSong"));
+                        JsonElement currentSong = body.get("currentSong");
                         JsonElement currentSource = body.get("currentSource");
-                        f.setCurrentSong(currentSong);
+                        Date lastUpdated = timestampFormat.parse(body.get("lastUpdated").getAsString());
+                        if (!currentSong.isJsonNull()) {
+                            Song song = new Song(
+                                    currentSong.getAsJsonObject().get("uri").getAsString(),
+                                    currentSong.getAsJsonObject().get("name").getAsString(),
+                                    currentSong.getAsJsonObject().get("artist").getAsString(),
+                                    currentSong.getAsJsonObject().get("durationMs").getAsLong()
+                            );
+                            song.setSongAlbum(currentSong.getAsJsonObject().get("album").getAsString());
+                            f.setCurrentSong(song);
+                        }
                         f.setCurrentSource(currentSource);
+                        f.setLastUpdated(lastUpdated);
                         if (!currentSource.isJsonNull()) {
                             String sourceType = getStringOrNull(currentSource.getAsJsonObject().get("type"));
                             if (sourceType.equals("session")) {
@@ -193,7 +218,7 @@ public class WebSocketClient {
                                     }
                                 }
                                 if (!sessionExists) {
-                                    existingSessionList.add(new Session(f.getId(), f.getName() + "'s Room"));
+                                    existingSessionList.add(new Session(f.getUserId(), f));
                                 }
                             }
                         } else {
@@ -215,43 +240,42 @@ public class WebSocketClient {
                 Log.w("WebSocketClient", "Unknown friend action: " + action);
             }
 
-        } catch (IllegalStateException e) {
+        } catch (IllegalStateException | ParseException e) {
             Log.e("WebSocketClient", "Error processing friend message", e);
         }
     }
 
     // ChatGPT Usage: Partial
-    private void handleSession(JSONObject json) {
+    private void handleSession(JsonObject json) {
 
         try {
-            String action = json.getString("action");
+            String action = json.get("action").getAsString();
             if (action.equals("join")) {
-                JSONObject body = json.getJSONObject("body");
-                String userId = body.getString("userId");
-                String username = body.optString("username", null);
-                String profilePic = body.optString("profilePic", null);
+                JsonObject body = json.get("body").getAsJsonObject();
+                String userId = body.get("userId").getAsString();
+                String username = body.get("username").getAsString();
+                String profilePic = getStringOrNull(body.get("profilePic"));
                 CurrentSession currentSession = model.getCurrentSession().getValue();
-                if(currentSession == null){
+                if (currentSession == null) {
                     currentSession = new CurrentSession("session", "MySession");
                 }
                 List<User> sessionMembers = currentSession.getSessionMembers();
-                if(sessionMembers == null){
+                if (sessionMembers == null) {
                     sessionMembers = new ArrayList<>();
                 }
                 User user = new User(userId, username, profilePic);
                 sessionMembers.add(user);
                 currentSession.setSessionMembers(sessionMembers);
                 model.getCurrentSession().postValue(currentSession);
-            }
-            else if (action.equals("leave")) {
-                JSONObject body = json.getJSONObject("body");
-                String userId = body.getString("userId");
+            } else if (action.equals("leave")) {
+                JsonObject body = json.get("body").getAsJsonObject();
+                String userId = body.get("userId").getAsString();
                 CurrentSession currentSession = model.getCurrentSession().getValue();
-                if(currentSession == null){
+                if (currentSession == null) {
                     currentSession = new CurrentSession("session", "MySession");
                 }
                 List<User> sessionMembers = currentSession.getSessionMembers();
-                if(sessionMembers == null){
+                if (sessionMembers == null) {
                     sessionMembers = new ArrayList<>();
                 }
                 for (User s : sessionMembers) {
@@ -262,41 +286,40 @@ public class WebSocketClient {
                 }
                 currentSession.setSessionMembers(sessionMembers);
                 model.getCurrentSession().postValue(currentSession);
-            }
-            else if (action.equals("refresh")) {
-                JSONObject body = json.getJSONObject("body");
-                JSONArray members = body.getJSONArray("members");
-                JSONArray queue = body.getJSONArray("queue");
+            } else if (action.equals("refresh")) {
+                JsonObject body = json.get("body").getAsJsonObject();
+                JsonArray members = body.get("members").getAsJsonArray();
+                JsonArray queue = body.get("queue").getAsJsonArray();
                 CurrentSession currentSession = model.getCurrentSession().getValue();
 
-                if(currentSession == null){
+                if (currentSession == null) {
                     currentSession = new CurrentSession("session", "MySession");
                 }
 
                 List<User> sessionMembers = new ArrayList<>();
                 List<Song> sessionQueue = new ArrayList<>();
 
-                for (int i = 0; i < members.length(); i++) {
-                    JSONObject member = members.getJSONObject(i);
-                    String id = member.getString("userId");
-                    String username = member.getString("username");
-                    String profilePic = member.getString("profilePic");
+                for (int i = 0; i < members.size(); i++) {
+                    JsonObject member = members.get(i).getAsJsonObject();
+                    String id = member.get("userId").getAsString();
+                    String username = member.get("username").getAsString();
+                    String profilePic = getStringOrNull(member.get("profilePic"));
                     User user = new User(id, username, profilePic);
                     sessionMembers.add(user);
                 }
 //                session was created by current user
-                if(members.length() == 0){
+                if (members.size() == 0) {
                     model.checkSessionCreatedByMe().postValue(true);
                     Log.d(TAG, "handleSession: you created a session instead of joining one");
                     List<Song> ExisitngSongQueue = model.getSongQueue().getValue();
-                    if(ExisitngSongQueue==null){
+                    if (ExisitngSongQueue == null) {
                         ExisitngSongQueue = new ArrayList<>();
                     }
                     JSONArray songQueue = new JSONArray();
                     try {
                         Song currentSong = model.getCurrentSong().getValue();
                         JSONObject currSong = new JSONObject();
-                        if (currentSong != null){
+                        if (currentSong != null) {
                             currSong.put("uri", currentSong.getSongID());
                             currSong.put("durationMs", currentSong.getDuration());
                             currSong.put("title", currentSong.getSongName());
@@ -316,27 +339,26 @@ public class WebSocketClient {
                         messageToReplaceQueue.put("action", "queueReplace");
                         messageToReplaceQueue.put("body", songQueue);
                         if (webSocket != null) {
-                            Log.e(TAG, "handleSession: replace queue now:: "+ messageToReplaceQueue.toString());
+                            Log.e(TAG, "handleSession: replace queue now:: " + messageToReplaceQueue);
                             webSocket.send(messageToReplaceQueue.toString());
                             currentSession.setSessionQueue(ExisitngSongQueue);
                         }
                     } catch (JSONException e) {
-                        Log.e("JSONException", "Exception message: "+e.getMessage());
+                        Log.e("JSONException", "Exception message: " + e.getMessage());
                     }
-                }
-                else{ //session was joined by current user
+                } else { //session was joined by current user
                     model.checkSessionCreatedByMe().postValue(false);
                     Log.e(TAG, "handleSession: you joined a session instead of creating one");
                     model.getCurrentSong().postValue(null);
                     Log.e(TAG, "handleSession: current song is null now");
-                    for (int i = 0; i < queue.length(); i++) {
-                        JSONObject song = queue.getJSONObject(i);
-                        String songId = song.getString("uri");
-                        String duration = song.getString("durationMs");
-                        String songName = song.getString("title");
-                        String songArtist = song.getString("artist");
+                    for (int i = 0; i < queue.size(); i++) {
+                        JsonObject song = queue.get(i).getAsJsonObject();
+                        String songId = song.get("uri").getAsString();
+                        long duration = song.get("durationMs").getAsLong();
+                        String songName = song.get("title").getAsString();
+                        String songArtist = song.get("artist").getAsString();
                         Song songToAdd = new Song(songId, songName, songArtist, duration);
-                        Log.e(TAG, "handleSession: adding song to queue:: "+ songToAdd.getSongName()+ " :: "+ songToAdd.getSongArtist()+ " :: "+ songToAdd.getSongID()+ " :: "+ songToAdd.getDuration()+ " :: "+ songToAdd.getCurrentPosition());
+                        Log.e(TAG, "handleSession: adding song to queue:: " + songToAdd.getSongName() + " :: " + songToAdd.getSongArtist() + " :: " + songToAdd.getSongID() + " :: " + songToAdd.getDuration() + " :: " + songToAdd.getCurrentPosition());
                         sessionQueue.add(songToAdd);
                     }
                     currentSession.setSessionQueue(sessionQueue);
@@ -345,36 +367,34 @@ public class WebSocketClient {
                 currentSession.setSessionMembers(sessionMembers);
                 currentSession.setSessionId("session");
                 model.checkSessionActive().postValue(true);
-            }
-            else if (action.equals("queueAdd")) {
-                JSONObject songDetails = json.getJSONObject("body");
-                String songId = songDetails.getString("uri");
-                String duration = songDetails.getString("durationMs");
-                String songName = songDetails.getString("title");
-                String songArtist = songDetails.getString("artist");
+            } else if (action.equals("queueAdd")) {
+                JsonObject songDetails = json.get("body").getAsJsonObject();
+                String songId = songDetails.get("uri").getAsString();
+                long duration = songDetails.get("durationMs").getAsLong();
+                String songName = songDetails.get("title").getAsString();
+                String songArtist = songDetails.get("artist").getAsString();
                 Song songToAdd = new Song(songId, songName, songArtist, duration);
                 List<Song> sessionQueue = model.getSongQueue().getValue();
-                if(sessionQueue == null){
+                if (sessionQueue == null) {
                     sessionQueue = new ArrayList<>();
                 }
                 sessionQueue.add(songToAdd);
                 model.getSongQueue().postValue(sessionQueue);
                 CurrentSession currentSession = model.getCurrentSession().getValue();
-                if(currentSession == null){
+                if (currentSession == null) {
                     currentSession = new CurrentSession("session", "MySession");
                 }
                 currentSession.setSessionQueue(sessionQueue);
                 model.getCurrentSession().postValue(currentSession);
-            }
-            else if (action.equals("queueSkip")) {
+            } else if (action.equals("queueSkip")) {
                 Log.d(TAG, "handleSession: queueSkip has been initiated");
-                Log.d(TAG, "handleSession: queueSkip: " + model.getCurrentSong().getValue().getSongName()+" :: "+model.getSongQueue().getValue().get(0).getSongName());
+                Log.d(TAG, "handleSession: queueSkip: " + model.getCurrentSong().getValue().getSongName() + " :: " + model.getSongQueue().getValue().get(0).getSongName());
                 CurrentSession currentSession = model.getCurrentSession().getValue();
-                if(currentSession == null){
+                if (currentSession == null) {
                     currentSession = new CurrentSession("session", "MySession");
                 }
                 List<Song> sessionQueue = model.getSongQueue().getValue();
-                if(sessionQueue == null){
+                if (sessionQueue == null) {
                     sessionQueue = new ArrayList<>();
                 }
                 Song currentSong = sessionQueue.get(0);
@@ -384,17 +404,16 @@ public class WebSocketClient {
                 model.getCurrentSession().postValue(currentSession);
                 model.getCurrentSong().postValue(currentSong);
                 model.getSongQueue().postValue(sessionQueue);
-            }
-            else if (action.equals("queueDrag")) {
-                JSONObject body = json.getJSONObject("body");
-                int startIndex =  body.getInt("startIndex");
-                int endIndex = body.getInt("endIndex");
+            } else if (action.equals("queueDrag")) {
+                JsonObject body = json.get("body").getAsJsonObject();
+                int startIndex = body.get("startIndex").getAsInt();
+                int endIndex = body.get("endIndex").getAsInt();
                 CurrentSession currentSession = model.getCurrentSession().getValue();
-                if(currentSession == null){
+                if (currentSession == null) {
                     currentSession = new CurrentSession("session", "MySession");
                 }
                 List<Song> sessionQueue = currentSession.getSessionQueue();
-                if(sessionQueue == null){
+                if (sessionQueue == null) {
                     sessionQueue = new ArrayList<>();
                 }
                 Song songToMove = sessionQueue.get(startIndex);
@@ -403,35 +422,31 @@ public class WebSocketClient {
                 currentSession.setSessionQueue(sessionQueue);
                 model.getCurrentSession().postValue(currentSession);
                 model.getSongQueue().postValue(sessionQueue);
-            }
-            else if (action.equals("queuePause")) {
+            } else if (action.equals("queuePause")) {
                 Song currentSong = model.getCurrentSong().getValue();
                 currentSong.setIsPLaying(false);
                 model.getCurrentSong().postValue(currentSong);
-            }
-            else if (action.equals("queueResume")) {
+            } else if (action.equals("queueResume")) {
                 Song currentSong = model.getCurrentSong().getValue();
                 currentSong.setIsPLaying(true);
                 model.getCurrentSong().postValue(currentSong);
-            }
-            else if (action.equals("queueSeek")) {
-                JSONObject body = json.getJSONObject("body");
-                int seekPosition = body.getInt("seekPosition");
+            } else if (action.equals("queueSeek")) {
+                JsonObject body = json.get("body").getAsJsonObject();
+                long seekPosition = body.get("seekPosition").getAsLong();
                 Log.d(TAG, "handleSession: seekPosition: " + seekPosition);
                 Song currentSong = model.getCurrentSong().getValue();
-                currentSong.setCurrentPosition(seekPosition+"");
+                currentSong.setCurrentPosition(seekPosition);
                 model.getCurrentSong().postValue(currentSong);
-            }
-            else if (action.equals("message")) {
-                JSONObject messageDetails = json.getJSONObject("body");
-                String from = json.getString("from");
+            } else if (action.equals("message")) {
+                JsonObject messageDetails = json.get("body").getAsJsonObject();
+                String from = json.get("from").getAsString();
 
                 CurrentSession currentSession = model.getCurrentSession().getValue();
-                if(currentSession == null){
+                if (currentSession == null) {
                     currentSession = new CurrentSession("session", "MySession");
                 }
                 List<User> sessionMembers = currentSession.getSessionMembers();
-                if(sessionMembers == null){
+                if (sessionMembers == null) {
                     sessionMembers = new ArrayList<>();
                 }
                 User sender = sessionMembers.stream()
@@ -440,9 +455,9 @@ public class WebSocketClient {
                         .orElse(null);
 
                 Message message = new Message(sender,
-                        messageDetails.getString("message"),
-                        timestampFormat.parse(messageDetails.getString("timestamp")));
-                Log.d("WS", message.toString());
+                        messageDetails.get("message").getAsString(),
+                        timestampFormat.parse(messageDetails.get("timestamp").getAsString()));
+                Log.d("WebSocket", message.toString());
 
                 // Add to redux
                 model.addMessage(message, true);
@@ -471,194 +486,186 @@ public class WebSocketClient {
                             .load(message.getSenderProfileImageUrl())
                             .error(R.drawable.default_profile_image)
                             .get());
-                } catch(IllegalStateException ignored)  { }
+                } catch (IllegalStateException ignored) {
+                }
 
                 // Show the notification
                 NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
                 notificationManager.notify(1, builder.build());
 
-            }
-            else {
+            } else {
                 Log.w("WebSocketClient", "Unknown session action: " + action);
             }
 
-        } catch (JSONException | ParseException | IOException e) {
+        } catch (ParseException | IOException e) {
             Log.e("WebSocketClient", "Error processing session message", e);
         }
     }
 
     // ChatGPT Usage: Partial
-    private void handleRequests(JsonObject json){
+    private void handleRequests(JsonObject json) {
         try {
             String action = json.get("action").getAsString();
             JsonObject body = json.get("body").getAsJsonObject();
 
             // Handling the refresh action
-            if (action.equals("refresh")) {
-                JsonArray requesting = body.get("requesting").getAsJsonArray();
-                JsonArray requested = body.get("requested").getAsJsonArray();
-                // TODO: Update the Redux store with the refreshed lists of requesting and requested users
-                List<SearchUser> newRequests = model.getReceivedRequests().getValue();
-                if (newRequests == null) {
-                    newRequests = new ArrayList<SearchUser>();
-                }
-                for (int i = 0; i < requesting.size(); i++) {
-                    JsonObject request = requesting.get(i).getAsJsonObject();
-                    String userId = request.get("userId").getAsString();
-                    String userName = request.get("username").getAsString();
-                    String profilePic = getStringOrNull(request.get("profilePic"));
-                    SearchUser requestingUser = new SearchUser(userName, userId, profilePic);
-                    newRequests.add(requestingUser);
-                }
-                model.getReceivedRequests().postValue(newRequests);
+            switch (action) {
+                case "refresh":
+                    JsonArray requesting = body.get("requesting").getAsJsonArray();
+                    JsonArray requested = body.get("requested").getAsJsonArray();
+                    // TODO: Update the Redux store with the refreshed lists of requesting and requested users
+                    List<SearchUser> newRequests = model.getReceivedRequests().getValue();
+                    if (newRequests == null) {
+                        newRequests = new ArrayList<SearchUser>();
+                    }
+                    for (int i = 0; i < requesting.size(); i++) {
+                        JsonObject request = requesting.get(i).getAsJsonObject();
+                        String userId = request.get("userId").getAsString();
+                        String userName = request.get("username").getAsString();
+                        String profilePic = getStringOrNull(request.get("profilePic"));
+                        SearchUser requestingUser = new SearchUser(userName, userId, profilePic);
+                        newRequests.add(requestingUser);
+                    }
+                    model.getReceivedRequests().postValue(newRequests);
 
-                List<SearchUser> sentRequests = model.getSentRequests().getValue();
-                if (sentRequests == null) {
-                    sentRequests = new ArrayList<SearchUser>();
-                }
-                for (int i = 0; i < requested.size(); i++) {
-                    JsonObject request = requested.get(i).getAsJsonObject();
-                    String userId = request.get("userId").getAsString();
-                    String userName = request.get("username").getAsString();
-                    String profilePic = getStringOrNull(request.get("profilePic"));
-                    SearchUser requestedUser = new SearchUser(userName, userId, profilePic);
-                    sentRequests.add(requestedUser);
-                }
-                model.getSentRequests().postValue(sentRequests);
-            }
+                    List<SearchUser> sentRequests = model.getSentRequests().getValue();
+                    if (sentRequests == null) {
+                        sentRequests = new ArrayList<SearchUser>();
+                    }
+                    for (int i = 0; i < requested.size(); i++) {
+                        JsonObject request = requested.get(i).getAsJsonObject();
+                        String userId = request.get("userId").getAsString();
+                        String userName = request.get("username").getAsString();
+                        String profilePic = getStringOrNull(request.get("profilePic"));
+                        SearchUser requestedUser = new SearchUser(userName, userId, profilePic);
+                        sentRequests.add(requestedUser);
+                    }
+                    model.getSentRequests().postValue(sentRequests);
+                    break;
 
-            // Handling the add action
-            else if (action.equals("add")) {
-                String userId = body.get("userId").getAsString();
-                String username = body.get("username").getAsString();
-                String profilePic = getStringOrNull(body.get("profilePic"));
-                String currentSong = getStringOrNull(body.get("currentSong"));
-                JsonElement currentSource = body.get("currentSource");
+                // Handling the add action
+                case "add": {
+                    String userId = body.get("userId").getAsString();
+                    String username = body.get("username").getAsString();
+                    String profilePic = getStringOrNull(body.get("profilePic"));
+                    JsonElement currentSong = body.get("currentSong");
+                    JsonElement currentSource = body.get("currentSource");
+                    Date lastUpdated = timestampFormat.parse(body.get("lastUpdated").getAsString());
 
-                Log.d("WebSocketClient", "Add friend: "+username);
-                SearchUser newRequest = new SearchUser(username, userId, profilePic);
+                    Log.d("WebSocketClient", "Add friend: " + username);
+                    SearchUser newRequest = new SearchUser(username, userId, profilePic);
 
-                // If request is from user that I sent request before remove from sent
-                boolean friendAdded = false;
-                List<SearchUser> sent = model.getSentRequests().getValue();
-                if (sent != null) {
-                    List<SearchUser> updatedSent = sent
-                            .stream()
-                            .filter(u -> !u.getId().equals(userId))
-                            .collect(Collectors.toList());
-                    if (updatedSent.size() < sent.size()) {
-                        Log.d("WebSocketClient", "Friend "+username+" added");
-                        model.setSentRequestsList(updatedSent);
-                        friendAdded = true;
+                    // If request is from user that I sent request before remove from sent
+                    boolean friendAdded = false;
+                    List<SearchUser> sent = model.getSentRequests().getValue();
+                    if (sent != null) {
+                        List<SearchUser> updatedSent = sent
+                                .stream()
+                                .filter(u -> !u.getId().equals(userId))
+                                .collect(Collectors.toList());
+                        if (updatedSent.size() < sent.size()) {
+                            Log.d("WebSocketClient", "Friend " + username + " added");
+                            model.setSentRequestsList(updatedSent);
+                            friendAdded = true;
 
-                        Friend newFriend = new Friend(userId, username, profilePic);
-                        newFriend.setCurrentSong(currentSong);
-                        if (!currentSource.isJsonNull()) {
-                            newFriend.setCurrentSource(currentSource);
+                            Friend newFriend = new Friend(userId, username, profilePic);
+                            if (!currentSong.isJsonNull()) {
+                                Song song = new Song(
+                                        currentSong.getAsJsonObject().get("uri").getAsString(),
+                                        currentSong.getAsJsonObject().get("name").getAsString(),
+                                        currentSong.getAsJsonObject().get("artist").getAsString(),
+                                        currentSong.getAsJsonObject().get("durationMs").getAsLong()
+                                );
+                                song.setSongAlbum(currentSong.getAsJsonObject().get("album").getAsString());
+                                newFriend.setCurrentSong(song);
+                            }
+
+                            if (!currentSource.isJsonNull()) {
+                                newFriend.setCurrentSource(currentSource);
+                            }
+                            List<Friend> friendList = model.getFriendsList().getValue();
+                            if (friendList == null) {
+                                friendList = new ArrayList<>();
+                            }
+                            newFriend.setLastUpdated(lastUpdated);
+                            friendList.add(newFriend);
+                            model.getFriendsList().postValue(friendList);
+
+                            // Check permission
+                            if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                                CharSequence name = "New Friend";
+                                int importance = NotificationManager.IMPORTANCE_DEFAULT;
+                                NotificationChannel channel = new NotificationChannel("friend_request_channel", name, importance);
+                                notification.createNotificationChannel(channel);
+
+                                // Build the notification
+                                NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel.getId())
+                                        .setSmallIcon(R.drawable.default_profile_image)
+                                        .setContentTitle("New Friend")
+                                        .setContentText(username + " accepted your friend request")
+                                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                        .setAutoCancel(true); // Automatically removes the notification when the user taps it
+
+                                // Show the notification
+                                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+                                notificationManager.notify(1, builder.build());
+                            }
                         }
-                        List<Friend> friendList = model.getFriendsList().getValue();
-                        if (friendList == null) {
-                            friendList = new ArrayList<Friend>();
+                    }
+
+                    // If request is from new user, add it to received request list
+                    if (!friendAdded && !model.inReceivedRequest(newRequest)) {
+                        Log.d("WebSocketClient", "Friends Requested from " + username);
+                        List<SearchUser> requestList = model.getReceivedRequests().getValue();
+                        if (requestList == null) {
+                            requestList = new ArrayList<SearchUser>();
                         }
-                        friendList.add(newFriend);
-                        model.getFriendsList().postValue(friendList);
+                        requestList.add(newRequest);
+                        model.getReceivedRequests().postValue(requestList);
 
                         // Check permission
-                        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-                            CharSequence name = "New Friend";
-                            int importance = NotificationManager.IMPORTANCE_DEFAULT;
-                            NotificationChannel channel = new NotificationChannel("friend_request_channel", name, importance);
-                            notification.createNotificationChannel(channel);
-
-                            // Build the notification
-                            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel.getId())
-                                    .setSmallIcon(R.drawable.default_profile_image)
-                                    .setContentTitle("New Friend")
-                                    .setContentText(username+" accepted your friend request")
-                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                                    .setAutoCancel(true); // Automatically removes the notification when the user taps it
-
-                            // Show the notification
-                            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-                            notificationManager.notify(1, builder.build());
+                        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                            return;
                         }
+
+                        CharSequence name = "New Friend";
+                        int importance = NotificationManager.IMPORTANCE_DEFAULT;
+                        NotificationChannel channel = new NotificationChannel("friend_request_channel", name, importance);
+                        notification.createNotificationChannel(channel);
+
+                        // Build the notification
+                        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel.getId())
+                                .setSmallIcon(R.drawable.default_profile_image)
+                                .setContentTitle("New Friend")
+                                .setContentText("You have received new request from " + username)
+                                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                .setAutoCancel(true); // Automatically removes the notification when the user taps it
+
+                        // Show the notification
+                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+                        notificationManager.notify(1, builder.build());
                     }
+                    break;
                 }
 
-                // If request is from new user, add it to received request list
-                if (!friendAdded && !model.inReceivedRequest(newRequest)) {
-                    Log.d("WebSocketClient", "Friends Requested from " + username);
-                    List<SearchUser> requestList = model.getReceivedRequests().getValue();
-                    if (requestList == null) {
-                        requestList = new ArrayList<SearchUser>();
-                    }
-                    requestList.add(newRequest);
-                    model.getReceivedRequests().postValue(requestList);
+                // Handling the remove action
+                case "remove": {
+                    String userId = body.get("userId").getAsString();
 
-                    // Check permission
-                    if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                        return;
-                    }
-
-                    CharSequence name = "New Friend";
-                    int importance = NotificationManager.IMPORTANCE_DEFAULT;
-                    NotificationChannel channel = new NotificationChannel("friend_request_channel", name, importance);
-                    notification.createNotificationChannel(channel);
-
-                    // Build the notification
-                    NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel.getId())
-                            .setSmallIcon(R.drawable.default_profile_image)
-                            .setContentTitle("New Friend")
-                            .setContentText("You have received new request from " + username)
-                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                            .setAutoCancel(true); // Automatically removes the notification when the user taps it
-
-                    // Show the notification
-                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-                    notificationManager.notify(1, builder.build());
+                    model.removeRequest(model.getSentRequests(), userId);
+                    model.removeRequest(model.getReceivedRequests(), userId);
+                    model.removeFriend(userId);
+                    break;
                 }
+
+                // Handling any other unexpected actions
+                default:
+                    Log.w("WebSocketClient", "Unknown request action: " + action);
+                    break;
             }
 
-            // Handling the remove action
-            else if (action.equals("remove")) {
-                String userId = body.get("userId").getAsString();
-
-                model.removeRequest(model.getSentRequests(), userId);
-                model.removeRequest(model.getReceivedRequests(), userId);
-                model.removeFriend(userId);
-            }
-
-            // Handling any other unexpected actions
-            else {
-                Log.w("WebSocketClient", "Unknown request action: " + action);
-            }
-
-        } catch (IllegalStateException e) {
+        } catch (IllegalStateException | ParseException e) {
             Log.e("WebSocketClient", "Error processing request message", e);
         }
-    }
-
-    // ChatGPT Usage: Partial
-    private void startPing() {
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (webSocket != null) {
-                    webSocket.send(ByteString.EMPTY);  // Send an empty Ping frame
-                }
-                handler.postDelayed(this, PING_INTERVAL);
-            }
-        }, PING_INTERVAL);
-    }
-
-    // ChatGPT Usage: Partial
-    public static String getStringOrNull(JsonElement jsonElement) {
-        if (jsonElement != null && !jsonElement.isJsonNull() && jsonElement.isJsonPrimitive()) {
-            JsonPrimitive jsonPrimitive = jsonElement.getAsJsonPrimitive();
-            if (jsonPrimitive.isString()) {
-                return jsonPrimitive.getAsString();
-            }
-        }
-        return null;
     }
 }

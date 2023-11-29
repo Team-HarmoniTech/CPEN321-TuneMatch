@@ -6,6 +6,7 @@ describe("Create new user", () => {
     // Expected status code: 200
     // Expected behavior: Return created user's data
     // Expected output: userId, username, profile-pic, bio, top artists, top genres
+    // ChatGPT usage: None
     test("Valid user data", async () => {
       const validUserData = {
         spotify_id: 'newValidSpotifyId',
@@ -31,6 +32,7 @@ describe("Create new user", () => {
     // Expected status code: 400
     // Expected behavior: Return error message
     // Expected output: Error JSON indicating which fields were invalid
+    // ChatGPT usage: None
     test("Invalid user data", async () => {
       const invalidUserData = {
         username: 'NewUser',

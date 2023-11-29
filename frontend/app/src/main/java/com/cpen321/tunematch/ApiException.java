@@ -1,7 +1,7 @@
 package com.cpen321.tunematch;
 
 public class ApiException extends Exception {
-    private int statusCode;
+    private final int statusCode;
 
     // ChatGPT Usage: No
     public ApiException(int statusCode, String message) {

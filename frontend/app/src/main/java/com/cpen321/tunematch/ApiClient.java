@@ -16,7 +16,6 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public abstract class ApiClient<T> {
     protected T api;
-    protected abstract String getBaseUrl();
 
     // ChatGPT Usage: No
     public ApiClient(Class<T> serviceClass) {
@@ -29,11 +28,7 @@ public abstract class ApiClient<T> {
         api = retrofit.create(serviceClass);
     }
 
-    // ChatGPT Usage: No
-    public interface ApiResponseCallback {
-        void onSuccess(JsonElement result);
-        void onError(ApiException exception);
-    }
+    protected abstract String getBaseUrl();
 
     // ChatGPT Usage: No
     private JsonElement parseJsonObject(String json) {
@@ -69,6 +64,13 @@ public abstract class ApiClient<T> {
             Log.d("ApiClient", e.getMessage());
             throw new ApiException(-1, e.getMessage());
         }
+    }
+
+    // ChatGPT Usage: No
+    public interface ApiResponseCallback {
+        void onSuccess(JsonElement result);
+
+        void onError(ApiException exception);
     }
 }
 

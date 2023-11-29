@@ -6,6 +6,7 @@ describe("Ban user", () => {
     // Expected status code: 200
     // Expected behavior: User is banned
     // Expected output: User with ID ${userId} has been banned.
+    // ChatGPT usage: None
     test("Valid user ID", async () => {
         const res = await request(server)
             .put(`/reports/ban/testUser1`)

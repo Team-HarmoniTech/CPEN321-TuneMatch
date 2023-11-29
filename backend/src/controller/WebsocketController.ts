@@ -5,8 +5,7 @@ import logger from "@src/logger";
 import {
   database,
   sessionService,
-  socketService,
-  userService,
+  socketService
 } from "@src/services";
 import { Request } from "express";
 import { WebSocket } from "ws";
@@ -52,27 +51,47 @@ export async function handleConnection(ws: WebSocket, req: Request) {
   });
 
   // ChatGPT Usage: No
-  ws.on("message", function message(data) {
+  ws.on("message", async function message(data) {
     try {
       const req = JSON.parse(data.toString());
       if (!req.method) {
         ws.send(JSON.stringify({ Error: "Received data is missing fields" }));
       } else {
-        logger.dev(`${req.method} request`);
+        logger.dev(`${req.method} ${req?.action || null} from User ${currentUserId}`);
+        /* Find function */
+        let func;
         switch (req.method) {
           case "SESSION":
-            new SessionController().acceptRequest(ws, req, currentUserId);
+            func = new SessionController()[req.action];
             break;
           case "FRIENDS":
-            new UserController().acceptRequest(ws, req, currentUserId);
+            func = new UserController()[req.action];
             break;
           case "REQUESTS":
-            new RequestController().acceptRequest(ws, req, currentUserId);
+            func = new RequestController()[req.action];
             break;
           default:
             ws.send(
               JSON.stringify({ Error: "Received data has an invalid method" }),
             );
+        }
+
+        /* Call function */
+        if (!func) {
+          ws.send(
+            JSON.stringify({
+              Error: `${req.method} endpoint ${req.action} does not exist.`,
+            }),
+          );
+        } else {
+          try {
+            await func(ws, req, currentUserId);
+          } catch (err) {
+            logger.err(err.message);
+            ws.send(JSON.stringify({
+              Error: err.message,
+            }));
+          }
         }
       }
     } catch {
@@ -89,7 +108,6 @@ export async function handleConnection(ws: WebSocket, req: Request) {
     try {
       if (userId) {
         await sessionService.leaveSession(userId);
-        await userService.updateUserStatus(userId, null, null);
       }
     } catch { /* empty */ }
     if (userId) {

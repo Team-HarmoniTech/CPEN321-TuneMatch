@@ -22,8 +22,6 @@ import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 
-import com.squareup.picasso.Picasso;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -34,10 +32,10 @@ import java.util.List;
 import kotlin.text.Charsets;
 
 public class SearchFragment extends Fragment {
-    private ArrayAdapter<String> listAdapter;
-    private AlertDialog profileDialog;
     ReduxStore model;
     BackendClient backend;
+    private ArrayAdapter<String> listAdapter;
+    private AlertDialog profileDialog;
     private WebSocketService webSocketService;
 
     // ChatGPT Usage: No
@@ -104,18 +102,8 @@ public class SearchFragment extends Fragment {
                             String profileUrl = user.getProfilePic();
                             friend[0] = user;
                             if (profileUrl != null) {
-                                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        // Update your UI components here
-                                        ImageView profilePic = dialogView.findViewById(R.id.profileImage);
-                                        Picasso.get()
-                                                .load(profileUrl)
-                                                .placeholder(R.drawable.default_profile_image) // Set the default image
-                                                .error(R.drawable.default_profile_image) // Use the default image in case of an error
-                                                .into(profilePic);
-                                    }
-                                });
+                                ImageView profilePic = dialogView.findViewById(R.id.profileImage);
+                                new DownloadProfilePicture(profilePic, profileUrl).run();
                             }
 
                         } catch (ApiException | RuntimeException e) {
@@ -144,7 +132,7 @@ public class SearchFragment extends Fragment {
                                 body.put("userId", friend[0].getId());
                                 messageToSend.put("body", body);
                             } catch (JSONException e) {
-                                Log.e("JSONException", "Exception message: "+e.getMessage());
+                                Log.e("JSONException", "Exception message: " + e.getMessage());
                             }
 
                             if (webSocketService != null) {
@@ -154,18 +142,19 @@ public class SearchFragment extends Fragment {
                             }
                             profileDialog.dismiss();
                         } else {
-                            Log.d("SearchFragment","FriendId was not retrieved yet. Try again.");
+                            Log.d("SearchFragment", "FriendId was not retrieved yet. Try again.");
                         }
                     }
                 });
             }
         });
 
-        searchFriend.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
+        searchFriend.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 return updateQuery(query, true);
             }
+
             @Override
             public boolean onQueryTextChange(String newText) {
                 return updateQuery(newText, false);
@@ -194,14 +183,13 @@ public class SearchFragment extends Fragment {
                 try {
                     if (query.isEmpty()) {
                         newSearchList = backend.getMatches();
-                    }
-                    else {
+                    } else {
                         String encodedQuery = "";
                         try {
                             encodedQuery = URLEncoder.encode(query, Charsets.UTF_8.toString());
                             Log.d("SearchFragment", "onQueryTextSubmit: " + encodedQuery);
                         } catch (UnsupportedEncodingException e) {
-                            Log.e("JSONException", "Exception message: "+e.getMessage());
+                            Log.e("JSONException", "Exception message: " + e.getMessage());
                         }
                         newSearchList = backend.searchUser(encodedQuery);
 
@@ -210,7 +198,7 @@ public class SearchFragment extends Fragment {
                                 @Override
                                 public void run() {
                                     Toast.makeText(getContext(),
-                                            "User with username "+query+" does not exist.",
+                                            "User with username " + query + " does not exist.",
                                             Toast.LENGTH_SHORT).show();
                                 }
                             });

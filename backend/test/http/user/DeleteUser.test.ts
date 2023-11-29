@@ -7,6 +7,7 @@ describe("Delete user", () => {
     // Expected status code: 200
     // Expected behavior: Return current user's data
     // Expected output: User has been deleted!
+    // ChatGPT usage: None
     test("Existing user", async () => {
       const res = await request(server)
       .delete('/me/delete')
@@ -20,6 +21,7 @@ describe("Delete user", () => {
     // Expected status code: 401
     // Expected behavior: Return error message
     // Expected output: This executing user does not exist
+    // ChatGPT usage: None
     test("Non-existing user", async () => {
       const res = await request(server)
       .delete('/me/delete')
@@ -33,6 +35,7 @@ describe("Delete user", () => {
     // Expected status code: 400
     // Expected behavior: Return error message
     // Expected output: Cannot delete a user with an active websocket
+    // ChatGPT usage: None
     test("User is in active session", async () => {
       const socket1 = request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
       .expectJson()

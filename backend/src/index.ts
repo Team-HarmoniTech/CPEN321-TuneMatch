@@ -3,7 +3,6 @@ import 'module-alias/register';
 import { handleConnection } from "@controller/WebsocketController";
 import { findCurrentUser } from "@middleware/CurrentUser";
 import { handleError } from "@middleware/ErrorHandler";
-import { Prisma } from '@prisma/client';
 import { Routes } from "@src/routes";
 import express, { Request, Response } from "express";
 import { validationResult } from "express-validator";
@@ -66,13 +65,7 @@ wss.on("connection", handleConnection);
 /* Reset sessions and current listening then start express server */
 // ChatGPT Usage: No
 Promise.all([
-  database.session.deleteMany(),
-  database.user.updateMany({
-    data: {
-      current_song: Prisma.DbNull,
-      current_source: Prisma.DbNull,
-    },
-  }),
+  database.session.deleteMany()
 ]).then(() => {
   startServer();
 });

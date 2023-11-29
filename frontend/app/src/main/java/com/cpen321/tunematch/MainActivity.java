@@ -1,7 +1,5 @@
 package com.cpen321.tunematch;
 
-import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -12,7 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.util.Log;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
@@ -24,32 +21,22 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-
 public class MainActivity extends AppCompatActivity {
+    public boolean webSocketBound = false;
     private HomeFragment homeFrag;
     private RoomFragment roomFrag;
     private SearchFragment searchFrag;
     private ProfileFragment profileFrag;
     private BackendClient backend;
-    private WebSocketClient webSocketClient;
     private ReduxStore model;
-    public boolean isServiceBound = false;
     private WebSocketService webSocketService;
-    private SpotifyService mSpotifyService;
-    private boolean mSpotifyBound = false;
-    private Song lastSongState = null;
-
     // ChatGPT Usage: Partial
-    private ServiceConnection serviceConnection = new ServiceConnection() {
+    private final ServiceConnection webSocketConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             WebSocketService.LocalBinder binder = (WebSocketService.LocalBinder) service;
             webSocketService = binder.getService();
-            isServiceBound = true;
+            webSocketBound = true;
 
             homeFrag = new HomeFragment();
             roomFrag = new RoomFragment();
@@ -61,36 +48,13 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             webSocketService = null;
-            isServiceBound = false;
+            webSocketBound = false;
         }
     };
-
+    private SpotifyService mSpotifyService;
+    private boolean mSpotifyBound = false;
     // ChatGPT Usage: Partial
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Intent intention = new Intent(this, WebSocketService.class);
-        bindService(intention, serviceConnection, Context.BIND_AUTO_CREATE);
-        Intent spotifyIntent = new Intent(this, SpotifyService.class);
-        bindService(spotifyIntent, mSpotifyConnection, Context.BIND_AUTO_CREATE);
-    }
-
-    // ChatGPT Usage: Partial
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (isServiceBound) {
-            unbindService(serviceConnection);
-            isServiceBound = false;
-        }
-        if (mSpotifyBound) {
-            unbindService(mSpotifyConnection);
-            mSpotifyBound = false;
-        }
-    }
-
-    // ChatGPT Usage: Partial
-    private ServiceConnection mSpotifyConnection = new ServiceConnection() {
+    private final ServiceConnection mSpotifyConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             SpotifyService.LocalBinder binder = (SpotifyService.LocalBinder) service;
@@ -100,9 +64,40 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
+            mSpotifyService = null;
             mSpotifyBound = false;
         }
     };
+
+    // ChatGPT Usage: Partial
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Intent intent = getIntent();
+        if (intent == null || !intent.hasExtra("spotifyUserId")) {
+            throw new RuntimeException();
+        }
+
+        Intent webSocketIntent = new Intent(this, WebSocketService.class);
+        bindService(webSocketIntent, webSocketConnection, Context.BIND_AUTO_CREATE);
+
+        Intent spotifyIntent = new Intent(this, SpotifyService.class);
+        bindService(spotifyIntent, mSpotifyConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    // ChatGPT Usage: Partial
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (webSocketBound) {
+            unbindService(webSocketConnection);
+            webSocketBound = false;
+        }
+        if (mSpotifyBound) {
+            unbindService(mSpotifyConnection);
+            mSpotifyBound = false;
+        }
+    }
 
     // ChatGPT Usage: Partial
     public SpotifyService getSpotifyService() {
@@ -113,73 +108,34 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // ChatGPT Usage: Partial
-    public void sendMessageViaWebSocket(String message) {
-        if (isServiceBound && webSocketService != null) {
-            webSocketService.sendMessage(message);
-        }
-    }
-
     // ChatGPT Usage: No
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
-    protected void onCreate(Bundle savedInstanceState)  {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         model = ReduxStore.getInstance();
 
-        model.getCurrentSong().observe(this, song -> {
-//          execute the function only if the song name changes
-            if (song != null) {
-                // Check if the playing state has changed
-                if (lastSongState == null || lastSongState.getSongID().equals(song.getSongID())) {
-                    if (webSocketService != null) {
-                        JSONObject messageToSend = new JSONObject();
-                        try {
-                            messageToSend.put("method", "FRIENDS");
-                            messageToSend.put("action", "update");
-                            JSONObject body = new JSONObject();
-                            body.put("song", song.getSongName());
-                            messageToSend.put("body", body);
-                            webSocketService.sendMessage(messageToSend.toString());
-                        } catch (JSONException e) {
-                            Log.e(TAG, "Failed to create JSON message for updating friends about song change", e);
-                        }
-                    } else {
-                        Log.e(TAG, "WebSocketService is not available or session is not active");
-                    }
-                }
-                lastSongState = new Song(song.getSongID(), song.getSongName(), song.getSongArtist(), song.getDuration());
-                lastSongState.setCurrentPosition(song.getCurrentPosition());
-                lastSongState.setIsPLaying(song.isPlaying());
-            }
-        });
-
         // Retrieve the Spotify User ID from the Intent
-        Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("spotifyUserId")) {
-            String spotifyUserId = intent.getStringExtra("spotifyUserId");
+        String spotifyUserId = getIntent().getStringExtra("spotifyUserId");
+        backend = new BackendClient(spotifyUserId);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    User currUser = backend.getMe(true);
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            model.setCurrentUser(currUser);
+                        }
+                    });
 
-            backend = new BackendClient(spotifyUserId);
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        User currUser = backend.getMe(true);
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                model.setCurrentUser(currUser);
-                            }
-                        });
-
-                    } catch (ApiException e) {
-                        e.printStackTrace();
-                    }
+                } catch (ApiException e) {
+                    e.printStackTrace();
                 }
-            }).start();
-        }
+            }
+        }).start();
 
         // Check if notification permission is granted
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
@@ -187,11 +143,11 @@ public class MainActivity extends AppCompatActivity {
 
             // If permission is not granted, request it
             ActivityCompat.requestPermissions(this,
-                    new String[]{android.Manifest.permission.POST_NOTIFICATIONS},0);
+                    new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 0);
         }
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavi);
-        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener(){
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
@@ -243,48 +199,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // ChatGPT Usage: No
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (webSocketClient != null) {
-            webSocketClient.stop();
-        }
+    public BackendClient getBackend() {
+        return backend;
     }
 
     // ChatGPT Usage: No
-    public BackendClient getBackend() {return backend;}
-
-    // ChatGPT Usage: No
-    public WebSocketClient getWebSocketClient() {return webSocketClient;}
-
-    // ChatGPT Usage: No
-    public ReduxStore getModel() {return model;}
+    public ReduxStore getModel() {
+        return model;
+    }
 
     // ChatGPT Usage: No
     public WebSocketService getWebSocketService() {
-        if (isServiceBound && webSocketService != null) {
+        if (webSocketBound && webSocketService != null) {
             return webSocketService;
         }
         return null;
-    }
-
-    // ChatGPT Usage: No
-    public ArrayList<String> parseList(String response, String key) {
-        Log.d("MainActivity", "parseList: "+key);
-
-        ArrayList<String> parsedList = new ArrayList<>();
-        try {
-            JSONObject jsonObject = new JSONObject(response);
-            String tempList = jsonObject.getString(key).replace("[", "").replace("]","").trim();
-            Log.d("MainActivity", "tempList:"+tempList);
-
-            for (String item : tempList.split(",")) {
-                parsedList.add(item.replace("\"", ""));
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return parsedList;
     }
 }
 

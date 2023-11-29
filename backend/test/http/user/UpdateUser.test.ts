@@ -6,6 +6,7 @@ describe("Update user", () => {
     // Expected status code: 200
     // Expected behavior: Return list of users related to search param
     // Expected output: {userId, username, profile-pic, match}[]
+    // ChatGPT usage: None
     test("Existing user with valid user data", async () => {
       const validUserData = {
         username: 'UpdatedUser',
@@ -31,6 +32,7 @@ describe("Update user", () => {
     // Expected status code: 400
     // Expected behavior: Return error message
     // Expected output: Error JSON indicating which fields were invalid
+    // ChatGPT usage: None
     test("Invalid user data", async () => {
       const invalidUserData = {
         top_artists: 123
@@ -59,6 +61,7 @@ describe("Update user", () => {
     // Expected status code: 400
     // Expected behavior: Return error message
     // Expected output: At least one of username, top_artists, top_genres, pfp_url, bio must be provided
+    // ChatGPT usage: None
     test("Body without fields", async () => {
       const res = await request(server)
       .put('/me/update')
@@ -85,6 +88,7 @@ describe("Update user", () => {
     // Expected status code: 401
     // Expected behavior: Return error message
     // Expected output: This executing user does not exist
+    // ChatGPT usage: None
     test("Non-existing user", async () => {
       const res = await request(server)
         .put('/me/update')

@@ -1,6 +1,7 @@
 import { server } from "@src/index";
 import { sessionService } from "@src/services";
 import request from "superwstest";
+import { originalDate } from "../../globalSetup";
 
 describe("Session Queue", () => {
     const testQueue = [
@@ -34,6 +35,9 @@ describe("Session Queue", () => {
             method: "SESSION",
             action: "join"
         }).expectJson();
+
+        global.Date = originalDate;
+        global.Date.now = originalDate.now;
     });
 
     afterEach(async () => {
@@ -44,6 +48,7 @@ describe("Session Queue", () => {
     // Input: none
     // Expected behavior: see the it statement
     // Expected output: none
+       // ChatGPT usage: None
     it("should create with an empty queue", async () => {
         expect(await sessionService.getQueue(1)).toHaveProperty("running", false);
         expect(await sessionService.getQueue(1)).toHaveProperty("queue", []);

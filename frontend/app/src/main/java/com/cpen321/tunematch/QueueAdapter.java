@@ -13,8 +13,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHolder> {
-    private List<Song> items;
     WebSocketService webSocketService;
+    private List<Song> items;
 
     // ChatGPT Usage: No
     public QueueAdapter(WebSocketService webSocketService) {
@@ -72,26 +72,6 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
 //        }
 //    }
 
-    // ChatGPT Usage: Partial
-    public static class QueueViewHolder extends RecyclerView.ViewHolder {
-        private TextView songIdView;  // Assume you have a TextView to display the song ID
-        private TextView durationView;  // Assume you have a TextView to display the duration
-
-        public QueueViewHolder(@NonNull View itemView) {
-            super(itemView);
-            songIdView = itemView.findViewById(R.id.song_id);
-            durationView = itemView.findViewById(R.id.duration);
-        }
-
-        public void bind(Song song) {
-            songIdView.setText(song.getSongName()+" - "+song.getSongArtist());
-//            convert song in ms to mm:ss
-            durationView.setText(String.format("%d:%02d",
-                    Integer.parseInt(song.getDuration()) / 1000 / 60,
-                    Integer.parseInt(song.getDuration()) / 1000 % 60));
-        }
-    }
-
     // ChatGPT Usage: No
     public void addSong(Song song) {
         items.add(song);
@@ -104,5 +84,27 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
         notifyDataSetChanged();  // Notify the adapter that the data set has changed
     }
 
-    public List<Song> getQueue() {return items;}
+    public List<Song> getQueue() {
+        return items;
+    }
+
+    // ChatGPT Usage: Partial
+    public static class QueueViewHolder extends RecyclerView.ViewHolder {
+        private final TextView songIdView;  // Assume you have a TextView to display the song ID
+        private final TextView durationView;  // Assume you have a TextView to display the duration
+
+        public QueueViewHolder(@NonNull View itemView) {
+            super(itemView);
+            songIdView = itemView.findViewById(R.id.song_id);
+            durationView = itemView.findViewById(R.id.duration);
+        }
+
+        public void bind(Song song) {
+            songIdView.setText(song.getSongName() + " - " + song.getSongArtist());
+//            convert song in ms to mm:ss
+            durationView.setText(String.format("%ld:%02ld",
+                    song.getDuration() / 1000 / 60,
+                    song.getDuration() / 1000 % 60));
+        }
+    }
 }

@@ -11,37 +11,27 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
-import java.util.ArrayList;
+import java.util.List;
 
-public class ListFragment extends Fragment{
+public class ListFragment<T> extends Fragment {
 
-    ReduxStore model;
-    private String listTitle;
-    private ArrayList<String> listItems;
-    private WebSocketService webSocketService;
+    protected final String listTitle;
+    protected ReduxStore model;
+    protected List<T> listItems;
+    protected WebSocketService webSocketService;
 
     // ChatGPT Usage: Yes
-    public static ListFragment newInstance(ArrayList<String> listItem, String listTitle) {
-        ListFragment fragment = new ListFragment();
-        Bundle args = new Bundle();
-        args.putStringArrayList("itemList", listItem);
-        args.putString("listTitle", listTitle);
-        fragment.setArguments(args);
-        return fragment;
+    public ListFragment(List<T> items, String listTitle) {
+        this.listItems = items;
+        this.listTitle = listTitle;
     }
 
     // ChatGPT Usage: Yes
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (getArguments() != null) {
-            listItems = getArguments().getStringArrayList("itemList");
-            listTitle = getArguments().getString("listTitle");
-        }
-
-        model = ((MainActivity) getActivity()).getModel();
-        webSocketService = ((MainActivity) getActivity()).getWebSocketService();
+        model = ((MainActivity) requireActivity()).getModel();
+        webSocketService = ((MainActivity) requireActivity()).getWebSocketService();
     }
 
     // ChatGPT Usage: Partial
@@ -53,36 +43,19 @@ public class ListFragment extends Fragment{
         TextView titleTextView = view.findViewById(R.id.titleText);
         titleTextView.setText(listTitle);
 
-        // Find the ListView and set the adapter
+        // Find the ListView
         ListView listView = view.findViewById(R.id.listView);
+        TextView emptyText = view.findViewById(R.id.no_content);
+        listView.setEmptyView(emptyText);
 
-        // Create an ArrayAdapter to populate the ListView
-        if (listTitle.equals("Friends List")) {
-            // Updated the CustomListAdapter instantiation to pass `this` as the SessionJoinListener
-            CustomListAdapter adapter = new CustomListAdapter(getContext(), getActivity(), "EditFriendsList", listItems, webSocketService);
-            listView.setAdapter(adapter);
-
-            model.getFriendsList().observe(getViewLifecycleOwner(), friends -> {
-                ArrayList<String> friendsListItems = new ArrayList<>();
-                for (Friend f : friends) {
-                    friendsListItems.add(f.getName()+";"+f.getId()+";"+f.getProfilePic());
-                }
-                adapter.setData(friendsListItems);
-                adapter.notifyDataSetChanged();
-            });
-        } else if (listTitle.equals("Request List")) {
-            RequestListAdapter adapter = new RequestListAdapter(getContext(), model.getReceivedRequests().getValue(), webSocketService);
-            listView.setAdapter(adapter);
-            model.getReceivedRequests().observe(getViewLifecycleOwner(), request -> {
-                adapter.setData(request);
-                adapter.notifyDataSetChanged();
-            });
-        } else {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, listItems);
-            listView.setAdapter(adapter);
-        }
-
+        // Set the adapter
+        setAdapter(listView);
         return view;
+    }
+
+    protected void setAdapter(ListView listView) {
+        ArrayAdapter<T> adapter = new ArrayAdapter<T>(requireActivity(), android.R.layout.simple_list_item_1, listItems);
+        listView.setAdapter(adapter);
     }
 }
 

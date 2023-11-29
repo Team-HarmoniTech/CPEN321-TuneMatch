@@ -23,6 +23,7 @@ describe("Session Message", () => {
     // Input: The user is in a session
     // Expected behavior: The message is passed to all other members of the session
     // Expected output: None
+    // ChatGPT usage: None
     it("should pass messages between session members", async () => {
         const socket1 = request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
         .expectJson()
@@ -60,6 +61,7 @@ describe("Session Message", () => {
     // Input: The user is not in a session
     // Expected behavior: Nothing changes
     // Expected output: returns an error with the message "User is not in a session."
+    // ChatGPT usage: None
     it("should do nothing when not in a session", async () => {
         const socket1 = request(server).ws("/socket", { headers: { "user-id": "testUser1" } })
         .expectJson()
@@ -67,9 +69,7 @@ describe("Session Message", () => {
 
         await socket1.sendJson(message)
         .expectJson({
-            method: "SESSION",
-            action: "error",
-            body: "User is not in a session."
+            Error: "User is not in a session."
         });
 
         await socket1.close();

@@ -132,12 +132,12 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    Log.d("fetchSpotifyUserId","inside thread");
+                    Log.d("fetchSpotifyUserId", "inside thread");
                     // Make the GET request to retrieve user details
                     JsonObject userResponse = spotifyApiClient.getMe();
 
                     // Example using JSONObject (make sure to handle exceptions and null checks)
-                    Log.d(TAG, "Spotify my info: "+userResponse);
+                    Log.d(TAG, "Spotify my info: " + userResponse);
                     spotifyUserId = userResponse.get("id").getAsString();
                     Log.d(TAG, "Spotify User ID: " + spotifyUserId);
 
@@ -151,14 +151,17 @@ public class LoginActivity extends AppCompatActivity {
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                             @Override
                             public void run() {
-                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                intent.putExtra("spotifyUserId", spotifyUserId);
+                                Log.d("LoginActivity", spotifyUserId + " " + CLIENT_ID);
                                 Intent webSocketServiceIntent = new Intent(LoginActivity.this, WebSocketService.class);
                                 webSocketServiceIntent.putExtra("spotifyUserId", spotifyUserId);
-                                startService(webSocketServiceIntent);
+                                startForegroundService(webSocketServiceIntent);
+
                                 Intent spotifyServiceIntent = new Intent(LoginActivity.this, SpotifyService.class);
                                 spotifyServiceIntent.putExtra("clientID", CLIENT_ID);
-                                startService(spotifyServiceIntent);
+                                startForegroundService(spotifyServiceIntent);
+
+                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                intent.putExtra("spotifyUserId", spotifyUserId);
                                 startActivity(intent);
                             }
                         });

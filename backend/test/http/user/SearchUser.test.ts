@@ -6,6 +6,7 @@ describe("Search User", () => {
     // Expected status code: 200
     // Expected behavior: Return list of users related to search param
     // Expected output: {userId, username, profile-pic, match}[]
+    // ChatGPT usage: None
     test("Existing user", async () => {
       const res = await request(server)
         .get('/users/search')
@@ -26,6 +27,7 @@ describe("Search User", () => {
     // Expected status code: 400
     // Expected behavior: Return error message
     // Expected output: Error JSON indicating which fields were invalid
+    // ChatGPT usage: None
     test("Missing q", async () => {
       const res = await request(server)
         .get('/users/search')
@@ -48,6 +50,7 @@ describe("Search User", () => {
     // Expected status code: 401
     // Expected behavior: Return error message
     // Expected output: This executing user does not exist
+    // ChatGPT usage: None
     test("Non-existing user", async () => {
       const res = await request(server)
         .get('/users/search')

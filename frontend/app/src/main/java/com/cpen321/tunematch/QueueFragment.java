@@ -17,10 +17,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 public class QueueFragment extends Fragment {
-    private QueueAdapter queueAdapter;
-    private WebSocketService webSocketService;
     ReduxStore model;
     MainActivity mainActivity;
+    private QueueAdapter queueAdapter;
+    private WebSocketService webSocketService;
 
     // ChatGPT Usage: Partial
     @Override
@@ -78,18 +78,18 @@ public class QueueFragment extends Fragment {
                         && draggedFromPosition != -1 && draggedToPosition != -1
                         && draggedFromPosition != draggedToPosition && webSocketService != null
                         && model.checkSessionActive().getValue()) {
-                            JSONObject jsonObject = new JSONObject();
-                            try {
-                                jsonObject.put("method", "SESSION");
-                                jsonObject.put("action", "queueDrag");
-                                JSONObject body = new JSONObject();
-                                body.put("startIndex", draggedFromPosition);
-                                body.put("endIndex", draggedToPosition);
-                                jsonObject.put("body", body);
-                                webSocketService.sendMessage(jsonObject.toString());
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                    JSONObject jsonObject = new JSONObject();
+                    try {
+                        jsonObject.put("method", "SESSION");
+                        jsonObject.put("action", "queueDrag");
+                        JSONObject body = new JSONObject();
+                        body.put("startIndex", draggedFromPosition);
+                        body.put("endIndex", draggedToPosition);
+                        jsonObject.put("body", body);
+                        webSocketService.sendMessage(jsonObject.toString());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
 
                     // Reset the positions
                     draggedFromPosition = -1;
@@ -105,7 +105,7 @@ public class QueueFragment extends Fragment {
     // ChatGPT Usage: No
     private void addSongsToQueue() {
         model.getSongQueue().observe(getViewLifecycleOwner(), songs -> {
-            if(songs == null) {
+            if (songs == null) {
                 songs = new ArrayList<>();
             }
             queueAdapter.setSongs(songs);

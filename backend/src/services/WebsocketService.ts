@@ -13,6 +13,7 @@ export class WebSocketService {
     await this.connectionsLock.runExclusive(async () => {
       const duplicate = !!(await this.connections.getFromKey(userId));
       if (duplicate) {
+        logger.log(`WEBSOCKET: Duplicate User ${userId} tried to connect`);
         socket.close(1008, `Duplicate User ${userId} tried to connect`);
         return;
       }

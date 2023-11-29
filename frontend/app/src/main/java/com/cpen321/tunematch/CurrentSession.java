@@ -5,9 +5,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class CurrentSession {
+    private final String sessionName;
+    private final List<Message> messages;
     private String sessionId;
-    private String sessionName;
-    private List<Message> messages;
     private List<User> sessionMembers;
     private List<Song> sessionQueue;
     private Song currentSong;
@@ -38,18 +38,13 @@ public class CurrentSession {
     }
 
     // ChatGPT Usage: No
-    public void setSessionMembers(List<User> sessionMembers) {
-        this.sessionMembers = sessionMembers;
-    }
-
-    // ChatGPT Usage: No
-    public void setSessionQueue(List<Song> sessionQueue) {
-        this.sessionQueue = sessionQueue;
-    }
-
-    // ChatGPT Usage: No
     public List<User> getSessionMembers() {
         return sessionMembers;
+    }
+
+    // ChatGPT Usage: No
+    public void setSessionMembers(List<User> sessionMembers) {
+        this.sessionMembers = sessionMembers;
     }
 
     // ChatGPT Usage: No
@@ -58,10 +53,19 @@ public class CurrentSession {
     }
 
     // ChatGPT Usage: No
-    public void setCurrentSong(Song currentSong) { this.currentSong = currentSong; }
+    public void setSessionQueue(List<Song> sessionQueue) {
+        this.sessionQueue = sessionQueue;
+    }
 
     // ChatGPT Usage: No
-    public Song getCurrentSong() { return currentSong; }
+    public Song getCurrentSong() {
+        return currentSong;
+    }
+
+    // ChatGPT Usage: No
+    public void setCurrentSong(Song currentSong) {
+        this.currentSong = currentSong;
+    }
 
     // ChatGPT Usage: No
     public List<Message> getMessages() {

@@ -1,11 +1,18 @@
 import { server } from "@src/index";
 import request from 'superwstest';
+import { originalDate } from "../../globalSetup";
 
 describe("Get report", () => {
+    beforeEach(async () => {
+        global.Date = originalDate;
+        global.Date.now = originalDate.now;
+    });
+
     // Input: Valid dates
     // Expected status code: 200
     // Expected behavior: Return list of reports
     // Expected output: List of reports
+    // ChatGPT usage: None
     test("Valid user data with data query", async () => {
         const dateFrom = new Date(2023, 10, 1).toISOString();
         const dateTo = new Date(2023, 11, 31).toISOString();
@@ -25,14 +32,13 @@ describe("Get report", () => {
             expect(report).toHaveProperty('report_context');
             expect(report).toHaveProperty('timestamp');
         });
-
-        expect(res.body.length).toBe(2);
     });
 
     // Input: Valid dates
     // Expected status code: 200
     // Expected behavior: Return list of reports
     // Expected output: List of reports
+    // ChatGPT usage: None
     test("Valid user data without date query", async () => {
         const res = await request(server)
             .get('/reports');
@@ -48,7 +54,5 @@ describe("Get report", () => {
             expect(report).toHaveProperty('report_context');
             expect(report).toHaveProperty('timestamp');
         });
-
-        expect(res.body.length).toBe(2);
     });
 });

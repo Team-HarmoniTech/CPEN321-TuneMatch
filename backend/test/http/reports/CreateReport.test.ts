@@ -6,12 +6,13 @@ describe("Create report", () => {
     // Expected status code: 200
     // Expected behavior: Return generated report
     // Expected output: Generated report
+    // ChatGPT usage: None
     test("Valid user data", async () => {
         const res = await request(server)
             .post('/reports/create')
-            .set('user-id', 'testUser1') // Replace with a valid user ID
+            .set('user-id', 'testUser1')
             .send({
-                offenderId: 'testUser2', // Replace with a valid offender user ID
+                offenderId: 'testUser2',
                 reason: 'Sample Reason',
                 text: 'Description of the report',
                 context: 'Context or additional details'
@@ -31,10 +32,11 @@ describe("Create report", () => {
     // Expected status code: 200
     // Expected behavior: Return error message
     // Expected output: Generated report
+    // ChatGPT usage: None
     test("Valid user data", async () => {
         const res = await request(server)
             .post('/reports/create')
-            .set('user-id', 'testUser1') // Replace with a valid user ID
+            .set('user-id', 'testUser1')
             .send({
                 reason: 'Sample Reason',
                 text: 'Description of the report',

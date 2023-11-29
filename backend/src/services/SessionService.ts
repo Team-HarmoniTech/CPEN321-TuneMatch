@@ -25,7 +25,6 @@ export class SessionService {
         return otherSession;
       }
     }
-    
 
     /* Leave old session if exists */
     await this.leaveSession(userId);
@@ -61,7 +60,7 @@ export class SessionService {
     }
 
     /* Update user with session */
-    const user = await userService.updateUserStatus(userId, undefined, { type: "session" });
+    const user = await userService.updateUserStatus(userId, undefined, { type: "session", members: session.members.map(m => m.username) });
     await this.messageSession(
       session.id,
       userId,
@@ -221,9 +220,10 @@ export class SessionService {
       const q = queueData.queue;
       return {
         running: q.running,
-        timeStarted: q[0]?.timeStarted?.toISOString(),
+        initialPosition: q.running ? (new Date().getTime() - q.songs[0].timeStarted.getTime()) : (q.songs[0] ? q.songs[0].durationMs - q.songs[0].leftMs : undefined),
+        timeStamp: new Date().toISOString(),
         queue: [...q.songs].map((val) => {
-          return { uri: val.uri, durationMs: val.durationMs, title: val.title, artist: val.artist };
+          return { uri: val.uri, durationMs: val.durationMs, title: val.title, artist: val.artist};
         }),
       };
     });

@@ -6,6 +6,7 @@ describe("Get self", () => {
     // Expected status code: 200
     // Expected behavior: Return current user's data
     // Expected output: userId, username, profile-pic
+    // ChatGPT usage: None
     test("Existing user", async () => {
         const res = await request(server)
             .get('/me')
@@ -21,6 +22,7 @@ describe("Get self", () => {
     // Expected status code: 200
     // Expected behavior: Return current user's full data
     // Expected output: userId, username, profile pic, bio, top artists, top genres
+    // ChatGPT usage: None
     test("Existing user full profile", async () => {
         const res = await request(server)
             .get('/me')
@@ -40,6 +42,7 @@ describe("Get self", () => {
     // Expected status code: 401
     // Expected behavior: Return error message
     // Expected output: This executing user does not exist
+    // ChatGPT usage: None
     test("Non-existing user", async () => {
         const res = await request(server)
             .get('/me')
@@ -53,6 +56,7 @@ describe("Get self", () => {
     // Expected status code: 400
     // Expected behavior: Return error message
     // Expected output: Error JSON indicating which fields were invalid
+    // ChatGPT usage: None
     test("Missing user-id", async () => {
         const res = await request(server)
             .get('/me');
@@ -64,6 +68,7 @@ describe("Get self", () => {
     // Expected status code: 403
     // Expected behavior: Return error message
     // Expected output: This executing user is banned
+    // ChatGPT usage: None
     test("Banned user", async () => {
         const res = await request(server)
             .get('/me')

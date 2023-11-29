@@ -20,20 +20,22 @@ public class ReduxStore extends ViewModel {
     private final MutableLiveData<List<Message>> chatMessages;
     private final MutableLiveData<Boolean> sessionCreatedByMe;
     private final MutableLiveData<Song> currentSong;
+    private final MutableLiveData<Song> currentSongForFriends;
     private final MutableLiveData<Boolean> sessionActive;
     private final MutableLiveData<User> currentUser;
 
     // ChatGPT Usage: Partial
     public ReduxStore() {
-        friendsList = new MutableLiveData<>();
-        sentRequests = new MutableLiveData<>();
-        receivedRequests = new MutableLiveData<>();
-        sessionList = new MutableLiveData<>();
-        songQueue = new MutableLiveData<>();
-        searchList = new MutableLiveData<>();
-        currentSession = new MutableLiveData<>();
-        chatMessages = new MutableLiveData<>();
-        currentSong = new MutableLiveData<>();
+        currentSongForFriends = new MutableLiveData<>(null);
+        friendsList = new MutableLiveData<>(new ArrayList<>());
+        sentRequests = new MutableLiveData<>(new ArrayList<>());
+        receivedRequests = new MutableLiveData<>(new ArrayList<>());
+        sessionList = new MutableLiveData<>(new ArrayList<>());
+        songQueue = new MutableLiveData<>(new ArrayList<>());
+        searchList = new MutableLiveData<>(new ArrayList<>());
+        currentSession = new MutableLiveData<>(null);
+        chatMessages = new MutableLiveData<>(new ArrayList<>());
+        currentSong = new MutableLiveData<>(null);
         sessionActive = new MutableLiveData<>(false);
         currentUser = new MutableLiveData<>(null);
         sessionCreatedByMe = new MutableLiveData<>(true);
@@ -49,6 +51,10 @@ public class ReduxStore extends ViewModel {
 
     public MutableLiveData<Boolean> checkSessionCreatedByMe() {
         return sessionCreatedByMe;
+    }
+
+    public MutableLiveData<Song> getCurrentSongForFriends() {
+        return currentSongForFriends;
     }
 
     // ChatGPT Usage: No
@@ -76,6 +82,7 @@ public class ReduxStore extends ViewModel {
         return songQueue;
     }
 
+
     // ChatGPT Usage: No
     public MutableLiveData<Song> getCurrentSong() {
         return currentSong;
@@ -92,13 +99,19 @@ public class ReduxStore extends ViewModel {
     }
 
     // ChatGPT Usage: No
-    public MutableLiveData<List<SearchUser>> getSentRequests() { return sentRequests; }
+    public MutableLiveData<List<SearchUser>> getSentRequests() {
+        return sentRequests;
+    }
 
     // ChatGPT Usage: No
-    public MutableLiveData<List<SearchUser>> getReceivedRequests() { return receivedRequests; }
+    public MutableLiveData<List<SearchUser>> getReceivedRequests() {
+        return receivedRequests;
+    }
 
     // ChatGPT Usage: No
-    public void setSentRequestsList(List<SearchUser> newRequests) { sentRequests.postValue(newRequests); }
+    public void setSentRequestsList(List<SearchUser> newRequests) {
+        sentRequests.postValue(newRequests);
+    }
 
     // ChatGPT Usage: No
     public void addSentRequest(SearchUser userToAdd) {
@@ -111,42 +124,23 @@ public class ReduxStore extends ViewModel {
     }
 
     // ChatGPT Usage: No
-    public void setReceivedRequestsList(List<SearchUser> newRequests) { receivedRequests.postValue(newRequests); }
-
-    // ChatGPT Usage: No
     public MutableLiveData<Boolean> checkSessionActive() {
         return sessionActive;
     }
 
     // ChatGPT Usage: No
-    public MutableLiveData<List<SearchUser>> getSearchList() {return searchList;}
+    public MutableLiveData<List<SearchUser>> getSearchList() {
+        return searchList;
+    }
 
     // ChatGPT Usage: No
     public MutableLiveData<CurrentSession> getCurrentSession() {
         return currentSession;
     }
 
-    // ChatGPT Usage: Partial
-    public void setFriendsList(List<Friend> friends) {
-        friendsList.setValue(friends);
-    }
-
-    // ChatGPT Usage: Partial
-    public void setSessionList(List<Session> sessions) {
-        sessionList.setValue(sessions);
-    }
-
-    // ChatGPT Usage: Partial
-    public void setSongQueue(List<Song> songs) {
-        songQueue.setValue(songs);
-    }
-
     // ChatGPT Usage: No
     public void addMessage(Message message, boolean background) {
         List<Message> currentMessages = chatMessages.getValue();
-        if (currentMessages == null) {
-            currentMessages = new ArrayList<Message>();
-        }
         currentMessages.add(message);
         if (background) {
             chatMessages.postValue(currentMessages);
@@ -159,6 +153,7 @@ public class ReduxStore extends ViewModel {
     public MutableLiveData<List<Message>> getMessages() {
         return chatMessages;
     }
+
     public void addSongToQueue(Song song) {
         List<Song> currentQueue = songQueue.getValue();
         if (currentQueue == null) {
@@ -179,8 +174,8 @@ public class ReduxStore extends ViewModel {
     public String getFriendName(String id) {
         String name = "";
         for (Friend f : friendsList.getValue()) {
-            if ((f.getId()).equals(id)) {
-                name = f.getName();
+            if ((f.getUserId()).equals(id)) {
+                name = f.getUserName();
                 break;
             }
         }
@@ -194,9 +189,9 @@ public class ReduxStore extends ViewModel {
 
         for (int i = 0; i < currFriendList.size(); i++) {
             Friend f = currFriendList.get(i);
-            if (f.getId().equals(friendIdToRemove)) {
+            if (f.getUserId().equals(friendIdToRemove)) {
                 currFriendList.remove(i);
-                Log.d("ReduxStore", "Removed "+friendIdToRemove);
+                Log.d("ReduxStore", "Removed " + friendIdToRemove);
                 break;
             }
         }
@@ -239,7 +234,7 @@ public class ReduxStore extends ViewModel {
         currentSong.setValue(song);
     }
 
-    public void setCurrentSongPosition(String timeStarted) {
+    public void setCurrentSongPosition(long timeStarted) {
         Song song = currentSong.getValue();
         song.setCurrentPosition(timeStarted);
         currentSong.setValue(song);

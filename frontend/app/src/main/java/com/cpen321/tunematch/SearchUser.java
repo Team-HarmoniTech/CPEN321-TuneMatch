@@ -3,9 +3,9 @@ package com.cpen321.tunematch;
 import java.util.List;
 
 public class SearchUser {
-    private String name;
-    private String id;
-    private String profilePic;
+    private final String name;
+    private final String id;
+    private final String profilePic;
     private String matchPercent;
     private List<String> topArtist;
     private List<String> topGenres;
@@ -18,22 +18,34 @@ public class SearchUser {
     }
 
     // ChatGPT Usage: No
-    public String getName() {return name;}
+    public String getName() {
+        return name;
+    }
 
     // ChatGPT Usage: No
-    public String getId() {return id;}
+    public String getId() {
+        return id;
+    }
 
     // ChatGPT Usage: No
-    public String getProfilePic() {return profilePic;}
+    public String getProfilePic() {
+        return profilePic;
+    }
 
     // ChatGPT Usage: No
-    public String getMatchPercent() {return matchPercent;}
+    public String getMatchPercent() {
+        return matchPercent;
+    }
 
     // ChatGPT Usage: No
-    public List<String> getTopArtist() {return topArtist;}
+    public void setMatchPercent(String matchPercent) {
+        this.matchPercent = matchPercent;
+    }
 
     // ChatGPT Usage: No
-    public List<String> getTopGenres() {return topGenres;}
+    public List<String> getTopArtist() {
+        return topArtist;
+    }
 
     // ChatGPT Usage: No
     public void setTopArtist(List<String> topArtist) {
@@ -41,12 +53,12 @@ public class SearchUser {
     }
 
     // ChatGPT Usage: No
-    public void setTopGenres(List<String> topGenres) {
-        this.topGenres = topGenres;
+    public List<String> getTopGenres() {
+        return topGenres;
     }
 
     // ChatGPT Usage: No
-    public void setMatchPercent(String matchPercent) {
-        this.matchPercent = matchPercent;
+    public void setTopGenres(List<String> topGenres) {
+        this.topGenres = topGenres;
     }
 }

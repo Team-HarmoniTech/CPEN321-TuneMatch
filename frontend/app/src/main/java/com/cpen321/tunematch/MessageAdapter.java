@@ -24,14 +24,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class MessageAdapter extends RecyclerView.Adapter  {
-    private List<Message> messages;
-    private User currentUser;
-    private LayoutInflater inflater;
-    private Context context;
-    private BackendClient backend;
+public class MessageAdapter extends RecyclerView.Adapter {
     public final static int MESSAGE_TYPE_RECEIVED = 1;
     public final static int MESSAGE_TYPE_SENT = 0;
+    private final User currentUser;
+    private final LayoutInflater inflater;
+    private final Context context;
+    private final BackendClient backend;
+    private List<Message> messages;
 
     // ChatGPT Usage: No
     public MessageAdapter(List<Message> messages, User currentUser, @NonNull LayoutInflater inflater, @NonNull Context context, @NonNull BackendClient backend) {
@@ -47,9 +47,9 @@ public class MessageAdapter extends RecyclerView.Adapter  {
         if (viewType == MESSAGE_TYPE_SENT) {
             return new MessageViewHolder(
                     LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.chat_sent_message, parent, false)
+                            .inflate(R.layout.chat_sent_message, parent, false)
             );
-        } else  {
+        } else {
             return new MessageViewHolderWithImage(
                     LayoutInflater.from(parent.getContext())
                             .inflate(R.layout.chat_recieved_message, parent, false)
@@ -63,13 +63,13 @@ public class MessageAdapter extends RecyclerView.Adapter  {
         Message message = messages.get(position);
         if (getItemViewType(position) == MESSAGE_TYPE_SENT) {
             MessageViewHolder view = (MessageViewHolder) holder;
-            view.getMessageText().setText(message.getMessageText());
+            view.messageText.setText(message.getMessageText());
         } else {
             MessageViewHolderWithImage view = (MessageViewHolderWithImage) holder;
-            view.getMessageText().setText(message.getMessageText());
+            view.messageText.setText(message.getMessageText());
 
-            //Add Report OnLongClickListener
-            view.getMessageText().setOnLongClickListener(new OnLongClickReportListener(position));
+            //Add Report OnClickListener
+            view.messageText.setOnClickListener(new OnClickReportListener(position));
         }
         recalculateView(holder, position);
     }
@@ -86,7 +86,7 @@ public class MessageAdapter extends RecyclerView.Adapter  {
         if (getItemViewType(position) == MESSAGE_TYPE_SENT) {
             MessageViewHolder view = (MessageViewHolder) holder;
             // Set padding to 0 if next to message from same user
-            ConstraintLayout container = view.getContainer();
+            ConstraintLayout container = view.container;
             container.setPadding(
                     container.getPaddingLeft(),
                     2,
@@ -95,7 +95,7 @@ public class MessageAdapter extends RecyclerView.Adapter  {
         } else {
             MessageViewHolderWithImage view = (MessageViewHolderWithImage) holder;
             // Set padding to 0 if next to message from same user
-            ConstraintLayout container = view.getContainer();
+            ConstraintLayout container = view.container;
             container.setPadding(
                     container.getPaddingLeft(),
                     2,
@@ -104,13 +104,9 @@ public class MessageAdapter extends RecyclerView.Adapter  {
 
             // Only render image if first
             if (isFirstMessage(position)) {
-                new Thread(new DownloadImage(
-                        view.getProfileImage(),
-                        message.getSenderProfileImageUrl(),
-                        R.drawable.default_profile_image
-                )).start();
+                new DownloadProfilePicture(view.profileImage, message.getSenderProfileImageUrl()).run();
             } else {
-                view.getProfileImage().setVisibility(View.INVISIBLE);
+                view.profileImage.setVisibility(View.INVISIBLE);
             }
         }
     }
@@ -152,44 +148,37 @@ public class MessageAdapter extends RecyclerView.Adapter  {
 
     // ChatGPT Usage: No
     static class MessageViewHolder extends RecyclerView.ViewHolder {
-        private final TextView messageText;
-        private final ConstraintLayout container;
-        public TextView getMessageText() {
-            return messageText;
-        }
-        public ConstraintLayout getContainer() {
-            return container;
-        }
+        protected final TextView messageText;
+        protected final ConstraintLayout container;
+
         public MessageViewHolder(@NonNull View view) {
             super(view);
-            container = (ConstraintLayout) view.findViewById(R.id.container);
-            messageText = (TextView) view.findViewById(R.id.textMessage);
+            container = view.findViewById(R.id.container);
+            messageText = view.findViewById(R.id.textMessage);
         }
     }
 
     // ChatGPT Usage: No
     static class MessageViewHolderWithImage extends MessageViewHolder {
-        private final ImageView profileImage;
-        public ImageView getProfileImage() {
-            return profileImage;
-        }
+        protected final ImageView profileImage;
+
         public MessageViewHolderWithImage(@NonNull View view) {
             super(view);
-            profileImage = (ImageView) view.findViewById(R.id.profileImage);
+            profileImage = view.findViewById(R.id.profileImage);
         }
     }
 
     // ChatGPT Usage: No
-    public class OnLongClickReportListener implements View.OnLongClickListener {
-        private int position;
+    public class OnClickReportListener implements View.OnClickListener {
+        private final int position;
 
-        public OnLongClickReportListener(int position) {
+        public OnClickReportListener(int position) {
             super();
             this.position = position;
         }
 
         @Override
-        public boolean onLongClick(View view) {
+        public void onClick(View view) {
             // Create the dialog
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
             View dialogView = inflater.inflate(R.layout.report_user_dialogue, null);
@@ -223,6 +212,7 @@ public class MessageAdapter extends RecyclerView.Adapter  {
                         otherText.setVisibility(View.GONE);
                     }
                 }
+
                 @Override
                 public void onNothingSelected(AdapterView<?> adapterView) {
                     otherText.setVisibility(View.GONE);
@@ -238,7 +228,7 @@ public class MessageAdapter extends RecyclerView.Adapter  {
                         @Override
                         public void run() {
                             try {
-                                List<Message> context = new ArrayList(messages);
+                                List<Message> context = new ArrayList<>(messages);
                                 BackendClient.ReportReason reason = (BackendClient.ReportReason) spinner.getSelectedItem();
                                 backend.generateReport(
                                         message.getSenderUserId(),
@@ -261,7 +251,6 @@ public class MessageAdapter extends RecyclerView.Adapter  {
 
             // Finally show dialog
             alertDialog.show();
-            return true;
         }
     }
 }

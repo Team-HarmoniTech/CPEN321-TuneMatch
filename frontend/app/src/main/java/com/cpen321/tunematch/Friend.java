@@ -1,12 +1,13 @@
 package com.cpen321.tunematch;
 
-import android.util.Log;
-
 import com.google.gson.JsonElement;
 
+import java.util.Date;
+
 public class Friend extends User {
-    private String currentSong;
+    private Song currentSong;
     private JsonElement currentSource;
+    private Date lastUpdated;
 
     // ChatGPT Usage: No
     public Friend(String userId, String userName, String profileImageUrl) {
@@ -16,31 +17,27 @@ public class Friend extends User {
     }
 
     // ChatGPT Usage: No
-    public String getName() {
-        return getUserName();
+    public Song getCurrentSong() {
+        return currentSong;
     }
 
-    // ChatGPT Usage: No
-    public String getId() { return getUserId(); }
-
-    // ChatGPT Usage: No
-    public String getProfilePic() { return getProfileImageUrl(); }
-
-    // ChatGPT Usage: No
-    public String getCurrentSong() { return currentSong; }
-
-    // ChatGPT Usage: No
-    public JsonElement getCurrentSource() { return currentSource; }
-
-    // ChatGPT Usage: No
-    public boolean getIsListening() {
-        Log.d("Friend", "current song: " + currentSong);
-        return (currentSong != null);
+    public void setCurrentSong(Song currentSong) {
+        this.currentSong = currentSong;
     }
 
-    // ChatGPT Usage: No
-    public void setCurrentSong(String currentSong) { this.currentSong = currentSong; }
+    public JsonElement getCurrentSource() {
+        return currentSource;
+    }
 
-    // ChatGPT Usage: No
-    public void setCurrentSource(JsonElement currentSource) { this.currentSource = currentSource; }
+    public void setCurrentSource(JsonElement currentSource) {
+        this.currentSource = currentSource;
+    }
+
+    public Date getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(Date lastUpdated) {
+        this.lastUpdated = lastUpdated;
+    }
 }

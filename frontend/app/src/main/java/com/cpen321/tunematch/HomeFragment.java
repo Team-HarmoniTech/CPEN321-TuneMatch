@@ -1,6 +1,8 @@
 package com.cpen321.tunematch;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,21 +13,24 @@ import android.widget.ListView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.MutableLiveData;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
-    private View view;
+    private final Handler handler = new Handler(Looper.getMainLooper());
     ReduxStore model;
     Button createSessionButton;
     MainActivity mainActivity;
     BottomNavigationView bottomNavigationView;
+    private View view;
     private WebSocketService webSocketService;
 
     // ChatGPT Usage: Partial
@@ -51,32 +56,21 @@ public class HomeFragment extends Fragment {
     public void onStart() {
         super.onStart();
         createSessionButton = view.findViewById(R.id.createListeningSessionBtn);
-        ListView friendsActivityList = view.findViewById(R.id.friendsList);
-        CustomListAdapter friendsAdapter = new CustomListAdapter(getContext(), getActivity(), "FriendsList", new ArrayList<>(), webSocketService);
 
+        RecyclerView friendsActivityList = view.findViewById(R.id.friendsList);
+        MutableLiveData<List<Friend>> friendsList = model.getFriendsList();
+        FriendActivityListAdapter friendsAdapter = new FriendActivityListAdapter(friendsList.getValue(), handler);
         friendsActivityList.setAdapter(friendsAdapter);
+        friendsActivityList.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        model.getFriendsList().observe(getViewLifecycleOwner(), friends -> {
-            ArrayList<String> friendsListItems = new ArrayList<>();
-            for (Friend f : friends) {
-                friendsListItems.add(f.getName()+";"+ (f.getIsListening() ? f.getCurrentSong() : "Not Listening"));
-            }
-            friendsAdapter.setData(friendsListItems);
-            friendsAdapter.notifyDataSetChanged();
-        });
+        friendsList.observe(getViewLifecycleOwner(), friendsAdapter::updateData);
 
         // Add existing listening session
         ListView sessionList = view.findViewById(R.id.listeningSessionList);
-        List<String> sessionListItems = new ArrayList<>();
-        CustomListAdapter sessionAdapter = new CustomListAdapter(getContext(), getActivity(), "SessionsList", sessionListItems, webSocketService);
-        model.getSessionList().observe(getViewLifecycleOwner(), sessions -> {
-            sessionListItems.clear();
-            for (Session s : sessions) {
-                sessionListItems.add(s.getSessionId());
-            }
-            sessionList.setAdapter(sessionAdapter);
-        });
-
+        MutableLiveData<List<Session>> sessions = model.getSessionList();
+        SessionListAdapter sessionAdapter = new SessionListAdapter(getContext(), getActivity(), sessions.getValue(), webSocketService);
+        sessionList.setAdapter(sessionAdapter);
+        model.getSessionList().observe(getViewLifecycleOwner(), sessionAdapter::updateData);
 
         createSessionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -86,7 +80,7 @@ public class HomeFragment extends Fragment {
                     messageToCreateSession.put("method", "SESSION");
                     messageToCreateSession.put("action", "join");
                 } catch (JSONException e) {
-                    Log.e("JSONException", "Exception message: "+e.getMessage());
+                    Log.e("JSONException", "Exception message: " + e.getMessage());
                 }
                 if (webSocketService != null) {
                     webSocketService.sendMessage(messageToCreateSession.toString());
@@ -95,5 +89,12 @@ public class HomeFragment extends Fragment {
                 bottomNavigationView.setSelectedItemId(R.id.navigation_room);
             }
         });
+    }
+
+    @Override
+    public void onDestroy() {
+        // Remove any pending callbacks when the activity is destroyed
+        handler.removeCallbacksAndMessages(null);
+        super.onDestroy();
     }
 }

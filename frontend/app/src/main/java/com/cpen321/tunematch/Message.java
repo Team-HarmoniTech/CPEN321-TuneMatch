@@ -4,10 +4,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Message implements Comparable<Message> {
-    private User sender;
-    private String messageText;
-    private Date timestamp;
-    public static final SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");;
+    public static final SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+    private final User sender;
+    private final String messageText;
+    private final Date timestamp;
 
     // ChatGPT Usage: No
     public Message(User sender, String messageText, Date timestamp) {

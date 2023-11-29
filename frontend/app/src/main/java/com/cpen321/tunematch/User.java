@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 // ChatGPT Usage: No
 public class User {
-    private String userId;
-    private String userName;
-    private String profileImageUrl;
+    private final String userId;
+    private final String userName;
+    private final String profileImageUrl;
     private String bio;
     private ArrayList<String> topArtists;
     private ArrayList<String> topGenres;
@@ -41,32 +41,27 @@ public class User {
     }
 
     // ChatGPT Usage: No
-    public String getProfilePic() {
+    public String getProfileImageUrl() {
         return profileImageUrl;
     }
 
     // ChatGPT Usage: No
-    public String getProfileImageUrl() { return profileImageUrl; }
+    public ArrayList<String> getTopArtists() {
+        return topArtists;
+    }
 
     // ChatGPT Usage: No
-    public void setTopArtists(ArrayList<String> topArtists) {this.topArtists = topArtists;}
-
-    // ChatGPT Usage: No
-    public void setTopGenres(ArrayList<String> topGenres) {this.topGenres = topGenres;}
-
-    // ChatGPT Usage: No
-    public ArrayList<String> getTopArtists() { return topArtists; }
-
-    // ChatGPT Usage: No
-    public ArrayList<String> getTopGenres() { return topGenres; }
-
-    // ChatGPT Usage: No
-    public void setBio(String bio) {
-        this.bio = bio;
+    public ArrayList<String> getTopGenres() {
+        return topGenres;
     }
 
     // ChatGPT Usage: No
     public String getBio() {
         return bio;
+    }
+
+    // ChatGPT Usage: No
+    public void setBio(String bio) {
+        this.bio = bio;
     }
 }

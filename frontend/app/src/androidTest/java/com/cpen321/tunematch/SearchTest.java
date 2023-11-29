@@ -16,8 +16,8 @@ import java.util.List;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SearchTest {
 
+    private final String VALID_USERNAME = "sojupapi";
     private ActivityScenario<LoginActivity> loginActivityScenario;
-    private String VALID_USERNAME = "sojupapi";
 
     // ChatGPT Usage: Partial
     @Before
@@ -63,7 +63,7 @@ public class SearchTest {
 
         // Check if request dialog is displayed
         UiTestHelper.addDelay(1000);
-        List<Integer> idsToCheck = Arrays.asList(R.id.addButton, R.id.nameText, R.id.profileImage);
+        List<Integer> idsToCheck = Arrays.asList(R.id.pro, R.id.nameText, R.id.profileImage);
         UiTestHelper.checkViewListDisplay(idsToCheck, true);
 
         // Click add button to send request
