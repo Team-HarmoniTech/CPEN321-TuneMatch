@@ -1,5 +1,6 @@
 import { server } from "@src/index";
 import request from 'superwstest';
+import { originalDate } from "../../globalSetup";
 
 describe("Get top matches", () => {
     // Input: user-id is an existing user
@@ -42,11 +43,17 @@ describe("Get top matches", () => {
     // Expected output: User connections were not computed within 60000 milliseconds
     // ChatGPT usage: None
     test("Timeout", async () => {
+      const testConstantDate = new Date('2023-01-01T12:00:00Z');
+      global.Date = originalDate;
+
       const res = await request(server)
         .get('/me/matches')
         .set('user-id', 'testUser2');
 
       expect(res.statusCode).toBe(400);
       expect(res.body).toEqual({ error : "User connections were not computed within 60000 milliseconds." });
+
+      global.Date = jest.fn().mockImplementation(() => testConstantDate) as any;
+      global.Date.now = jest.fn().mockReturnValue(+testConstantDate);
     }, 70000);
   });
