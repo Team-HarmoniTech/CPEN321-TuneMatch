@@ -17,7 +17,7 @@ describe("Get report", () => {
                     reason: "PLAYLIST_ABUSE",    
                     reason_text: "Abusing playlist",      
                     report_context: "Context or additional details",
-                    timestamp: new Date(2023, 12, 15)
+                    timestamp: new Date("2024-01-15T00:00:00.000Z")
                 },
                 {
                     id: 1,
@@ -26,7 +26,7 @@ describe("Get report", () => {
                     reason: "OFFENSIVE_LANGUAGE",    
                     reason_text: "Bad behaviour",      
                     report_context: "Context or additional details",
-                    timestamp: new Date(2023, 11, 15)
+                    timestamp: new Date("2023-11-15T00:00:00.000Z")
                 },
                 {
                     id: 2,
@@ -35,7 +35,7 @@ describe("Get report", () => {
                     reason: "PLAYLIST_ABUSE",    
                     reason_text: "Abusing playlist",      
                     report_context: "Context or additional details",
-                    timestamp: new Date(2022, 11, 1)
+                    timestamp: new Date("2022-12-01T00:00:00.000Z")
                 },
             ]
         });
@@ -47,8 +47,8 @@ describe("Get report", () => {
     // Expected output: List of reports
     // ChatGPT usage: None
     test("Valid user data with data query", async () => {
-        const dateFrom = new Date(2023, 10, 1).toISOString();
-        const dateTo = new Date(2023, 11, 29).toISOString();
+        const dateFrom = new Date("2023-10-01T00:00:00.000Z").toISOString();
+        const dateTo = new Date("2023-11-29T00:00:00.000Z").toISOString();
 
         const res = await request(server)
             .get('/reports')
@@ -64,8 +64,8 @@ describe("Get report", () => {
                 reason: "OFFENSIVE_LANGUAGE",    
                 reason_text: "Bad behaviour",      
                 report_context: "Context or additional details",
-                timestamp: "2023-12-15T08:00:00.000Z"
-            }
+                timestamp: "2023-11-15T00:00:00.000Z"
+            },
         ]);
     });
 
@@ -88,7 +88,7 @@ describe("Get report", () => {
                 reason: "PLAYLIST_ABUSE",    
                 reason_text: "Abusing playlist",      
                 report_context: "Context or additional details",
-                timestamp: "2024-01-15T08:00:00.000Z"
+                timestamp: "2024-01-15T00:00:00.000Z"
             },
             {
                 id: 1,
@@ -97,7 +97,7 @@ describe("Get report", () => {
                 reason: "OFFENSIVE_LANGUAGE",    
                 reason_text: "Bad behaviour",      
                 report_context: "Context or additional details",
-                timestamp: "2023-12-15T08:00:00.000Z"
+                timestamp: "2023-11-15T00:00:00.000Z"
             },
             {
                 id: 2,
@@ -106,7 +106,7 @@ describe("Get report", () => {
                 reason: "PLAYLIST_ABUSE",    
                 reason_text: "Abusing playlist",      
                 report_context: "Context or additional details",
-                timestamp: "2022-12-01T08:00:00.000Z"
+                timestamp: "2022-12-01T00:00:00.000Z"
             }
         ])
     });
