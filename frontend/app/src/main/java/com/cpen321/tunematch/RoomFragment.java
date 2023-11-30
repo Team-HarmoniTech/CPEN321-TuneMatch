@@ -634,7 +634,7 @@ public class RoomFragment extends Fragment {
     private void playNextSong() {
         List<Song> songQueue = model.getSongQueue().getValue();
         if (songQueue == null || songQueue.isEmpty()) {
-            Toast.makeText(getContext(), "Queue is empty", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Queue is empty", Toast.LENGTH_SHORT).show();
             Song currentSong = model.getCurrentSong().getValue();
             currentSong.setIsPLaying(false);
             currentSong.setCurrentPosition(0);

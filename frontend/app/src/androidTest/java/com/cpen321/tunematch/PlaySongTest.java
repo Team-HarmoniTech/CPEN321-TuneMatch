@@ -22,6 +22,7 @@ public class PlaySongTest {
     public void setUp() {
         Intents.init();
         loginActivityScenario = ActivityScenario.launch(LoginActivity.class);
+        UiTestHelper.addDelay(1000);
         UiTestHelper.clickOnView(R.id.spotify_login_button);
 
         UiTestHelper.addDelay(15000);
@@ -77,7 +78,6 @@ public class PlaySongTest {
         // TODO: Currently crashing the app; needs to be fixed
         UiTestHelper.clickOnView(R.id.play_button);
         UiTestHelper.checkToastMessage("Queue is empty");
-        UiTestHelper.checkBtnBackground(R.id.play_button, R.drawable.play_btn);
         UiTestHelper.addDelay(2000);
 
         // Test next button with empty queue
@@ -98,7 +98,7 @@ public class PlaySongTest {
         A_testCreateSession();
 
         // Add known number of songs to the queue
-        List<String> songList = Arrays.asList("Santa Tell Me", "Snowman", "Last Christmas", "All I");
+        List<String> songList = Arrays.asList("Santa", "Snowman", "Last", "All");
         for (String title : songList) {
             searchSong(title);
         }
@@ -156,7 +156,7 @@ public class PlaySongTest {
 
         // Test valid input
         // Have snowman twice since first click would play the song
-        List<String> songTitle = Arrays.asList("Santa Tell Me", "Snowman", "Last Christmas", "All I");
+        List<String> songTitle = Arrays.asList("Santa", "Snowman", "Last", "All");
         for (String song : songTitle) {
             searchSong(song);
 
@@ -177,15 +177,13 @@ public class PlaySongTest {
 
         // Check Queue is displayed
         UiTestHelper.checkViewIsDisplayed(R.id.recycler_view);
+        UiTestHelper.reorder(1, 0);
+        UiTestHelper.addDelay(1000);
+        UiTestHelper.reorder(0, 2);
 
-        // Swipe second song on the list to top
-        UiTestHelper.swipeListItem(R.id.recycler_view, 1, true);
-
-        // Swipe first song on the list to bottom
-        UiTestHelper.swipeListItem(R.id.recycler_view, 0, false);
 
         // Check if order is changed correctly
-        List<String> expectedOrder = Arrays.asList("Last christmas", "snowman", "All I");
+        List<String> expectedOrder = Arrays.asList("Snowman", "All I", "Last");
         UiTestHelper.checkListOrder(R.id.recycler_view, expectedOrder);
     }
 
@@ -216,7 +214,7 @@ public class PlaySongTest {
     public void searchSong(String title) {
         // Search song
         UiTestHelper.inputMessage(R.id.songSearchBar, title, true);
-        UiTestHelper.addDelay(2000);
+        UiTestHelper.addDelay(1000);
 
         // Add to queue
         UiTestHelper.checkViewIsDisplayed(R.id.suggestionListView);

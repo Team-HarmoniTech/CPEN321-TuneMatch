@@ -102,7 +102,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
         public void bind(Song song) {
             songIdView.setText(song.getSongName() + " - " + song.getSongArtist());
 //            convert song in ms to mm:ss
-            durationView.setText(String.format("%ld:%02ld",
+            durationView.setText(String.format("%d:%02d",
                     song.getDuration() / 1000 / 60,
                     song.getDuration() / 1000 % 60));
         }
