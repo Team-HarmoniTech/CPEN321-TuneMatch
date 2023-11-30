@@ -16,7 +16,7 @@ import java.util.List;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SearchTest {
 
-    private final String VALID_USERNAME = "sojupapi";
+    private final String VALID_USERNAME = "Cassiel";
     private ActivityScenario<LoginActivity> loginActivityScenario;
 
     // ChatGPT Usage: Partial
@@ -24,6 +24,8 @@ public class SearchTest {
     public void setUp() {
         Intents.init();
         loginActivityScenario = ActivityScenario.launch(LoginActivity.class);
+        UiTestHelper.addDelay(1000);
+        UiTestHelper.clickOnView(R.id.spotify_login_button);
 
         UiTestHelper.addDelay(15000);
 
@@ -63,7 +65,7 @@ public class SearchTest {
 
         // Check if request dialog is displayed
         UiTestHelper.addDelay(1000);
-        List<Integer> idsToCheck = Arrays.asList(R.id.pro, R.id.nameText, R.id.profileImage);
+        List<Integer> idsToCheck = Arrays.asList(R.id.addButton, R.id.nameText, R.id.profileImage);
         UiTestHelper.checkViewListDisplay(idsToCheck, true);
 
         // Click add button to send request

@@ -1,6 +1,7 @@
 // Wrote by team member following online tutorial regarding BottomNavigationView usage
 package com.cpen321.tunematch;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 public class ProfileFragment extends Fragment {
     ReduxStore model;
     ApiClient apiClient;
+    SpotifyService spotifyService;
     FragmentManager fm;
     FragmentTransaction ft;
     private View view;
@@ -32,6 +34,7 @@ public class ProfileFragment extends Fragment {
 
         model = ReduxStore.getInstance();
         apiClient = ((MainActivity) getActivity()).getBackend();
+        spotifyService = ((MainActivity) getActivity()).getSpotifyService();
         fm = getActivity().getSupportFragmentManager();
     }
 
@@ -100,6 +103,17 @@ public class ProfileFragment extends Fragment {
                 ft.replace(R.id.mainFrame, topArtistFragment);
                 ft.addToBackStack(null);
                 ft.commit();
+            }
+        });
+
+        view.findViewById(R.id.logoutBtn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("ProfileFragment", "Logout button clicked");
+                spotifyService.logoutSpotify();
+                Intent intent = new Intent(getActivity(), LoginActivity.class);
+                startActivity(intent);
+                getActivity().finish();
             }
         });
 

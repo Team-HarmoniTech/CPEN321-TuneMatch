@@ -4,9 +4,10 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.ComponentName;
 import android.content.ServiceConnection;
 import android.os.Binder;
 import android.os.Build;
@@ -79,7 +80,12 @@ public class SpotifyService extends Service {
         startForeground(NOTIFICATION_ID, notification);
 
         // Start spotify connection
-        CLIENT_ID = Objects.requireNonNull(intent.getStringExtra("clientID"));
+        try {
+            CLIENT_ID = Objects.requireNonNull(intent.getStringExtra("clientID"));
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            CLIENT_ID = LoginActivity.getClientId();
+        }
         model = ReduxStore.getInstance();
         if (mSpotifyAppRemote == null || !mSpotifyAppRemote.isConnected()) {
             connectToSpotify();
@@ -177,10 +183,22 @@ public class SpotifyService extends Service {
         return mSpotifyAppRemote;
     }
 
+    // ChatGPT Usage: Yes
+    public void logoutSpotify() {
+        // Clear access token
+        SpotifyAppRemote.disconnect(mSpotifyAppRemote);
+
+        // Clear refresh token (if stored)
+        SharedPreferences.Editor editor = getSharedPreferences("my_preferences", Context.MODE_PRIVATE).edit();
+        editor.remove("SPOTIFY_REFRESH_TOKEN");
+        editor.apply();
+    }
+
     // ChatGPT Usage: No
     public class LocalBinder extends Binder {
         SpotifyService getService() {
             return SpotifyService.this;
         }
+
     }
 }
