@@ -76,31 +76,23 @@ public class RoomFragment extends Fragment {
     private SpotifyClient spotifyClient;
     private ReduxStore model;
     private WebSocketService webSocketService;
-    private long currentPosition = 0;
+//    private long currentPosition = 0;
     private Runnable searchRunnable;
-    private Song lastSongState = null;
+//    private Song lastSongState = null;
 
     // ChatGPT Usage: Partial
     final Runnable runnable = new Runnable() {
         @Override
         public void run() {
             synchronized (this) {
-                if (lastSongState != null) {
-//                    Log.e(TAG, "run: current position: " + currentSongTotalDuration);
-                    currentDuration.setText(formatDuration(currentPosition));
-                    int progress = (int) ((float) currentPosition / (float) currentSongTotalDuration * 100);
-                    seekBar.setProgress(progress);
-                    if ((currentSongTotalDuration - currentPosition < 3000)) {
+                    long newPosition = model.getCurrentPosition().getValue()+1000;
+                    model.setCurrentPosition(newPosition);
+                    if ((currentSongTotalDuration - newPosition < 3000)) {
                         playNextSong();
                     }
-                    currentPosition += 1000; // Assumes that this is run every second
-                    lastSongState.setCurrentPosition(currentPosition);
-                }
                 handler.postDelayed(this, 1000);
             }
-
         }
-
     };
 
     // ChatGPT Usage: Partial
@@ -126,12 +118,6 @@ public class RoomFragment extends Fragment {
         super.onStart();
         initializeObservers();
         setUpPlayerControls();
-        lastSongState = model.getCurrentSong().getValue();
-        if (lastSongState == null) {
-            currentSongTotalDuration = 0;
-        } else {
-            currentSongTotalDuration = model.getCurrentSong().getValue().getDuration();
-        }
     }
 
     // ChatGPT Usage: Partial
@@ -268,92 +254,13 @@ public class RoomFragment extends Fragment {
     }
 
     private void setUpPlayerControls() {
-//        final long[] trackDuration = {0};
-
-//        if(lastSongState != null){
-//            currentPosition = Long.parseLong(lastSongState.getCurrentPosition());
-//        }
-//        else{
-//            currentPosition = 0;
-//        }
-
-        if (model.getCurrentSong().getValue() != null) {
-            handler.post(runnable);
-        }
-
         songBanner.setImageResource(R.color.darkGray);
-        songTitle.setText(model.getCurrentSong().getValue() == null ? "No Song" : model.getCurrentSong().getValue().getSongName());
-        songArtist.setText(model.getCurrentSong().getValue() == null ? "No Artist" : model.getCurrentSong().getValue().getSongArtist());
-        totalDuration.setText(model.getCurrentSong().getValue() == null ? "0:00" : formatDuration(model.getCurrentSong().getValue().getDuration()));
-        currentDuration.setText(lastSongState == null ? "0:00" : formatDuration(lastSongState.getCurrentPosition()));
-        seekBar.setProgress(lastSongState == null ? 0 : (int) ((float) lastSongState.getCurrentPosition() / lastSongState.getDuration() * 100));
-        playpauseButton.setBackgroundResource(model.getCurrentSong().getValue() == null || !model.getCurrentSong().getValue().isPlaying() ? R.drawable.play_btn : R.drawable.pause_btn);
-
-
-        //
-//        mSpotifyAppRemote.getPlayerApi()
-//                .subscribeToPlayerState()
-//                .setEventCallback(playerState -> {
-//
-//                    final Track track = playerState.track;
-//                    trackDuration[0] = track.duration;
-//                    if (track != null && model.checkSessionCreatedByMe().getValue()) {
-//                        mSpotifyAppRemote.getImagesApi().getImage(track.imageUri).setResultCallback(bitmap -> {
-//                            // Create a new ImageView to hold the bitmap
-//                            ImageView tempImageView = new ImageView(getContext());
-//                            tempImageView.setImageBitmap(bitmap);
-//
-//                            // Add the ImageView to a layout
-//                            FrameLayout layout = new FrameLayout(getContext());
-//                            layout.addView(tempImageView);
-//
-//                            // Measure and layout the FrameLayout
-//                            layout.measure(View.MeasureSpec.makeMeasureSpec(bitmap.getWidth(), View.MeasureSpec.EXACTLY),
-//                                    View.MeasureSpec.makeMeasureSpec(bitmap.getHeight(), View.MeasureSpec.EXACTLY));
-//                            layout.layout(0, 0, bitmap.getWidth(), bitmap.getHeight());
-//
-//                            // Capture the ImageView with Blurry
-//                            Bitmap blurryBitmap = Blurry.with(getContext())
-//                                    .radius(10)
-//                                    .sampling(5)
-//                                    .capture(layout)
-//                                    .get();
-//
-//                            songBanner.setImageBitmap(blurryBitmap);
-//                        });
-//
-//                        songTitle.setText(track.name);
-//                        songArtist.setText(track.artist.name);
-//                        seekBar.setMax(100); // Set max to 100 for percentage
-//                        int progress = (int) ((float) playerState.playbackPosition / track.duration * 100);
-//                        seekBar.setProgress(progress);
-//                        totalDuration.setText(formatDuration(track.duration));
-//                        String trackId = track.uri.substring(track.uri.lastIndexOf(":") + 1);
-//                        // Set as current song only if the Redux store's current song is null
-//                        Song currentSong = model.getCurrentSong().getValue();
-//
-//                        if (currentSong == null || !currentSong.getSongID().equals(trackId)) {
-//                            Log.d(TAG, "setUpPlayerControls: is it triggered on load version 2 ??" + track);
-//                            Song curr = new Song(trackId, track.name, track.artist.name, String.valueOf(track.duration));
-//                            curr.setCurrentPosition(String.valueOf(playerState.playbackPosition));
-//                            curr.setIsPLaying(!playerState.isPaused);
-//                            model.getCurrentSong().postValue(curr);
-//                            if (webSocketService != null) {
-//                                sendCurrentSongToFriends(track.name);
-//                            }
-//                        }
-//                        handler.post(runnable);
-//                    }
-//                });
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            int progressChangedValue = 0;
-            long newProgress = 0;
-
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                progressChangedValue = progress;
-                newProgress = (long) (currentSongTotalDuration * (progress / 100.0));
-//                currentDuration.setText(formatDuration(newProgress));
+                if (fromUser) {
+                    long newProgress = (long) (currentSongTotalDuration * (progress / 100.0));
+                }
             }
 
             @Override
@@ -363,10 +270,11 @@ public class RoomFragment extends Fragment {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                handler.removeCallbacks(runnable);
-                Song currSong = model.getCurrentSong().getValue();
-                currSong.setCurrentPosition(newProgress);
-                model.getCurrentSong().postValue(currSong);
+                int progress = seekBar.getProgress();
+                long newProgress = (long) (currentSongTotalDuration * (progress / 100.0));
+                // Update the model with the new position
+                model.setCurrentPosition(newProgress);
+                mSpotifyAppRemote.getPlayerApi().seekTo(newProgress);
                 if (webSocketService != null && model.checkSessionActive().getValue()) {
                     JSONObject messageToSend = new JSONObject();
                     try {
@@ -378,7 +286,9 @@ public class RoomFragment extends Fragment {
                     }
                     webSocketService.sendMessage(messageToSend.toString());
                 }
-                handler.post(runnable);
+                if(model.getCurrentSong().getValue().isPlaying()) {
+                    handler.post(runnable);
+                }
             }
         });
 
@@ -399,6 +309,7 @@ public class RoomFragment extends Fragment {
                         webSocketService.sendMessage(messageToSend.toString());
                     }
                     currSong.setIsPLaying(true);
+                    mSpotifyAppRemote.getPlayerApi().resume();
                 } else {
                     if (webSocketService != null && model.checkSessionActive().getValue()) {
                         JSONObject messageToSend = new JSONObject();
@@ -411,6 +322,7 @@ public class RoomFragment extends Fragment {
                         webSocketService.sendMessage(messageToSend.toString());
                     }
                     currSong.setIsPLaying(false);
+                    mSpotifyAppRemote.getPlayerApi().pause();
                 }
                 model.getCurrentSong().postValue(currSong);
             }
@@ -426,7 +338,9 @@ public class RoomFragment extends Fragment {
         restartButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                model.setCurrentSongPosition(0);
+//                model.setCurrentSongPosition(0);
+                model.setCurrentPosition(0);
+                mSpotifyAppRemote.getPlayerApi().seekTo(0);
                 if (webSocketService != null && model.checkSessionActive().getValue()) {
                     JSONObject messageToSend = new JSONObject();
                     try {
@@ -444,46 +358,43 @@ public class RoomFragment extends Fragment {
 
     // ChatGPT Usage: Partial
     private void initializeObservers() {
-        model.getCurrentSong().observe(this, newSong -> {
+        model.getCurrentPosition().observe(getViewLifecycleOwner(), newPosition -> {
+            // Update the seek bar and current position text view
+//            Log.e(TAG, "initializeObservers: seekbar :: " + newPosition + " " + model.getCurrentSong().getValue().getDuration());
+            int progress = (int) ((float) newPosition / (float) model.getCurrentSong().getValue().getDuration() * 100);
+            seekBar.setProgress(progress);
+            currentDuration.setText(formatDuration(newPosition));
+        });
+
+
+
+
+        model.getCurrentSong().observe(getViewLifecycleOwner(), newSong -> {
+//            Log.e(TAG, "SONG HAS BEEN CHANGED SIR :: " + newSong.getSongID() + " " + newSong.getSongName() + " " + newSong.getSongArtist() + " " + newSong.getDuration() + " " + newSong.getCurrentPosition() + " " + newSong.isPlaying());
             if (newSong != null) {
                 currentSongTotalDuration = newSong.getDuration();
-                if (lastSongState == null || !lastSongState.getSongID().equals(newSong.getSongID())) {
-                    currentPosition = 0;
-                    songTitle.setText(newSong.getSongName());
-                    songArtist.setText(newSong.getSongArtist());
-                    totalDuration.setText(formatDuration(newSong.getDuration()));
-                    mSpotifyAppRemote.getPlayerApi().play("spotify:track:" + newSong.getSongID());
-                    mSpotifyAppRemote.getPlayerApi().pause();
+                songTitle.setText(newSong.getSongName());
+                songArtist.setText(newSong.getSongArtist());
+                totalDuration.setText(formatDuration(newSong.getDuration()));
+                if (newSong.isPlaying()) {
+                    handler.removeCallbacks(runnable);
+//                    Log.e(TAG, "initializeObservers: handler is being instantiated" );
+                    handler.post(runnable);
+                    playpauseButton.setBackgroundResource(R.drawable.pause_btn);
+                } else {
+                    handler.removeCallbacks(runnable);
+                    playpauseButton.setBackgroundResource(R.drawable.play_btn);
                 }
-                if (lastSongState == null || lastSongState.isPlaying() != newSong.isPlaying()) {
-                    if (newSong.isPlaying()) {
-                        handler.post(runnable);
-                        mSpotifyAppRemote.getPlayerApi().resume();
-                        playpauseButton.setBackgroundResource(R.drawable.pause_btn);
-                    } else {
-                        handler.removeCallbacks(runnable);
-                        mSpotifyAppRemote.getPlayerApi().pause();
-                        playpauseButton.setBackgroundResource(R.drawable.play_btn);
-                    }
-                }
-                if (lastSongState == null || lastSongState.getCurrentPosition() != newSong.getCurrentPosition()) {
-                    currentPosition = newSong.getCurrentPosition();
-                    int progress = (int) ((float) newSong.getCurrentPosition() / newSong.getDuration() * 100);
-                    seekBar.setProgress(progress);
-                    currentDuration.setText(formatDuration(newSong.getCurrentPosition()));
-                    mSpotifyAppRemote.getPlayerApi().seekTo(newSong.getCurrentPosition());
-                }
-//                    make a clone of newSong state instead of referencing it
-                lastSongState = new Song(newSong.getSongID(), newSong.getSongName(), newSong.getSongArtist(), newSong.getDuration());
-                lastSongState.setIsPLaying(newSong.isPlaying());
-                lastSongState.setCurrentPosition(newSong.getCurrentPosition());
+//                int progress = (int) ((float) newSong.getCurrentPosition() / newSong.getDuration() * 100);
+//                seekBar.setProgress(progress);
+//                currentDuration.setText(formatDuration(newSong.getCurrentPosition()));
             }
         });
 
         // Observe the song queue LiveData
         model.getSongQueue().observe(getViewLifecycleOwner(), songQueue -> {
             if (songQueue != null && model.getCurrentSong().getValue() == null) {
-                Log.e(TAG, "handleSession: song queue changed:: " + songQueue + ", current song:: " + model.getCurrentSong().getValue());
+//                Log.e(TAG, "handleSession: song queue changed:: " + songQueue + ", current song:: " + model.getCurrentSong().getValue());
                 if (songQueue.size() > 0) {
                     Song replace = songQueue.get(0);
                     replace.setIsPLaying(true);
@@ -496,6 +407,17 @@ public class RoomFragment extends Fragment {
 
         // Observe the session active LiveData
         model.checkSessionActive().observe(getViewLifecycleOwner(), this::updateSessionUI);
+    }
+
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Song currSong = model.getCurrentSong().getValue();
+//        currSong.setCurrentPosition(currentPosition);
+        model.getCurrentSong().postValue(currSong);
+//        handler.removeCallbacks(runnable);
+//        Log.e(TAG, "onStop: " + "handler has been stopped.. lol" );
     }
 
     // Update UI components related to the session active state
@@ -642,14 +564,18 @@ public class RoomFragment extends Fragment {
             currentSong.setIsPLaying(false);
             currentSong.setCurrentPosition(0);
             model.getCurrentSong().postValue(currentSong);
+            model.setCurrentPosition(0);
+            mSpotifyAppRemote.getPlayerApi().pause();
+            mSpotifyAppRemote.getPlayerApi().seekTo(0);
             return;
         }
         Song nextSong = songQueue.remove(0);
         model.getSongQueue().postValue(songQueue);
         nextSong.setCurrentPosition(0);
+        model.setCurrentPosition(0);
         nextSong.setIsPLaying(true);
         model.getCurrentSong().postValue(nextSong);
-
+        mSpotifyAppRemote.getPlayerApi().play("spotify:track:" + nextSong.getSongID());
         if (webSocketService != null && model.checkSessionActive().getValue()) {
             JSONObject messageToSend = new JSONObject();
             try {

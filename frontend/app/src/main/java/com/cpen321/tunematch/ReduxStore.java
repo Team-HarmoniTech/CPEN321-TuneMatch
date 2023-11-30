@@ -2,6 +2,7 @@ package com.cpen321.tunematch;
 
 import android.util.Log;
 
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -23,6 +24,9 @@ public class ReduxStore extends ViewModel {
     private final MutableLiveData<Song> currentSongForFriends;
     private final MutableLiveData<Boolean> sessionActive;
     private final MutableLiveData<User> currentUser;
+    private MutableLiveData<Long> currentPosition;
+
+
 
     // ChatGPT Usage: Partial
     public ReduxStore() {
@@ -39,6 +43,7 @@ public class ReduxStore extends ViewModel {
         sessionActive = new MutableLiveData<>(false);
         currentUser = new MutableLiveData<>(null);
         sessionCreatedByMe = new MutableLiveData<>(true);
+        currentPosition = new MutableLiveData<>(0L);
     }
 
     // ChatGPT Usage: Partial
@@ -86,6 +91,14 @@ public class ReduxStore extends ViewModel {
     // ChatGPT Usage: No
     public MutableLiveData<Song> getCurrentSong() {
         return currentSong;
+    }
+
+    public LiveData<Long> getCurrentPosition() {
+        return currentPosition;
+    }
+
+    public void setCurrentPosition(long position) {
+        currentPosition.postValue(position);
     }
 
     // ChatGPT Usage: No

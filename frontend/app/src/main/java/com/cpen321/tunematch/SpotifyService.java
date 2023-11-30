@@ -1,5 +1,7 @@
 package com.cpen321.tunematch;
 
+import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -111,14 +113,16 @@ public class SpotifyService extends Service {
 //                                set the current song in the spotifyapp remote as the current song in the model
                         mSpotifyAppRemote.getPlayerApi().getPlayerState()
                                 .setResultCallback(playerState -> {
+                                    Log.e(TAG, "onConnected: " + playerState.track.name+" "+playerState.track.artist.name+" "+playerState.track.album.name+" "+playerState.track.duration+" "+playerState.track.uri+" "+playerState.playbackPosition+" "+playerState.isPaused+" "+playerState.playbackSpeed);
                                     if (playerState != null && playerState.track != null) {
                                         Log.d("SpotifyService the current song resets on load", playerState.track.uri);
                                         String ID = playerState.track.uri.split(":")[2];
                                         Song currentSong = new Song(ID, playerState.track.name, playerState.track.artist.name, playerState.track.duration);
                                         currentSong.setCurrentPosition(playerState.playbackPosition);
-                                        // currentSong.setIsPLaying(!playerState.isPaused);
+                                        currentSong.setIsPLaying(!playerState.isPaused);
                                         model.getCurrentSong().postValue(currentSong);
                                         model.getCurrentSongForFriends().postValue(currentSong);
+                                        model.setCurrentPosition(playerState.playbackPosition);
                                     }
                                 });
                         mSpotifyAppRemote.getPlayerApi().subscribeToPlayerState().setEventCallback(new Subscription.EventCallback<PlayerState>() {
