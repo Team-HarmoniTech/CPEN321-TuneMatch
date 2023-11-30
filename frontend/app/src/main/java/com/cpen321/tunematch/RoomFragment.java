@@ -55,7 +55,7 @@ public class RoomFragment extends Fragment {
     private View view;
     private Button playpauseButton;
     private Button nextButton;
-    private Button prevButton;
+    private Button restartButton;
     private Button chatBtn;
     private Button queueBtn;
     private Button exitBtn;
@@ -79,6 +79,7 @@ public class RoomFragment extends Fragment {
     private long currentPosition = 0;
     private Runnable searchRunnable;
     private Song lastSongState = null;
+
     // ChatGPT Usage: Partial
     final Runnable runnable = new Runnable() {
         @Override
@@ -89,7 +90,7 @@ public class RoomFragment extends Fragment {
                     currentDuration.setText(formatDuration(currentPosition));
                     int progress = (int) ((float) currentPosition / (float) currentSongTotalDuration * 100);
                     seekBar.setProgress(progress);
-                    if (currentSongTotalDuration - currentPosition < 3000) {
+                    if ((currentSongTotalDuration - currentPosition < 3000)) {
                         playNextSong();
                     }
                     currentPosition += 1000; // Assumes that this is run every second
@@ -152,7 +153,7 @@ public class RoomFragment extends Fragment {
         exitBtn = view.findViewById(R.id.exitBtn);
         playpauseButton = view.findViewById(R.id.play_button);
         nextButton = view.findViewById(R.id.next_button);
-        prevButton = view.findViewById(R.id.previous_button);
+        restartButton = view.findViewById(R.id.restart_button);
         seekBar = view.findViewById(R.id.seekBar);
         songBanner = view.findViewById(R.id.song_banner_imageview);
         songTitle = view.findViewById(R.id.song_name_text);
@@ -223,7 +224,7 @@ public class RoomFragment extends Fragment {
                     // Schedule the searchRunnable to run after a delay (e.g., 500ms)
                     searchHandler.postDelayed(searchRunnable, 200);
                 }
-                return true; // Return true since the listener has handled the query text change
+                return false; // Return true since the listener has handled the query text change
             }
         });
 
@@ -422,7 +423,7 @@ public class RoomFragment extends Fragment {
             }
         });
 
-        prevButton.setOnClickListener(new View.OnClickListener() {
+        restartButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 model.setCurrentSongPosition(0);
@@ -634,7 +635,9 @@ public class RoomFragment extends Fragment {
     private void playNextSong() {
         List<Song> songQueue = model.getSongQueue().getValue();
         if (songQueue == null || songQueue.isEmpty()) {
-            Toast.makeText(requireContext(), "Queue is empty", Toast.LENGTH_SHORT).show();
+            try {
+                Toast.makeText(requireContext(), "Queue is empty", Toast.LENGTH_SHORT).show();
+            } catch (IllegalStateException e) {e.printStackTrace();}
             Song currentSong = model.getCurrentSong().getValue();
             currentSong.setIsPLaying(false);
             currentSong.setCurrentPosition(0);

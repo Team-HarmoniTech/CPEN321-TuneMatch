@@ -16,7 +16,7 @@ import java.util.List;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SearchTest {
 
-    private final String VALID_USERNAME = "sojupapi";
+    private final String VALID_USERNAME = "Cassiel";
     private ActivityScenario<LoginActivity> loginActivityScenario;
 
     // ChatGPT Usage: Partial
@@ -24,6 +24,7 @@ public class SearchTest {
     public void setUp() {
         Intents.init();
         loginActivityScenario = ActivityScenario.launch(LoginActivity.class);
+        UiTestHelper.addDelay(1000);
         UiTestHelper.clickOnView(R.id.spotify_login_button);
 
         UiTestHelper.addDelay(15000);

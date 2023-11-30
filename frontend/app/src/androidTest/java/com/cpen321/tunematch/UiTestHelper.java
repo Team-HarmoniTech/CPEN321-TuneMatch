@@ -253,12 +253,6 @@ public class UiTestHelper {
     }
 
     // ChatGPT Usage: No
-    public static void checkBtnBackground(int buttonViewId, int backgroundResId) {
-        onView(withId(buttonViewId))
-                .check(matches(ViewMatchers.hasBackground(backgroundResId)));
-    }
-
-    // ChatGPT Usage: No
     public static void checkListSize(int listViewId, int size) {
         onView(withId(listViewId))
                 .check(matches(ViewMatchers.withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))

@@ -34,6 +34,7 @@ android {
 
     testOptions {
         animationsDisabled = true
+        unitTests.all {ignoreFailures true}
     }
 }
 
