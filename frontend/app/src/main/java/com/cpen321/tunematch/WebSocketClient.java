@@ -1,6 +1,5 @@
 package com.cpen321.tunematch;
 
-import static android.app.PendingIntent.getActivity;
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 import static com.cpen321.tunematch.Message.timestampFormat;
 
@@ -15,14 +14,12 @@ import android.util.Log;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.lifecycle.MutableLiveData;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -89,7 +86,7 @@ public class WebSocketClient {
             public void onOpen(WebSocket webSocket, Response response) {
                 currentRetry = 0;
                 super.onOpen(webSocket, response);
-                SpotifyService mSpotifyService = SpotifyService.getInstance();
+//                SpotifyService mSpotifyService = SpotifyService.getInstance();
 //                mSpotifyAppRemote = mSpotifyService.getSpotifyAppRemote();
             }
 

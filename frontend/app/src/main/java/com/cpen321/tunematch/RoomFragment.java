@@ -259,9 +259,7 @@ public class RoomFragment extends Fragment {
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) {
-                    long newProgress = (long) (currentSongTotalDuration * (progress / 100.0));
-                }
+                // Required function
             }
 
             @Override
