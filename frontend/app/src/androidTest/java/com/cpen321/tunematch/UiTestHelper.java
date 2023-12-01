@@ -21,11 +21,9 @@ import android.view.WindowManager;
 import android.widget.SeekBar;
 
 import androidx.appcompat.widget.SearchView;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.Root;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
-import androidx.test.espresso.action.CoordinatesProvider;
 import androidx.test.espresso.action.GeneralLocation;
 import androidx.test.espresso.action.GeneralSwipeAction;
 import androidx.test.espresso.action.Press;
@@ -191,65 +189,19 @@ public class UiTestHelper {
         };
     }
 
-    // ChatGPT Usage: Partial
-    public static class RecyclerViewCoordinatesProvider implements CoordinatesProvider {
-        private final int position;
-        private final CoordinatesProvider childItemCoordinatesProvider;
-
-        public RecyclerViewCoordinatesProvider(int position, CoordinatesProvider childItemCoordinatesProvider) {
-            this.position = position;
-            this.childItemCoordinatesProvider = childItemCoordinatesProvider;
+    // ChatGPT Usage: No
+    public static void swipeListItem(int listViewId, int pos, Boolean isUp) {
+        if (isUp) {
+            onView(withId(listViewId)).perform(
+                    actionOnItemAtPosition(pos, new GeneralSwipeAction(
+                            Swipe.SLOW, GeneralLocation.CENTER, GeneralLocation.TOP_CENTER,
+                            Press.FINGER)));
+        } else {
+            onView(withId(listViewId)).perform(
+                    actionOnItemAtPosition(pos, new GeneralSwipeAction(
+                            Swipe.SLOW, GeneralLocation.CENTER, GeneralLocation.BOTTOM_CENTER,
+                            Press.FINGER)));
         }
-
-        @Override
-        public float[] calculateCoordinates(View view) {
-            return childItemCoordinatesProvider.calculateCoordinates(((RecyclerView) view).getLayoutManager().findViewByPosition(position));
-        }
-    }
-
-    // ChatGPT Usage: Partial
-    public enum CustomGeneralLocation implements CoordinatesProvider {
-        UNDER_RIGHT {
-            @Override
-            public float[] calculateCoordinates(View view) {
-                int[] screenLocation = new int[2];
-                view.getLocationOnScreen(screenLocation);
-                return new float[]{screenLocation[0] + view.getWidth() - 1f, screenLocation[1] + view.getHeight() * 1.5f};
-            }
-        },
-        ABOVE_RIGHT {
-            @Override
-            public float[] calculateCoordinates(View view) {
-                int[] screenLocation = new int[2];
-                view.getLocationOnScreen(screenLocation);
-                return new float[]{screenLocation[0] + view.getWidth() - 1f, screenLocation[1] - view.getHeight() * 0.5f};
-            }
-        }
-    }
-
-    // ChatGPT Usage: Partial
-    public static class ChildViewCoordinatesProvider implements CoordinatesProvider {
-        private final int childViewId;
-        private final CoordinatesProvider insideChildViewCoordinatesProvider;
-
-        public ChildViewCoordinatesProvider(int childViewId, CoordinatesProvider insideChildViewCoordinatesProvider) {
-            this.childViewId = childViewId;
-            this.insideChildViewCoordinatesProvider = insideChildViewCoordinatesProvider;
-        }
-
-        @Override
-        public float[] calculateCoordinates(View view) {
-            return insideChildViewCoordinatesProvider.calculateCoordinates(view.findViewById(childViewId));
-        }
-    }
-
-    // ChatGPT Usage: Partial
-    public static void reorder(int from, int to) {
-        onView(withId(R.id.recycler_view)).perform(new GeneralSwipeAction(
-                Swipe.SLOW,
-                new RecyclerViewCoordinatesProvider(from, new ChildViewCoordinatesProvider(R.id.song_id, GeneralLocation.CENTER)),
-                new RecyclerViewCoordinatesProvider(to, (from < to) ? CustomGeneralLocation.UNDER_RIGHT : CustomGeneralLocation.ABOVE_RIGHT),
-                Press.FINGER));
     }
 
     // ChatGPT Usage: No

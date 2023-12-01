@@ -55,10 +55,13 @@ export class RequestController {
     ) {
       ws.send(
         JSON.stringify(
-          new FriendsMessage(
-            "update",
-            await transformFriend(user)
-          ),
+          { 
+            ...new FriendsMessage(
+              "update",
+              await transformFriend(otherUser)
+            ),
+            from: user.spotify_id 
+          }
         ),
       );
     }

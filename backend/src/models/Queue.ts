@@ -153,7 +153,8 @@ export class Queue {
       song.leftMs = Math.max(song.leftMs, 0);
     }
 
-    this.running = true;
-    this.playNext(true);
+    if (this.running) {
+      this.playNext(true);
+    }
   }
 }
