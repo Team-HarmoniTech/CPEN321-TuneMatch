@@ -1,5 +1,6 @@
 package com.cpen321.tunematch;
 
+import static android.app.PendingIntent.getActivity;
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 import static com.cpen321.tunematch.Message.timestampFormat;
 
@@ -21,6 +22,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -29,9 +31,11 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import okhttp3.Headers;
@@ -47,10 +51,11 @@ public class WebSocketClient {
     private final Context context;
     private final NotificationManager notification;
     ReduxStore model;
-    private WebSocket webSocket;
+
     private static final int MAX_RETRIES = 5;
     private static final long INITIAL_BACKOFF_DELAY = 1000; // 1 second in milliseconds
     private int currentRetry = 0;
+
 
     // ChatGPT Usage: Partial
     public WebSocketClient(ReduxStore model, Context context, NotificationManager notification) {
@@ -84,6 +89,8 @@ public class WebSocketClient {
             public void onOpen(WebSocket webSocket, Response response) {
                 currentRetry = 0;
                 super.onOpen(webSocket, response);
+                SpotifyService mSpotifyService = SpotifyService.getInstance();
+//                mSpotifyAppRemote = mSpotifyService.getSpotifyAppRemote();
             }
 
             @Override
@@ -282,7 +289,7 @@ public class WebSocketClient {
 
     // ChatGPT Usage: Partial
     private void handleSession(JsonObject json) {
-
+        Log.e(TAG, "handleSession: " + json);
         try {
             String action = json.get("action").getAsString();
             if (action.equals("join")) {
@@ -325,6 +332,8 @@ public class WebSocketClient {
                 JsonObject body = json.get("body").getAsJsonObject();
                 JsonArray members = body.get("members").getAsJsonArray();
                 JsonArray queue = body.get("queue").getAsJsonArray();
+                Boolean isPlaying = body.get("running").getAsBoolean();
+
                 CurrentSession currentSession = model.getCurrentSession().getValue();
 
                 if (currentSession == null) {
@@ -378,15 +387,45 @@ public class WebSocketClient {
                             webSocket.send(messageToReplaceQueue.toString());
                             currentSession.setSessionQueue(ExisitngSongQueue);
                         }
+                        JSONObject messageToResumeSession = new JSONObject();
+                        JSONObject messageToSeek = new JSONObject();
+                        messageToResumeSession.put ("method", "SESSION");
+                        messageToResumeSession.put("action", "queueResume");
+                        messageToSeek.put("method", "SESSION");
+                        messageToSeek.put("action", "queueSeek");
+                        messageToSeek.put("body", new JSONObject().put("seekPosition", model.getCurrentPosition().getValue()));
+                        Log.e(TAG, "handleSession: messagetoseek0" + messageToSeek.toString());
+
+                        webSocket.send(messageToSeek.toString());
+
+                        if(model.getCurrentSong().getValue().isPlaying()) {
+                            Log.e(TAG, "handleSession: message to resume" + messageToResumeSession.toString());
+                            webSocket.send(messageToResumeSession.toString());
+                        }
                     } catch (JSONException e) {
                         Log.e("JSONException", "Exception message: " + e.getMessage());
                     }
                 } else { //session was joined by current user
+                    String timestamp = body.get("timeStamp").getAsString();
+                    Long initialPosition = body.get("initialPosition").getAsLong();
+                    long currentPosition = calculateCurrentPosition(timestamp, initialPosition);
+                    Log.e(TAG, "handleSession: here is where u need to focus i guess???" + currentPosition);
+                    model.setCurrentPosition(currentPosition);
                     model.checkSessionCreatedByMe().postValue(false);
                     Log.e(TAG, "handleSession: you joined a session instead of creating one");
-                    model.getCurrentSong().postValue(null);
+                    model.getCurrentSong().postValue(new Song("", "", "", 0));
+                    model.getSongQueue().postValue(null);
                     Log.e(TAG, "handleSession: current song is null now");
-                    for (int i = 0; i < queue.size(); i++) {
+                    Song currentSongFromSession = new Song(queue.get(0).getAsJsonObject().get("uri").getAsString(),
+                            queue.get(0).getAsJsonObject().get("title").getAsString(),
+                            queue.get(0).getAsJsonObject().get("artist").getAsString(),
+                            queue.get(0).getAsJsonObject().get("durationMs").getAsLong());
+                    currentSongFromSession.setIsPLaying(isPlaying);
+                    currentSongFromSession.setCurrentPosition(currentPosition);
+                    model.getCurrentSong().postValue(currentSongFromSession);
+                    model.setCurrentPosition(currentPosition);
+
+                    for (int i = 1; i < queue.size(); i++) {
                         JsonObject song = queue.get(i).getAsJsonObject();
                         String songId = song.get("uri").getAsString();
                         long duration = song.get("durationMs").getAsLong();
@@ -402,6 +441,10 @@ public class WebSocketClient {
                 currentSession.setSessionMembers(sessionMembers);
                 currentSession.setSessionId("session");
                 model.checkSessionActive().postValue(true);
+                model.getCurrentSession().postValue(currentSession);
+//                mSpotifyAppRemote.getPlayerApi().play(model.getCurrentSong().getValue().getSongID());
+//                mSpotifyAppRemote.getPlayerApi().seekTo(model.getCurrentPosition().getValue());
+//                mSpotifyAppRemote.getPlayerApi().resume();
             } else if (action.equals("queueAdd")) {
                 JsonObject songDetails = json.get("body").getAsJsonObject();
                 String songId = songDetails.get("uri").getAsString();
@@ -433,12 +476,14 @@ public class WebSocketClient {
                     sessionQueue = new ArrayList<>();
                 }
                 Song currentSong = sessionQueue.get(0);
+                currentSong.setIsPLaying(true);
                 sessionQueue.remove(0);
                 currentSession.setSessionQueue(sessionQueue);
                 currentSession.setCurrentSong(currentSong);
                 model.getCurrentSession().postValue(currentSession);
                 model.getCurrentSong().postValue(currentSong);
                 model.getSongQueue().postValue(sessionQueue);
+                model.setCurrentPosition(0);
             } else if (action.equals("queueDrag")) {
                 JsonObject body = json.get("body").getAsJsonObject();
                 int startIndex = body.get("startIndex").getAsInt();
@@ -447,7 +492,7 @@ public class WebSocketClient {
                 if (currentSession == null) {
                     currentSession = new CurrentSession("session", "MySession");
                 }
-                List<Song> sessionQueue = currentSession.getSessionQueue();
+                List<Song> sessionQueue = model.getSongQueue().getValue();
                 if (sessionQueue == null) {
                     sessionQueue = new ArrayList<>();
                 }
@@ -461,10 +506,12 @@ public class WebSocketClient {
                 Song currentSong = model.getCurrentSong().getValue();
                 currentSong.setIsPLaying(false);
                 model.getCurrentSong().postValue(currentSong);
+//                mSpotifyAppRemote.getPlayerApi().pause();
             } else if (action.equals("queueResume")) {
                 Song currentSong = model.getCurrentSong().getValue();
                 currentSong.setIsPLaying(true);
                 model.getCurrentSong().postValue(currentSong);
+//                mSpotifyAppRemote.getPlayerApi().resume();
             } else if (action.equals("queueSeek")) {
                 JsonObject body = json.get("body").getAsJsonObject();
                 long seekPosition = body.get("seekPosition").getAsLong();
@@ -472,7 +519,10 @@ public class WebSocketClient {
                 Song currentSong = model.getCurrentSong().getValue();
                 currentSong.setCurrentPosition(seekPosition);
                 model.getCurrentSong().postValue(currentSong);
+                model.setCurrentPosition(seekPosition);
+//                mSpotifyAppRemote.getPlayerApi().seekTo(seekPosition);
             } else if (action.equals("message")) {
+                Log.e(TAG, "handleSession: " + model.getCurrentSession().getValue());
                 JsonObject messageDetails = json.get("body").getAsJsonObject();
                 String from = json.get("from").getAsString();
 
@@ -691,5 +741,15 @@ public class WebSocketClient {
         } catch (IllegalStateException | ParseException e) {
             Log.e("WebSocketClient", "Error processing request message", e);
         }
+    }
+    public static long calculateCurrentPosition(String timestampString, long initialPosition) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Date timestamp = sdf.parse(timestampString);
+
+        long currentTime = System.currentTimeMillis();
+        long timeDifference = currentTime - timestamp.getTime(); // Time difference in milliseconds
+
+        return initialPosition + timeDifference; // Add the time difference to the initial position
     }
 }
