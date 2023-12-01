@@ -12,6 +12,7 @@ import android.util.Log;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.lifecycle.MutableLiveData;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -148,20 +149,18 @@ public class WebSocketClient {
                     JsonElement currentSong = friendJson.get("currentSong");
                     JsonElement currentSource = friendJson.get("currentSource");
 
-                    Friend friend = new Friend(id, username, profilePic);
+                    Song song = null;
                     if (!currentSong.isJsonNull()) {
-                        Song song = new Song(
+                        song = new Song(
                                 currentSong.getAsJsonObject().get("uri").getAsString(),
                                 currentSong.getAsJsonObject().get("name").getAsString(),
                                 currentSong.getAsJsonObject().get("artist").getAsString(),
                                 currentSong.getAsJsonObject().get("durationMs").getAsLong()
                         );
                         song.setSongAlbum(currentSong.getAsJsonObject().get("album").getAsString());
-                        friend.setCurrentSong(song);
                     }
 
-                    friend.setCurrentSource(currentSource);
-                    friend.setLastUpdated(lastUpdated);
+                    Friend friend = new Friend(id, username, profilePic, song, currentSource, lastUpdated);
                     friends.add(friend);
 
                     if (!currentSource.isJsonNull()) {
@@ -185,12 +184,12 @@ public class WebSocketClient {
 
             } else if (action.equals("update")) {
 //              check if from exists in the message
-                String from = json.get("from").getAsString();
-                List<Friend> existingFriendList = model.getFriendsList().getValue();
-                List<Session> existingSessionList = model.getSessionList().getValue();
-                for (Friend f : existingFriendList) {
-                    if (f.getUserId().equals(from)) {
-                        JsonObject body = json.get("body").getAsJsonObject();
+                JsonObject body = json.get("body").getAsJsonObject();
+                String userId = body.get("userId").getAsString();
+                List<Friend> friendList = model.getFriendsList().getValue();
+                List<Session> sessionList = model.getSessionList().getValue();
+                for (Friend f : friendList) {
+                    if (f.getUserId().equals(userId)) {
                         JsonElement currentSong = body.get("currentSong");
                         JsonElement currentSource = body.get("currentSource");
                         Date lastUpdated = timestampFormat.parse(body.get("lastUpdated").getAsString());
@@ -211,30 +210,63 @@ public class WebSocketClient {
                             if (sourceType.equals("session")) {
                                 boolean sessionExists = false;
 
-                                for (Session s : existingSessionList) {
-                                    if (s.getSessionId().equals(from)) {
+                                for (Session s : sessionList) {
+                                    if (s.getSessionId().equals(userId)) {
                                         sessionExists = true;
                                         break;
                                     }
                                 }
                                 if (!sessionExists) {
-                                    existingSessionList.add(new Session(f.getUserId(), f));
+                                   sessionList.add(new Session(f.getUserId(), f));
                                 }
                             }
                         } else {
-                            for (Session s : existingSessionList) {
-                                if (s.getSessionId().equals(from)) {
-                                    existingSessionList.remove(s);
+                            for (Session s : sessionList) {
+                                if (s.getSessionId().equals(userId)) {
+                                    sessionList.remove(s);
                                     break;
                                 }
                             }
                         }
+                        model.getFriendsList().postValue(friendList);
+                        model.getSessionList().postValue(sessionList);
+                        return;
                     }
                 }
-                model.getFriendsList().postValue(existingFriendList);
-                model.getSessionList().postValue(existingSessionList);
-            }
 
+                // Add the friend
+                JsonObject friendJson = json.get("body").getAsJsonObject();
+                String id = friendJson.get("userId").getAsString();
+                String username = friendJson.get("username").getAsString();
+                String profilePic = getStringOrNull(friendJson.get("profilePic"));
+                Date lastUpdated = timestampFormat.parse(friendJson.get("lastUpdated").getAsString());
+                JsonElement currentSong = friendJson.get("currentSong");
+                JsonElement currentSource = friendJson.get("currentSource");
+
+                Song song = null;
+                if (!currentSong.isJsonNull()) {
+                    song = new Song(
+                            currentSong.getAsJsonObject().get("uri").getAsString(),
+                            currentSong.getAsJsonObject().get("name").getAsString(),
+                            currentSong.getAsJsonObject().get("artist").getAsString(),
+                            currentSong.getAsJsonObject().get("durationMs").getAsLong()
+                    );
+                    song.setSongAlbum(currentSong.getAsJsonObject().get("album").getAsString());
+                }
+
+                Friend friend = new Friend(id, username, profilePic, song, currentSource, lastUpdated);
+                friendList.add(friend);
+
+                if (!currentSource.isJsonNull()) {
+                    String sourceType = getStringOrNull(currentSource.getAsJsonObject().get("type"));
+                    if (sourceType.equals("session")) {
+                        sessionList.add(new Session(friend.getUserId(), friend));
+                    }
+                }
+
+                model.getFriendsList().postValue(friendList);
+                model.getSessionList().postValue(sessionList);
+            }
             // Handling any other unexpected actions
             else {
                 Log.w("WebSocketClient", "Unknown friend action: " + action);
@@ -568,27 +600,20 @@ public class WebSocketClient {
                             model.setSentRequestsList(updatedSent);
                             friendAdded = true;
 
-                            Friend newFriend = new Friend(userId, username, profilePic);
+                            Song song = null;
                             if (!currentSong.isJsonNull()) {
-                                Song song = new Song(
+                                song = new Song(
                                         currentSong.getAsJsonObject().get("uri").getAsString(),
                                         currentSong.getAsJsonObject().get("name").getAsString(),
                                         currentSong.getAsJsonObject().get("artist").getAsString(),
                                         currentSong.getAsJsonObject().get("durationMs").getAsLong()
                                 );
                                 song.setSongAlbum(currentSong.getAsJsonObject().get("album").getAsString());
-                                newFriend.setCurrentSong(song);
                             }
 
-                            if (!currentSource.isJsonNull()) {
-                                newFriend.setCurrentSource(currentSource);
-                            }
+
                             List<Friend> friendList = model.getFriendsList().getValue();
-                            if (friendList == null) {
-                                friendList = new ArrayList<>();
-                            }
-                            newFriend.setLastUpdated(lastUpdated);
-                            friendList.add(newFriend);
+                            friendList.add(new Friend(userId, username, profilePic, song, currentSource, lastUpdated));
                             model.getFriendsList().postValue(friendList);
 
                             // Check permission

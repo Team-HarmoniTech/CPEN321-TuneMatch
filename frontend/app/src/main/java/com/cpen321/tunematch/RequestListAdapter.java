@@ -66,7 +66,6 @@ public class RequestListAdapter extends ArrayAdapter<SearchUser> {
                     Log.d("RequestList", "Accept friend:" + currentItem.getName());
                     webSocketService.sendMessage(messageToSend.toString());
                     model.removeRequest(model.getReceivedRequests(), currentItem.getId());
-                    model.addFriend(new Friend(currentItem.getId(), currentItem.getName(), currentItem.getProfilePic()));
                 }
             }
         });
