@@ -358,8 +358,6 @@ public class RoomFragment extends Fragment {
     // ChatGPT Usage: Partial
     private void initializeObservers() {
         model.getCurrentPosition().observe(getViewLifecycleOwner(), newPosition -> {
-            // Update the seek bar and current position text view
-//            Log.e(TAG, "initializeObservers: seekbar :: " + newPosition + " " + model.getCurrentSong().getValue().getDuration());
             float total = 0;
 
             if(model.getCurrentSong().getValue() != null) {
@@ -374,7 +372,6 @@ public class RoomFragment extends Fragment {
 
 
         model.getCurrentSong().observe(getViewLifecycleOwner(), newSong -> {
-//            Log.e(TAG, "SONG HAS BEEN CHANGED SIR :: " + newSong.getSongID() + " " + newSong.getSongName() + " " + newSong.getSongArtist() + " " + newSong.getDuration() + " " + newSong.getCurrentPosition() + " " + newSong.isPlaying());
             if (newSong != null) {
                 currentSongTotalDuration = newSong.getDuration();
                 songTitle.setText(newSong.getSongName());
@@ -389,10 +386,6 @@ public class RoomFragment extends Fragment {
                     handler.removeCallbacks(runnable);
                     playpauseButton.setBackgroundResource(R.drawable.play_btn);
                 }
-//                int progress = (int) ((float) newSong.getCurrentPosition() / newSong.getDuration() * 100);
-//                seekBar.setProgress(progress);
-//                currentDuration.setText(formatDuration(newSong.getCurrentPosition()));
-
             }
         });
 
@@ -417,10 +410,7 @@ public class RoomFragment extends Fragment {
     public void onStop() {
         super.onStop();
         Song currSong = model.getCurrentSong().getValue();
-//        currSong.setCurrentPosition(currentPosition);
         model.getCurrentSong().postValue(currSong);
-//        handler.removeCallbacks(runnable);
-//        Log.e(TAG, "onStop: " + "handler has been stopped.. lol" );
     }
 
     // Update UI components related to the session active state
