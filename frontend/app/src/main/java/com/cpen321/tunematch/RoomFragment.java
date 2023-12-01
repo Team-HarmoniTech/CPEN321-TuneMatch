@@ -393,15 +393,13 @@ public class RoomFragment extends Fragment {
 
         // Observe the song queue LiveData
         model.getSongQueue().observe(getViewLifecycleOwner(), songQueue -> {
-            if (songQueue != null && model.getCurrentSong().getValue() == null) {
+            if (songQueue != null && model.getCurrentSong().getValue() == null && songQueue.size() > 0) {
 //                Log.e(TAG, "handleSession: song queue changed:: " + songQueue + ", current song:: " + model.getCurrentSong().getValue());
-                if (songQueue.size() > 0) {
-                    Song replace = songQueue.get(0);
-                    replace.setIsPLaying(true);
-                    model.getCurrentSong().postValue(replace);
-                    songQueue.remove(0);
-                    model.getSongQueue().postValue(songQueue);
-                }
+                Song replace = songQueue.get(0);
+                replace.setIsPLaying(true);
+                model.getCurrentSong().postValue(replace);
+                songQueue.remove(0);
+                model.getSongQueue().postValue(songQueue);
             }
         });
 
