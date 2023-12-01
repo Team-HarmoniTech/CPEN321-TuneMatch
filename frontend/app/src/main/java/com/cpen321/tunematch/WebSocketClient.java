@@ -477,17 +477,13 @@ public class WebSocketClient {
                 String from = json.get("from").getAsString();
 
                 CurrentSession currentSession = model.getCurrentSession().getValue();
-                if (currentSession == null) {
-                    currentSession = new CurrentSession("session", "MySession");
-                }
                 List<User> sessionMembers = currentSession.getSessionMembers();
-                if (sessionMembers == null) {
-                    sessionMembers = new ArrayList<>();
-                }
+
                 User sender = sessionMembers.stream()
                         .filter(member -> member.getUserId().equals(from))
                         .findFirst()
                         .orElse(null);
+                if (sender == null) return;
 
                 Message message = new Message(sender,
                         messageDetails.get("message").getAsString(),
