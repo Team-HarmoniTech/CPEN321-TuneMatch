@@ -92,7 +92,7 @@ public class PlaySongTest {
         }
 
         // Check when next button is clicked, have pause button and queue length decrease
-        for (int size = songList.size(); size >= 0; size--) {
+        for (int size = songList.size()-1; size >= 0; size--) {
             UiTestHelper.clickOnView(R.id.next_button);
 
             UiTestHelper.checkListSize(R.id.recycler_view, size);
@@ -104,9 +104,6 @@ public class PlaySongTest {
     @Test
     public void E_testPlayButton() {
         A_testCreateSession();
-
-        // Have a song playing
-        searchSong("Snowman");
 
         for (int i = 0; i < 10; i++) {
             UiTestHelper.clickOnView(R.id.play_button);
@@ -158,13 +155,12 @@ public class PlaySongTest {
 
         // Check Queue is displayed
         UiTestHelper.checkViewIsDisplayed(R.id.recycler_view);
-        UiTestHelper.reorder(1, 0);
+        UiTestHelper.swipeListItem(R.id.recycler_view, 1, true);
         UiTestHelper.addDelay(1000);
-        UiTestHelper.reorder(0, 2);
-
+        UiTestHelper.swipeListItem(R.id.recycler_view, 0, false);
 
         // Check if order is changed correctly
-        List<String> expectedOrder = Arrays.asList("Santa", "All I", "Snowman", "Last");
+        List<String> expectedOrder = Arrays.asList("Santa", "Snowman", "Last", "All");
         UiTestHelper.checkListOrder(R.id.recycler_view, expectedOrder);
     }
 
