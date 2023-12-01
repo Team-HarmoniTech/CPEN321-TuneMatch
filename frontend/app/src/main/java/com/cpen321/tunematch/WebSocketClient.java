@@ -7,6 +7,8 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
@@ -46,6 +48,9 @@ public class WebSocketClient {
     private final NotificationManager notification;
     ReduxStore model;
     private WebSocket webSocket;
+    private static final int MAX_RETRIES = 5;
+    private static final long INITIAL_BACKOFF_DELAY = 1000; // 1 second in milliseconds
+    private int currentRetry = 0;
 
     // ChatGPT Usage: Partial
     public WebSocketClient(ReduxStore model, Context context, NotificationManager notification) {
@@ -77,8 +82,20 @@ public class WebSocketClient {
         webSocket = client.newWebSocket(request, new WebSocketListener() {
             @Override
             public void onOpen(WebSocket webSocket, Response response) {
-                // Handle when the WebSocket connection is opened.
+                currentRetry = 0;
                 super.onOpen(webSocket, response);
+            }
+
+            @Override
+            public void onClosing(WebSocket webSocket, int code, String reason) {
+                if (currentRetry < MAX_RETRIES) {
+                    long backoffDelay = INITIAL_BACKOFF_DELAY * (long) Math.pow(2, currentRetry - 1);
+                    Log.d("WebSocketClient", "Retrying in " + backoffDelay + " milliseconds...");
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> start(customHeader), backoffDelay);
+                    currentRetry++;
+                } else {
+                    Log.d("WebSocketClient", "Max retries reached. Unable to reconnect.");
+                }
             }
 
             @Override
@@ -100,13 +117,6 @@ public class WebSocketClient {
             public void onMessage(WebSocket webSocket, ByteString bytes) {
                 // Handle incoming messages as binary data.
                 Log.d("WebSocketClient", "onMessage Bytes: " + bytes.hex() + " / " + bytes.utf8());
-            }
-
-            @Override
-            public void onClosing(WebSocket webSocket, int code, String reason) {
-                // Handle when the server is going to close the connection.
-                Log.d("WebSocketClient", "onClosing: " + code + " / " + reason);
-                webSocket.close(1000, null);
             }
 
             @Override
@@ -172,14 +182,7 @@ public class WebSocketClient {
                 }
 
                 // Update the Redux store.
-                List<Friend> oldFriends;
-                if ((oldFriends = model.getFriendsList().getValue()) != null)
-                    friends.addAll(oldFriends);
                 model.getFriendsList().postValue(friends);
-
-                List<Session> oldSessions;
-                if ((oldSessions = model.getSessionList().getValue()) != null)
-                    sessions.addAll(oldSessions);
                 model.getSessionList().postValue(sessions);
 
             } else if (action.equals("update")) {
