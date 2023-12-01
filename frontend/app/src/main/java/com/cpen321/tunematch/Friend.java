@@ -10,10 +10,11 @@ public class Friend extends User {
     private Date lastUpdated;
 
     // ChatGPT Usage: No
-    public Friend(String userId, String userName, String profileImageUrl) {
+    public Friend(String userId, String userName, String profileImageUrl, Song currentSong, JsonElement currentSource, Date lastUpdated) {
         super(userId, userName, profileImageUrl);
-        currentSong = null;
-        currentSource = null;
+        this.currentSong = currentSong;
+        this.currentSource = currentSource;
+        this.lastUpdated = lastUpdated;
     }
 
     // ChatGPT Usage: No

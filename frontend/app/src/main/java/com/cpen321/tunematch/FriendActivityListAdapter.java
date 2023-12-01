@@ -47,10 +47,10 @@ public class FriendActivityListAdapter extends RecyclerView.Adapter<FriendActivi
             long minutes = ms / MIN_IN_MS;
             return minutes + " min";
         } else if (ms < 24 * 60 * MIN_IN_MS) {
-            long hours = ms / 60 * MIN_IN_MS;
+            long hours = ms / (60 * MIN_IN_MS);
             return hours + " hr";
         } else {
-            long days = ms / 24 * 60 * MIN_IN_MS;
+            long days = ms / (24 * 60 * MIN_IN_MS);
             return days + " d";
         }
     }
