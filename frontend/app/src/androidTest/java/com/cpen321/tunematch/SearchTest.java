@@ -16,7 +16,7 @@ import java.util.List;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SearchTest {
 
-    private final String VALID_USERNAME = "Cassiel";
+    private final String VALID_USERNAME = "sojupapi";
     private ActivityScenario<LoginActivity> loginActivityScenario;
 
     // ChatGPT Usage: Partial
