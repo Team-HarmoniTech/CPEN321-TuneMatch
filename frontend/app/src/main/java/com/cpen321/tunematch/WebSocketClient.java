@@ -51,7 +51,7 @@ public class WebSocketClient {
     private final Context context;
     private final NotificationManager notification;
     ReduxStore model;
-
+    private WebSocket webSocket;
     private static final int MAX_RETRIES = 5;
     private static final long INITIAL_BACKOFF_DELAY = 1000; // 1 second in milliseconds
     private int currentRetry = 0;
