@@ -228,6 +228,7 @@ public class RoomFragment extends Fragment {
                 }
                 if (webSocketService != null) {
                     model.checkSessionActive().postValue(false);
+                    model.getMessages().postValue(new ArrayList<>());
                     webSocketService.sendMessage(messageToSend.toString());
                 }
                 BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottomNavi);
