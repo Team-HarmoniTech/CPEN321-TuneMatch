@@ -76,9 +76,11 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 JSONObject messageToCreateSession = new JSONObject();
+
                 try {
                     messageToCreateSession.put("method", "SESSION");
                     messageToCreateSession.put("action", "join");
+
                 } catch (JSONException e) {
                     Log.e("JSONException", "Exception message: " + e.getMessage());
                 }

@@ -38,6 +38,16 @@ public class SpotifyService extends Service {
     private SpotifyAppRemote mSpotifyAppRemote;
     private String CLIENT_ID;
     private WebSocketService webSocketService;
+    private static SpotifyService instance;
+
+    public static SpotifyService getInstance() {
+        if (instance == null) {
+            instance = new SpotifyService();
+        }
+        return instance;
+    }
+
+
     // ChatGPT Usage: Partial
     private final ServiceConnection webSocketConnection = new ServiceConnection() {
         @Override

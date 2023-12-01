@@ -361,7 +361,12 @@ public class RoomFragment extends Fragment {
         model.getCurrentPosition().observe(getViewLifecycleOwner(), newPosition -> {
             // Update the seek bar and current position text view
 //            Log.e(TAG, "initializeObservers: seekbar :: " + newPosition + " " + model.getCurrentSong().getValue().getDuration());
-            int progress = (int) ((float) newPosition / (float) model.getCurrentSong().getValue().getDuration() * 100);
+            float total = 0;
+
+            if(model.getCurrentSong().getValue() != null) {
+                total = model.getCurrentSong().getValue().getDuration();
+            }
+            int progress = (int) ((float) newPosition / (float) total * 100);
             seekBar.setProgress(progress);
             currentDuration.setText(formatDuration(newPosition));
         });
@@ -388,6 +393,7 @@ public class RoomFragment extends Fragment {
 //                int progress = (int) ((float) newSong.getCurrentPosition() / newSong.getDuration() * 100);
 //                seekBar.setProgress(progress);
 //                currentDuration.setText(formatDuration(newSong.getCurrentPosition()));
+
             }
         });
 

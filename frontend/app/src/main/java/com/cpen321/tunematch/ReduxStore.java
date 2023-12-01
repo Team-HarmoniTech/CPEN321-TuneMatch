@@ -39,7 +39,7 @@ public class ReduxStore extends ViewModel {
         searchList = new MutableLiveData<>(new ArrayList<>());
         currentSession = new MutableLiveData<>(null);
         chatMessages = new MutableLiveData<>(new ArrayList<>());
-        currentSong = new MutableLiveData<>(null);
+        currentSong = new MutableLiveData<>(new Song("","","",0));
         sessionActive = new MutableLiveData<>(false);
         currentUser = new MutableLiveData<>(null);
         sessionCreatedByMe = new MutableLiveData<>(true);

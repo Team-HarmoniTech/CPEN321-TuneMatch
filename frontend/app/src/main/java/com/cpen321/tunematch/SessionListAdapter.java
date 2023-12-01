@@ -44,8 +44,9 @@ public class SessionListAdapter extends ListAdapter<Session> {
                 JSONObject messageToSend = new JSONObject();
                 JSONObject body = new JSONObject();
                 model.checkSessionActive().postValue(true);
-                model.getSongQueue().postValue(null);
-                model.getCurrentSong().postValue(null);
+
+//                model.getSongQueue().postValue(null);
+//                model.getCurrentSong().postValue(null);
                 try {
                     body.put("userId", owner.getUserId());
                     messageToSend.put("method", "SESSION");
