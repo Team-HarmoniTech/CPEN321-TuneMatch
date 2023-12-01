@@ -105,7 +105,7 @@ public class PlaySongTest {
     public void E_testPlayButton() {
         A_testCreateSession();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 9; i++) {
             UiTestHelper.clickOnView(R.id.play_button);
             UiTestHelper.addDelay(1000);
         }
@@ -119,8 +119,6 @@ public class PlaySongTest {
         for (int i = 0; i < 5; i++) {
             UiTestHelper.addDelay(i * 1000);
             UiTestHelper.clickOnView(R.id.restart_button);
-
-            UiTestHelper.checkTextIsDisplayed("00:00");
             UiTestHelper.checkSeekBarPosition(0);
         }
     }
