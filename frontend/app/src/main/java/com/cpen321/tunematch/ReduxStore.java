@@ -25,7 +25,7 @@ public class ReduxStore extends ViewModel {
     private final MutableLiveData<Boolean> sessionActive;
     private final MutableLiveData<User> currentUser;
     private MutableLiveData<Long> currentPosition;
-
+    private final MutableLiveData<Song> mediaPlayerState;
 
 
     // ChatGPT Usage: Partial
@@ -44,6 +44,7 @@ public class ReduxStore extends ViewModel {
         currentUser = new MutableLiveData<>(null);
         sessionCreatedByMe = new MutableLiveData<>(true);
         currentPosition = new MutableLiveData<>(0L);
+        mediaPlayerState = new MutableLiveData<>(new Song("","","",0));
     }
 
     // ChatGPT Usage: Partial
@@ -99,6 +100,10 @@ public class ReduxStore extends ViewModel {
 
     public void setCurrentPosition(long position) {
         currentPosition.postValue(position);
+    }
+
+    public MutableLiveData<Song> getMediaPlayerState() {
+        return mediaPlayerState;
     }
 
     // ChatGPT Usage: No

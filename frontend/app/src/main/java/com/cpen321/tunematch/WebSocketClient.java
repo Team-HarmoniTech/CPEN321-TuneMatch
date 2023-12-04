@@ -20,6 +20,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -52,7 +53,7 @@ public class WebSocketClient {
     private static final int MAX_RETRIES = 5;
     private static final long INITIAL_BACKOFF_DELAY = 1000; // 1 second in milliseconds
     private int currentRetry = 0;
-
+//    private SpotifyAppRemote mSpotifyAppRemote;
 
     // ChatGPT Usage: Partial
     public WebSocketClient(ReduxStore model, Context context, NotificationManager notification) {
@@ -402,7 +403,8 @@ public class WebSocketClient {
                     } catch (JSONException e) {
                         Log.e("JSONException", "Exception message: " + e.getMessage());
                     }
-                } else { //session was joined by current user
+                }
+                else { //session was joined by current user
                     String timestamp = body.get("timeStamp").getAsString();
                     Long initialPosition = body.get("initialPosition").getAsLong();
                     long currentPosition = calculateCurrentPosition(timestamp, initialPosition);
@@ -435,13 +437,25 @@ public class WebSocketClient {
                     currentSession.setSessionQueue(sessionQueue);
                     model.getSongQueue().postValue(sessionQueue);
                 }
+
                 currentSession.setSessionMembers(sessionMembers);
                 currentSession.setSessionId("session");
                 model.checkSessionActive().postValue(true);
                 model.getCurrentSession().postValue(currentSession);
+
+//                model.getCurrentSDKSong().postValue(model.getCurrentSong().getValue());
+
+
 //                mSpotifyAppRemote.getPlayerApi().play(model.getCurrentSong().getValue().getSongID());
 //                mSpotifyAppRemote.getPlayerApi().seekTo(model.getCurrentPosition().getValue());
 //                mSpotifyAppRemote.getPlayerApi().resume();
+
+                Song currentMediaPlayerState = model.getCurrentSong().getValue();
+                currentMediaPlayerState.setIsPLaying(isPlaying);
+                currentMediaPlayerState.setCurrentPosition(model.getCurrentPosition().getValue());
+                model.getMediaPlayerState().postValue(currentMediaPlayerState);
+                Log.e(TAG, "handleSession: media player state");
+
             } else if (action.equals("queueAdd")) {
                 JsonObject songDetails = json.get("body").getAsJsonObject();
                 String songId = songDetails.get("uri").getAsString();
@@ -481,6 +495,9 @@ public class WebSocketClient {
                 model.getCurrentSong().postValue(currentSong);
                 model.getSongQueue().postValue(sessionQueue);
                 model.setCurrentPosition(0);
+                Song currentMediaPlayerState = currentSong;
+                currentMediaPlayerState.setCurrentPosition(0);
+                model.getMediaPlayerState().postValue(currentMediaPlayerState);
             } else if (action.equals("queueDrag")) {
                 JsonObject body = json.get("body").getAsJsonObject();
                 int startIndex = body.get("startIndex").getAsInt();
@@ -503,11 +520,13 @@ public class WebSocketClient {
                 Song currentSong = model.getCurrentSong().getValue();
                 currentSong.setIsPLaying(false);
                 model.getCurrentSong().postValue(currentSong);
+                model.getMediaPlayerState().postValue(currentSong);
 //                mSpotifyAppRemote.getPlayerApi().pause();
             } else if (action.equals("queueResume")) {
                 Song currentSong = model.getCurrentSong().getValue();
                 currentSong.setIsPLaying(true);
                 model.getCurrentSong().postValue(currentSong);
+                model.getMediaPlayerState().postValue(currentSong);
 //                mSpotifyAppRemote.getPlayerApi().resume();
             } else if (action.equals("queueSeek")) {
                 JsonObject body = json.get("body").getAsJsonObject();
@@ -517,6 +536,10 @@ public class WebSocketClient {
                 currentSong.setCurrentPosition(seekPosition);
                 model.getCurrentSong().postValue(currentSong);
                 model.setCurrentPosition(seekPosition);
+                Song currentMediaPlayerState = currentSong;
+                currentMediaPlayerState.setCurrentPosition(seekPosition);
+                model.getMediaPlayerState().postValue(currentMediaPlayerState);
+                Log.d(TAG, "handleSession: media player state");
 //                mSpotifyAppRemote.getPlayerApi().seekTo(seekPosition);
             } else if (action.equals("message")) {
                 Log.e(TAG, "handleSession: " + model.getCurrentSession().getValue());

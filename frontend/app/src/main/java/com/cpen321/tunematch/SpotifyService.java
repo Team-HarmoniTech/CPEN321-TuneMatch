@@ -39,7 +39,7 @@ public class SpotifyService extends Service {
     private String CLIENT_ID;
     private WebSocketService webSocketService;
     private static SpotifyService instance;
-
+    private String SyncID = "";
     public static SpotifyService getInstance() {
         if (instance == null) {
             instance = new SpotifyService();
@@ -121,10 +121,12 @@ public class SpotifyService extends Service {
                         Log.e("SpotifyService", "Connected! Yay!");
                         mSpotifyAppRemote = spotifyAppRemote;
 //                                set the current song in the spotifyapp remote as the current song in the model
+
                         mSpotifyAppRemote.getPlayerApi().getPlayerState()
                                 .setResultCallback(playerState -> {
                                     Log.e(TAG, "onConnected: " + playerState.track.name+" "+playerState.track.artist.name+" "+playerState.track.album.name+" "+playerState.track.duration+" "+playerState.track.uri+" "+playerState.playbackPosition+" "+playerState.isPaused+" "+playerState.playbackSpeed);
                                     if (playerState != null && playerState.track != null) {
+                                        SyncID = playerState.track.uri.split(":")[2];
                                         Log.d("SpotifyService the current song resets on load", playerState.track.uri);
                                         String ID = playerState.track.uri.split(":")[2];
                                         Song currentSong = new Song(ID, playerState.track.name, playerState.track.artist.name, playerState.track.duration);
@@ -171,6 +173,22 @@ public class SpotifyService extends Service {
                             }
                         });
 
+                        model.getMediaPlayerState().observeForever(mediaPlayerState -> {
+                            Log.e(TAG, "media player state is being changed"+mediaPlayerState.getCurrentPosition()+" "+mediaPlayerState.isPlaying());
+                            if (mediaPlayerState != null) {
+                                if (mediaPlayerState.isPlaying()) {
+                                    mSpotifyAppRemote.getPlayerApi().resume();
+                                } else {
+                                    mSpotifyAppRemote.getPlayerApi().pause();
+                                }
+                                mSpotifyAppRemote.getPlayerApi().seekTo(mediaPlayerState.getCurrentPosition());
+                                if(!SyncID.equals(mediaPlayerState.getSongID())){
+                                    Log.e(TAG, "onConnected: is this in a loop??");
+                                    mSpotifyAppRemote.getPlayerApi().play("spotify:track:"+mediaPlayerState.getSongID());
+                                    SyncID = mediaPlayerState.getSongID();
+                                }
+                            }
+                        });
                     }
 
                     public void onFailure(Throwable throwable) {
